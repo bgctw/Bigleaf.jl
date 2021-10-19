@@ -12,6 +12,6 @@ export Esat_slope, Esat_from_Tair, Esat_from_Tair_deriv,
 
 include("bigleaf_constants.jl")
 include("unit_conversions.jl")
-#include("meteorological_variables.jl")
+include("meteorological_variables.jl")
 
 end

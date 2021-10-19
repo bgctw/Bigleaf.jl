@@ -21,7 +21,7 @@
 #' @references Foken, T, 2008: Micrometeorology_ Springer, Berlin, Germany_ 
 #' 
 #' @export
-function air_density(Tair,pressure; constants=bigleaf_constants()){
+function air_density(Tair,pressure; constants=bigleaf_constants())
   Tair_K     = Tair + constants[:Kelvin]
   pressure_Pa = pressure * constants[:kPa2Pa]
   rho = pressure_Pa / (constants[:Rd] * Tair_K) 
@@ -329,13 +329,13 @@ end
 #'               
 #' @export
 function virtual_temp(Tair,pressure,VPD;Esat_formula="Sonntag_1990",
-                         constants=bigleaf_constants()){
+                         constants=bigleaf_constants())
   e    = VPD_to_e(VPD,Tair,Esat_formula)
   Tair = Tair + constants[:Kelvin]
   Tv = Tair / (1 - (1 - constants[:eps]) * e/pressure) 
   Tv = Tv - constants[:Kelvin]
   return(Tv)
-}
+end
 
 
 
@@ -365,11 +365,11 @@ function virtual_temp(Tair,pressure,VPD;Esat_formula="Sonntag_1990",
 #' kinematic_viscosity(25,100)    
 #' 
 #' @export         
-function kinematic_viscosity(Tair,pressure; constants=bigleaf_constants()){
+function kinematic_viscosity(Tair,pressure; constants=bigleaf_constants())
   
   Tair     = Tair + constants[:Kelvin]
   pressure = pressure * constants[:kPa2Pa]
   
   v  = 1.327e-05*(constants[:pressure0]/pressure)*(Tair/constants[:Tair0])^1.81
   return(v)
-}
+end
