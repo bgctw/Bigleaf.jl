@@ -297,40 +297,41 @@ end
 
 
 
+"""
+$(SIGNATURES)
 
+Virtual temperature, defined as the temperature at which dry air would have the same
+             density as moist air at its actual temperature.
 
+# Arguments            
+- `Tair`:      Air temperature (deg C)
+- `pressure`:  Atmospheric pressure (kPa)
+- `VPD`:       Vapor pressure deficit (kPa)
+- `Esat_formula`: formula used in [`Esat_from_Tair`](@ref)
+- `constants` Dictionary with entries
+  - :Kelvin - conversion degree Celsius to Kelvin
+  - :eps - ratio of the molecular weight of water vapor to dry air (-) 
 
+# Details
+The virtual temperature is given by:
+ 
+```Tv = Tair / (1 - (1 - eps) e/pressure)```
 
-#' Virtual Temperature
-#' 
-#' Virtual temperature, defined as the temperature at which dry air would have the same
-#'              density as moist air at its actual temperature_
-#' 
-#' @param Tair      Air temperature (deg C)
-#' @param pressure  Atmospheric pressure (kPa)
-#' @param VPD       Vapor pressure deficit (kPa)
-#' @param Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat_ 
-#'                      One of \code{"Sonntag_1990"} (Default), \code{"Alduchov_1996"}, or \code{"Allen_1998"}_
-#'                      See \code{\link{Esat_slope}}_ 
-#' @param constants Kelvin - conversion degree Celsius to Kelvin \cr
-#'                  eps - ratio of the molecular weight of water vapor to dry air (-) 
-#' 
-#' @details the virtual temperature is given by:
-#'  
-#'    ```Tv = Tair / (1 - (1 - eps) e/pressure)}
-#' 
-#'  where Tair is in Kelvin (converted internally)_ Likewise, VPD is converted 
-#'  to actual vapor pressure (e in kPa) with \code{\link{VPD_to_e}} internally_
-#' 
-#' @return \item{Tv -}{virtual temperature (deg C)}
-#' 
-#' @references Monteith J_L_, Unsworth M_H_, 2008: Principles of Environmental Physics_
-#'             3rd edition_ Academic Press, London_
-#'  
-#' @examples 
-#' virtual_temp(25,100,1.5)                        
-#'               
-#' @export
+ where Tair is in Kelvin (converted internally)_ Likewise, VPD is converted 
+ to actual vapor pressure (e in kPa) with [`VPD_to_e`](@ref) internally.
+
+# Value
+virtual temperature (deg C)
+
+# References
+- Monteith J_L_, Unsworth M_H_, 2008: Principles of Environmental Physics.
+            3rd edition_ Academic Press, London.
+ 
+# Examples            
+```@example
+virtual_temp(25,100,1.5)                        
+```         
+"""
 function virtual_temp(Tair,pressure,VPD;Esat_formula=Val("Sonntag_1990"),
                          constants=bigleaf_constants())
   e    = VPD_to_e(VPD,Tair;Esat_formula)

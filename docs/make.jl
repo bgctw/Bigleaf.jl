@@ -16,7 +16,12 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
-    ],
+        #"Meteorological variables" => "metorological_variables.md",
+        #"Unit conversions" => "unit_conversions.md",
+        hide("metorological_variables.md"),
+        hide("unit_conversions.md"),
+        "Index" => "autodocs.md",
+        ],
 )
 
 deploydocs(;

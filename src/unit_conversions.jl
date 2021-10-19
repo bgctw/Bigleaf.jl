@@ -1,68 +1,65 @@
-#' Saturation Vapor Pressure (Esat) and Slope of the Esat Curve
-#' 
-#' Calculates saturation vapor pressure (Esat) over water and the
-#'              corresponding slope of the saturation vapor pressure curve_
-#' 
-#' @param Tair      Air temperature (deg C)
-#' @param formula   Formula to be used_ Either \code{:Sonntag_1990} (Default), 
-#'                  \code{"Alduchov_1996"}, or \code{"Allen_1998"}_
-#' @param constants Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
-#' 
-#' @details Esat (kPa) is calculated using the Magnus equation:
-#' 
-#'    \deqn{Esat = a * exp((b * Tair) / (c + Tair)) / 1000}
-#'  
-#'  where the coefficients a, b, c take different values depending on the formula used_
-#'  The default values are from Sonntag 1990 (a=611.2, b=17.62, c=243.12)_ This version
-#'  of the Magnus equation is recommended by the WMO (WMO 2008; p1.4-29)_ Alternatively,
-#'  parameter values determined by Alduchov & Eskridge 1996 or Allen et al_ 1998 can be 
-#'  used (see references)_
-#'  The slope of the Esat curve (\eqn{\Delta}) is calculated as the first derivative of the function:
-#'  
-#'    \deqn{\Delta = dEsat / dTair}
-#'  
-#'  which is solved using \code{\link[stats]{D}}_
-#' 
-#' @return A dataframe with the following columns: 
-#'  \item{Esat}{Saturation vapor pressure (kPa)}
-#'  \item{Delta}{Slope of the saturation vapor pressure curve (kPa K-1)}
-#'    
-#' @references Sonntag D_ 1990: Important new values of the physical constants of 1986, vapor 
-#'             pressure formulations based on the ITS-90 and psychrometric formulae_ 
-#'             Zeitschrift fuer Meteorologie 70, 340-344_
-#'             
-#'             World Meteorological Organization 2008: Guide to Meteorological Instruments
-#'             and Methods of Observation (WMO-No_8)_ World Meteorological Organization,
-#'             Geneva_ 7th Edition_
-#'             
-#'             Alduchov, O_ A_ & Eskridge, R_ E_, 1996: Improved Magnus form approximation of 
-#'             saturation vapor pressure_ Journal of Applied Meteorology, 35, 601-609
-#'             
-#'             Allen, R_G_, Pereira, L_S_, Raes, D_, Smith, M_, 1998: Crop evapotranspiration -
-#'             Guidelines for computing crop water requirements - FAO irrigation and drainage
-#'             paper 56, FAO, Rome_
-#' 
-#' @examples 
-#' Esat_slope(seq(0,45,5))[,"Esat"]  # Esat in kPa
-#' Esat_slope(seq(0,45,5))[,"Delta"] # the corresponding slope of the Esat curve (Delta) in kPa K-1
-#'        
-#' @importFrom stats D                  
-#' @export
+"""
+    Esat_slope(Tair; formula, constants) 
+    Esat_from_Tair(Tair; formula, constants) 
+    Esat_from_Tair_deriv(Tair; formula, constants) 
+
+Saturation Vapor Pressure (Esat) and Slope of the Esat Curve
+
+# Arguemtns
+- `Tair`:      Air temperature (deg C)
+- `formula=Val(:Sonntag_1990)`:   Formula to be used. Either 
+   `Val(:Sonntag_1990)` (Default), `Val(:Alduchov_1996`, or `Val(:Allen_1998)`.
+- `constants=bigleaf_constants()`: Dictionary with entry  :Pa2kPa - 
+  conversion pascal (Pa) to kilopascal
+
+# Details
+Esat (kPa) is calculated using the Magnus equation:
+
+```Esat = a * exp((b * Tair) / (c + Tair)) / 1000```
+where the coefficients a, b, c take different values depending on the formula use
+The default values are from Sonntag 1990 (a=611.2, b=17.62, c=243.12). This versi
+of the Magnus equation is recommended by the WMO (WMO 2008; p1.4-29). Alternativel
+parameter values determined by Alduchov & Eskridge 1996 or Allen et al. 1998 can b
+used (see references).
+The slope of the Esat curve (``\\Delta``) is calculated as the first derivative of the function:
+ 
+``\\Delta = {dEsat \\over dTair}``
+
+# Value   
+- `Esat_from_Tair`: Saturation vapor pressure (kPa)
+- `Esat_from_Tair_deriv`: Slope of the saturation vapor pressure curve (kPa K-1)
+- `Esat_slope`: A tuple of the two above values
+# References
+Sonntag D. 1990: Important new values of the physical constants of 1986, vapor 
+pressure formulations based on the ITS-90 and psychrometric formulae. 
+Zeitschrift fuer Meteorologie 70, 340-344.
+
+World Meteorological Organization 2008: Guide to Meteorological Instruments
+and Methods of Observation (WMO-No.8). World Meteorological Organization,
+Geneva. 7th Edition,
+
+Alduchov, O. A. & Eskridge, R. E., 1996: Improved Magnus form approximation of 
+saturation vapor pressure. Journal of Applied Meteorology, 35, 601-609
+
+Allen, R.G., Pereira, L.S., Raes, D., Smith, M., 1998: Crop evapotranspiration -
+Guidelines for computing crop water requirements - FAO irrigation and drainage
+paper 56, FAO, Rome.
+
+```@example
+Esat_from_Tair(20.0)          # Esat in kPa
+Esat_from_Tair_deriv(20.0)    # its derivative to temperature in kPa K-1
+Esat_slope(20.0)              # both as a tuple
+```
+"""
 function Esat_slope(Tair::Number; formula=:Sonntag_1990, constants=bigleaf_constants()) 
-  Esat = Esat_from_Tair([Tair]; formula, constants)
-  Delta = Esat_from_Tair_deriv([Tair]; formula, constants)
-  Esat[1], Delta[1]
-end
-
-get_EsatCoef(::Val{:Sonntag_1990}) = (a=611.2,b=17.62,c=243.12)
-get_EsatCoef(::Val{:Alduchov_1996}) = (a=610.94,b=17.625,c=243.04)
-get_EsatCoef(::Val{:Allen_1998}) = (a=610.8,b=17.27,c=237.3)
-
+  Esat = Esat_from_Tair(Tair; formula, constants)
+  Delta = Esat_from_Tair_deriv(Tair; formula, constants)
+  Esat, Delta
+end,
 function Esat_from_Tair(Tair; formula=Val(:Sonntag_1990), constants=bigleaf_constants()) 
   a,b,c = get_EsatCoef(formula)
   Esat = a * exp((b * Tair) / (c + Tair)) * constants[:Pa2kPa]
-end
-
+end,
 function Esat_from_Tair_deriv(Tair; formula=Val(:Sonntag_1990), constants=bigleaf_constants()) 
   # slope of the saturation vapor pressure curve
   #Delta = eval(D(expression(a * exp((b * Tair) / (c + Tair))),name="Tair"))
@@ -72,13 +69,15 @@ function Esat_from_Tair_deriv(Tair; formula=Val(:Sonntag_1990), constants=biglea
   Delta = Delta_Pa .* constants[:Pa2kPa]
 end
     
+get_EsatCoef(::Val{:Sonntag_1990}) = (a=611.2,b=17.62,c=243.12)
+get_EsatCoef(::Val{:Alduchov_1996}) = (a=610.94,b=17.625,c=243.04)
+get_EsatCoef(::Val{:Allen_1998}) = (a=610.8,b=17.27,c=237.3)
 
 """
     LE_to_ET(LE,Tair)
-
     ET_to_LE(ET,Tair)
 
-Converts evaporative water flux from mass (ET=evapotranspiration)
+Convert evaporative water flux from mass (ET=evapotranspiration)
              to energy (LE=latent heat flux) units, or vice versa.
 
 ## Arguments
@@ -116,49 +115,36 @@ function ET_to_LE(ET,Tair)
 end
 
 
-# """
-# Conversion between Conductance Units
+"""
+    ms_to_mol(G_ms,Tair,pressure; constants=bigleaf_constants())
+    mol_to_ms(G_mol,Tair,pressure; constants=bigleaf_constants())
 
-# @description Converts conductances from mass (m s-1)
-#              to molar units (mol m-2 s-1), or vice versa_
+Converts conductances from mass (m s-1) to molar units (mol m-2 s-1), or vice versa
 
-# @aliases ms_to_mol mol_to_ms
+# Details
+The conversions are given by
+- ``G_{mol} = G_{ms}  \\, pressure / (Rgas  Tair)``
+- ``G_{ms} = G_{mol}  \\, (Rgas  Tair) / pressure``
 
-# @param G_ms       Conductance (m s-1)
-# @param G_mol      Conductance (mol m-2 s-1)
-# @param Tair       Air temperature (deg C)
-# @param pressure   Atmospheric pressure (kPa)
-# @param constants  Kelvin - conversion degree Celsius to Kelvin \cr
-#                   Rgas - universal gas constant (J mol-1 K-1) \cr
-#                   kPa2Pa - conversion kilopascal (kPa) to pascal (Pa)
+where Tair is in Kelvin and pressure in Pa (converted from kPa internally).
 
-# @details
-# The conversions are given by:
-
-# ``G_mol = G_ms * pressure / (Rgas * Tair)``
-
-# ``G_ms = G_mol * (Rgas * Tair) / pressure``
-
-# where Tair is in Kelvin and pressure in Pa (converted from kPa internally)
-
-# @references Jones, H_G_ 1992_ Plants and microclimate: a quantitative approach to environmental plant physiology_
-#             2nd Edition_, Cambridge University Press, Cambridge_ 428 p
-
-# @example
-# ms_to_mol(0.005,25,100)
-
-# @export
-# """
-# function ms_to_mol(G_ms,Tair,pressure; constants=bigleaf_constants())
-#   Tair     = Tair + constants[:Kelvin] 
-#   pressure = pressure * constants[:kPa2Pa] 
-#   G_mol  = G_ms * pressure / (constants[:Rgas]  * Tair)
-# end
-# function mol_to_ms(G_mol,Tair,pressure; constants=bigleaf_constants())
-#   Tair     = Tair + constants[:Kelvin] 
-#   pressure = pressure * constants[:kPa2Pa] 
-#   G_ms  = G_mol * (constants[:Rgas]  * Tair) / (pressure)
-# end
+# References 
+Jones, H_G_ 1992_ Plants and microclimate: a quantitative approach to environmental plant physiology_
+            2nd Edition_, Cambridge University Press, Cambridge_ 428 
+```@example
+ms_to_mol(0.005,25,100)
+```
+"""
+function ms_to_mol(G_ms,Tair,pressure; constants=bigleaf_constants())
+  Tair     = Tair + constants[:Kelvin] 
+  pressure = pressure * constants[:kPa2Pa] 
+  G_mol  = G_ms * pressure / (constants[:Rgas]  * Tair)
+end,
+function mol_to_ms(G_mol,Tair,pressure; constants=bigleaf_constants())
+  Tair     = Tair + constants[:Kelvin] 
+  pressure = pressure * constants[:kPa2Pa] 
+  G_ms  = G_mol * (constants[:Rgas]  * Tair) / (pressure)
+end
 
 
 # """
