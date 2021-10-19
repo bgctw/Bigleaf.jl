@@ -1,5 +1,5 @@
 using bigleaf
-using Documenter
+using Documenter, DocStringExtensions
 
 DocMeta.setdocmeta!(bigleaf, :DocTestSetup, :(using bigleaf); recursive=true)
 

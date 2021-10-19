@@ -3,6 +3,9 @@ uuid = "e2ae9153-b66f-47c5-85f1-c6d65380123f"
 authors = ["Thomas Wutzler <twutz@bgc-jena.mpg.de> and contributors"]
 version = "0.1.0"
 
+[deps]
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+
 [compat]
 julia = "1"
 
