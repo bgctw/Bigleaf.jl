@@ -129,8 +129,9 @@ The conversions are given by
 where Tair is in Kelvin and pressure in Pa (converted from kPa internally).
 
 # References 
-Jones, H_G_ 1992_ Plants and microclimate: a quantitative approach to environmental plant physiology_
-            2nd Edition_, Cambridge University Press, Cambridge_ 428 
+Jones, H_G_ 1992_ Plants and microclimate: a quantitative approach to 
+  environmental plant physiology_
+  2nd Edition_, Cambridge University Press, Cambridge_ 428 
 ```@example
 ms_to_mol(0.005,25,100)
 ```
@@ -147,30 +148,36 @@ function mol_to_ms(G_mol,Tair,pressure; constants=bigleaf_constants())
 end
 
 
-# """
-# Conversions between Humidity Measures
+"""
+    VPD_to_rH(VPD,Tair; ...)
+    H_to_VPD(rH,Tair; ...)
+    e_to_rH(e,Tair; ...)
+    VPD_to_e(VPD,Tair; ...)
+    e_to_VPD(e,Tair; ...)
+    e_to_q(e,pressure; ...)
+    q_to_e(q,pressure; ...)
+    q_to_VPD(q,Tair,pressure; ...)
+    VPD_to_q(VPD,Tair,pressure; ...)
 
-# @description Conversion between vapor pressure (e), vapor pressure deficit (VPD),
-#              specific humidity (q), and relative humidity (rH)_
+Conversion between vapor pressure (e), vapor pressure deficit (VPD),
+             specific humidity (q), and relative humidity (rH).
 
-# @param Tair      Air temperature (deg C)
-# @param pressure  Atmospheric pressure (kPa)
-# @param e         Vapor pressure (kPa)
-# @param q         Specific humidity (kg kg-1)
-# @param VPD       Vapor pressure deficit (kPa)
-# @param rH        Relative humidity (-)
-# @param Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat_
-#                      One of \code{:Sonntag_1990} (Default), \code{"Alduchov_1996"}, or \code{"Allen_1998"}_
-#                      See \code{\link{Esat_slope}}_
-# @param constants eps - ratio of the molecular weight of water vapor to dry air (-) \cr
-#                  Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
+# Arguments             
+- Tair:      Air temperature (deg C)
+- pressure:  Atmospheric pressure (kPa)
+- e:         Vapor pressure (kPa)
+- q:        Specific humidity (kg kg-1)
+- VPD:       Vapor pressure deficit (kPa)
+- rH:        Relative humidity (-)
 
-# @family humidity conversion
+All functions accept the optional arguemtns:
+- `Esat_formula`: formula used in [`Esat_from_Tair`](@ref)
+- `constants`: dictionary from [`bigleaf_constants`](@ref) with entries
+  eps and Pa2kPa
 
-# @references Foken, T, 2008: Micrometeorology_ Springer, Berlin, Germany_
-
-# @export
-# """
+# Rreferences 
+Foken, T, 2008: Micrometeorology_ Springer, Berlin, Germany.
+"""
 function VPD_to_rH(VPD,Tair; Esat_formula=Val(:Sonntag_1990),
                       constants=bigleaf_constants())
   esat = Esat_from_Tair(Tair; formula = Esat_formula,constants)
@@ -222,80 +229,72 @@ function VPD_to_q(VPD,Tair,pressure; Esat_formula=Val(:Sonntag_1990),
   q    = e_to_q(e,pressure;constants)
 end
 
-# """
-# Conversions between Global Radiation and Photosynthetic Photon Flux Density
+"""
+    Rg_to_PPFD(Rg,J_to_mol=4.6,frac_PAR=0.5)
+    PPFD_to_Rg(PPFD,J_to_mol=4.6,frac_PAR=0.5)
 
-# @description Converts radiation from W m-2 to umol m-2 s-1 and vice versa_
+Conversions between Global Radiation (W m-2) and Photosynthetic Photon Flux Density (umol m-2 s-1)
 
-# @param Rg       Global radiation = incoming short-wave radiation at the surface (W m-2)
-# @param PPFD     Photosynthetic photon flux density (umol m-2 s-1)
-# @param J_to_mol Conversion factor from J m-2 s-1 (= W m-2) to umol (quanta) m-2 s-1
-# @param frac_PAR Fraction of incoming solar irradiance that is photosynthetically
-#                 active radiation (PAR); defaults to 0.5
+# Arguments
+- Rg:       Global radiation = incoming short-wave radiation at the surface (W m-2)
+- PPFD:     Photosynthetic photon flux density (umol m-2 s-1)
+- J_to_mol: Conversion factor from J m-2 s-1 (= W m-2) to umol (quanta) m-2 s-1
+- frac_PAR: Fraction of incoming solar irradiance that is photosynthetical-          
+  active radiation (PAR); defaults to 0.5
 
-# @details
-# The conversion is given by:
+# Details
+The conversion is given by:
 
-#  ``PPFD = Rg * frac_PAR * J_to_mol}
+ ``PPFD = Rg * frac_PAR * J_to_mol``
 
-# by default, the combined conversion factor (\code{frac_PAR * J_to_mol}) is 2.3
+by default, the combined conversion factor (`frac_PAR * J_to_mol`) is 2.3
 
-# @example
-# # convert a measured incoming short-wave radiation of 500 Wm-2 to
-# # PPFD in umol m-2 s-1 and backwards
-# Rg_to_PPFD(500)
-# PPFD_to_Rg(1150)
-
-# @export
-# """
+# Examples
+```@example
+# convert a measured incoming short-wave radiation of 500 Wm-2 to
+# PPFD in umol m-2 s-1 and backwards
+Rg_to_PPFD(500)
+PPFD_to_Rg(1150)
+```
+"""
 function Rg_to_PPFD(Rg,J_to_mol=4.6,frac_PAR=0.5)
   PPFD = Rg * frac_PAR * J_to_mol
-end
+end,
 function PPFD_to_Rg(PPFD,J_to_mol=4.6,frac_PAR=0.5)
   Rg = PPFD / frac_PAR / J_to_mol
 end
 
-# """
-# Conversion between Mass and Molar Units
+"""
+    kg_to_mol(mass, molarMass=bigleaf_constants()[:H2Omol])
 
-# @description Converts mass units of a substance to the corresponding molar units
-#              and vice versa_
-
-# @param mass      Numeric vector of mass in kg
-# @param molarMass Numeric vector of molar mass of the substance (kg mol-1)
-#                  e_g_ as provided by \code{\link{bigleaf_constants}}()$H2Omol
-#                  Default is molar mass of Water_
-
-# @return Numeric vector of amount of substance in mol_
-# @export
-# """
+Conversion between Mass (kg) and Molar Units (mol).
+"""
 function kg_to_mol(mass, molarMass=bigleaf_constants()[:H2Omol])
   moles = mass / molarMass
 end
 
-# """
-# Conversion between Mass and Molar Units of Carbon and CO2
+"""
+    umolCO2_to_gC(CO2_flux; constants=bigleaf_constants())
+    gC_to_umolCO2(C_flux; constants=bigleaf_constants())
 
-# @description Converts CO2 quantities from umol CO2 m-2 s-1 to g C m-2 d-1 and vice versa_
 
-# @param CO2_flux  CO2 flux (umol CO2 m-2 s-1)
-# @param C_flux    Carbon (C) flux (gC m-2 d-1)
-# @param constants Cmol - molar mass of carbon (kg mol-1) \cr
-#                  umol2mol - conversion micromole (umol) to mol (mol) \cr
-#                  mol2umol - conversion mole (mol) to micromole (umol)  \cr
-#                  kg2g - conversion kilogram (kg) to gram (g) \cr
-#                  g2kg - conversion gram (g) to kilogram (kg) \cr
-#                  days2seconds - seconds per day
+Convert CO2 quantities from (umol CO2 m-2 s-1) to (g C m-2 d-1) and vice versa.
 
-# @example
-# umolCO2_to_gC(20)  # gC m-2 d-1
+# Arguments
+- CO2_flux  CO2 flux (umol CO2 m-2 s-1)
+- C_flux    Carbon (C) flux (gC m-2 d-1)
+- `constants`: dictionary from [`bigleaf_constants`](@ref) with entries:
+  Cmol, umol2mol, mol2umol, kg2g, g2kg, says2seconds
 
-# @export
-# """
+# Examples                 
+```@example
+umolCO2_to_gC(20)  # gC m-2 d-1
+```
+"""
 function umolCO2_to_gC(CO2_flux; constants=bigleaf_constants())
   C_flux = CO2_flux * constants[:umol2mol]  * constants[:Cmol]  * 
   constants[:kg2g]  * constants[:days2seconds] 
-end
+end,
 function gC_to_umolCO2(C_flux; constants=bigleaf_constants())
   CO2_flux = (C_flux * constants[:g2kg]  / constants[:days2seconds] ) / 
   constants[:Cmol]  * constants[:mol2umol] 
