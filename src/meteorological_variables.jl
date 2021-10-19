@@ -10,7 +10,7 @@
 #' 
 #' @details Air density (\eqn{\rho}) is calculated as:
 #' 
-#'   \deqn{\rho = pressure / (Rd * Tair)}
+#'   ```\rho = pressure / (Rd * Tair)}
 #' 
 #' @return \item{\eqn{\rho}}{air density (kg m-3)}
 #' 
@@ -45,7 +45,7 @@ end
 #' 
 #' @details Atmospheric pressure is approximated by the hypsometric equation:
 #' 
-#'          \deqn{pressure = pressure_0 / (exp(g * elevation / (Rd Temp)))}
+#'          ```pressure = pressure_0 / (exp(g * elevation / (Rd Temp)))}
 #'       
 #' @note The hypsometric equation gives an estimate of the standard pressure
 #'       at a given altitude_ 
@@ -70,7 +70,7 @@ function pressure_from_elevation(elev,Tair,VPD=missing; constants=bigleaf_consta
   else 
     pressure1   = constants[:pressure0] / exp(constants[:g] * elev / (constants[:Rd]*Tair_K))
     Tv          = virtual_temp(Tair_K - constants[:Kelvin],pressure1 * constants[:Pa2kPa],
-                                VPD,Esat_formula="Sonntag_1990",constants) + constants[:Kelvin]
+                                VPD;Esat_formula=Val("Sonntag_1990"),constants) + constants[:Kelvin]
     pressure    = constants[:pressure0] / exp(constants[:g] * elev / (constants[:Rd]*Tv))
   end
   pressure = pressure * constants[:Pa2kPa]
@@ -87,7 +87,7 @@ end
 #'                  
 #' @details The psychrometric constant (\eqn{\gamma}) is given as:
 #' 
-#'    \deqn{\gamma = cp * pressure / (eps * \lambda)}
+#'    ```\gamma = cp * pressure / (eps * \lambda)}
 #'  
 #'  where \eqn{\lambda} is the latent heat of vaporization (J kg-1), 
 #'  as calculated from \code{\link{latent_heat_vaporization}}_
@@ -106,27 +106,30 @@ function psychrometric_constant(Tair,pressure; constants=bigleaf_constants())
   gamma  = (constants[:cp] * pressure) / (constants[:eps] * lambda)
 end
 
-#' Latent Heat of Vaporization
-#' 
-#' Latent heat of vaporization as a function of air temperature_
-#' 
-#' @param Tair  Air temperature (deg C)
-#' 
-#' @details The following formula is used:
-#' 
-#'   \deqn{\lambda = (2.501 - 0.00237*Tair)10^6}
-#' 
-#' @return \item{\eqn{\lambda} -}{Latent heat of vaporization (J kg-1)} 
-#' 
-#' @references Stull, B_, 1988: An Introduction to Boundary Layer Meteorology (p_641)
-#'             Kluwer Academic Publishers, Dordrecht, Netherlands
-#'             
-#'             Foken, T, 2008: Micrometeorology_ Springer, Berlin, Germany_ 
-#' 
-#' @examples 
-#' latent_heat_vaporization(seq(5,45,5))             
-#'             
-#' @export
+"""
+    $(SIGNATURES)
+
+Latent heat of vaporization as a function of air temperature
+using 
+
+``\\lambda = (2.501 - 0.00237 \\, Tair) 10^6``.
+
+# Arguments:
+- Tair:  Air temperature (deg C)
+
+# Value
+``\\lambda``: Latent heat of vaporization (J kg-1) 
+
+# References
+- Stull, B_, 1988: An Introduction to Boundary Layer Meteorology (p_641)
+            Kluwer Academic Publishers, Dordrecht, Netherlands            
+- Foken, T, 2008: Micrometeorology_ Springer, Berlin, Germany
+
+
+```@example
+latent_heat_vaporization.(range(5,45,5))        
+```
+"""            
 function latent_heat_vaporization(Tair) 
   k1 = 2.501
   k2 = 0.00237
@@ -178,7 +181,7 @@ end
 #' 
 #' @details Wet-bulb temperature (Tw) is calculated from the following expression:
 #'          
-#'            \deqn{e = Esat(Tw) - gamma* (Tair - Tw)}
+#'            ```e = Esat(Tw) - gamma* (Tair - Tw)}
 #'          
 #'          The equation is solved for Tw using \code{\link[stats]{optimize}}_
 #'          Actual vapor pressure e (kPa) is calculated from VPD using the function \code{\link{VPD_to_e}}_
@@ -194,7 +197,7 @@ end
 #'        
 #' @importFrom stats optimize                  
 #' @export
-# function wetbulb_temp(Tair,pressure,VPD;accuracy=1e-03,Esat_formula="Sonntag_1990",
+# function wetbulb_temp(Tair,pressure,VPD;accuracy=1e-03,Esat_formula=Val("Sonntag_1990"),
 #                          constants=bigleaf_constants()){
 #   if (!is_numeric(accuracy)){
 #     stop("'accuracy' must be numeric!")
@@ -254,7 +257,7 @@ end
 #' 
 #' @details Dew point temperature (Td) is defined by:
 #' 
-#'           \deqn{e = Esat(Td)}
+#'           ```e = Esat(Td)}
 #'    
 #'          where e is vapor pressure of the air and Esat is the vapor pressure deficit_
 #'          This equation is solved for Td using \code{\link[stats]{optimize}}_
@@ -269,7 +272,7 @@ end
 #' 
 #' @importFrom stats optimize 
 #' @export              
-# function dew_point(Tair,VPD,accuracy=1e-03,Esat_formula="Sonntag_1990",
+# function dew_point(Tair,VPD,accuracy=1e-03,Esat_formula=Val("Sonntag_1990"),
 #                       constants=bigleaf_constants()){
   
 #   if (!is_numeric(accuracy)){
@@ -314,7 +317,7 @@ end
 #' 
 #' @details the virtual temperature is given by:
 #'  
-#'    \deqn{Tv = Tair / (1 - (1 - eps) e/pressure)}
+#'    ```Tv = Tair / (1 - (1 - eps) e/pressure)}
 #' 
 #'  where Tair is in Kelvin (converted internally)_ Likewise, VPD is converted 
 #'  to actual vapor pressure (e in kPa) with \code{\link{VPD_to_e}} internally_
@@ -328,9 +331,9 @@ end
 #' virtual_temp(25,100,1.5)                        
 #'               
 #' @export
-function virtual_temp(Tair,pressure,VPD;Esat_formula="Sonntag_1990",
+function virtual_temp(Tair,pressure,VPD;Esat_formula=Val("Sonntag_1990"),
                          constants=bigleaf_constants())
-  e    = VPD_to_e(VPD,Tair,Esat_formula)
+  e    = VPD_to_e(VPD,Tair;Esat_formula)
   Tair = Tair + constants[:Kelvin]
   Tv = Tair / (1 - (1 - constants[:eps]) * e/pressure) 
   Tv = Tv - constants[:Kelvin]
@@ -353,7 +356,7 @@ end
 #' @details where v is the kinematic viscosity of the air (m2 s-1), 
 #'          given by (Massman 1999b):
 #'          
-#'            \deqn{v = 1.327 * 10^-5(pressure0/pressure)(Tair/Tair0)^1.81}
+#'            ```v = 1.327 * 10^-5(pressure0/pressure)(Tair/Tair0)^1.81}
 #'          
 #' @return \item{v -}{kinematic viscosity of air (m2 s-1)}
 #' 

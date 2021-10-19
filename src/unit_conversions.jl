@@ -73,8 +73,10 @@ function Esat_from_Tair_deriv(Tair; formula=Val(:Sonntag_1990), constants=biglea
 end
     
 
-@doc raw"""
-$(TYPEDSIGNATURES)
+"""
+    LE_to_ET(LE,Tair)
+
+    ET_to_LE(ET,Tair)
 
 Converts evaporative water flux from mass (ET=evapotranspiration)
              to energy (LE=latent heat flux) units, or vice versa.
@@ -85,19 +87,26 @@ Converts evaporative water flux from mass (ET=evapotranspiration)
 - Tair Air temperature (deg C)
 
 The conversions are given by:
+- ``ET = LE/\\lambda``
+- ``LE = \\lambda ET``
 
-``ET = LE/\lambda``
-
-``LE = \lambda ET``
-
-where ``\lambda`` is the latent heat of vaporization (J kg-1) as calculated by
+where ``\\lambda`` is the latent heat of vaporization (J kg-1) as calculated by
 [`latent_heat_vaporization`](@ref).
 
-@example
+# Examples
+```@example
 # LE of 200 Wm-2 and air temperature of 25degC
 LE_to_ET(200,25)
+```
+
+```@example
+x = linspace(-π, π) # hide
+plot(x, f(x), color = "red")
+savefig("f-plot.svg"); 
+```
 """
 function LE_to_ET(LE,Tair)
+  # ![](f-plot.svg)
   lambda = latent_heat_vaporization(Tair)
   ET     = LE/lambda
 end,

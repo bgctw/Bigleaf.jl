@@ -2,6 +2,7 @@ using bigleaf
 using Documenter, DocStringExtensions
 
 DocMeta.setdocmeta!(bigleaf, :DocTestSetup, :(using bigleaf); recursive=true)
+doctest(bigleaf, manual = false)
 
 makedocs(;
     modules=[bigleaf],
