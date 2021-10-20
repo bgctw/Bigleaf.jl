@@ -93,19 +93,15 @@ where ``\\lambda`` is the latent heat of vaporization (J kg-1) as calculated by
 [`latent_heat_vaporization`](@ref).
 
 # Examples
-```@example
+```jldoctest; output = false
 # LE of 200 Wm-2 and air temperature of 25degC
-LE_to_ET(200,25)
-```
-
-```@example
-x = linspace(-π, π) # hide
-plot(x, f(x), color = "red")
-savefig("f-plot.svg"); 
+ET = LE_to_ET(200,25)
+≈(ET, 8.19e-5, atol =1e-7)
+# output
+true
 ```
 """
 function LE_to_ET(LE,Tair)
-  # ![](f-plot.svg)
   lambda = latent_heat_vaporization(Tair)
   ET     = LE/lambda
 end,

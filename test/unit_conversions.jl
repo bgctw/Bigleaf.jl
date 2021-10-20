@@ -1,12 +1,19 @@
 @testset "Esat_from_Tair" begin
-  Tair = 25.2
+  Tair = 15
   formula=Val(:Sonntag_1990)
   constants=bigleaf_constants()
   eSat = Esat_from_Tair(Tair; formula, constants)
   # regression test
-  @test isapprox(eSat, 3.197, atol=1e-3)
+  @test isapprox(eSat, 1.702, atol=1e-3)
   eSat2 = Esat_from_Tair(Tair; formula = Val(:Alduchov_1996), constants)
+  eSat3 = Esat_from_Tair(Tair; formula = Val(:Allen_1998), constants)
+  # different results with different methods
   @test !(eSat2 ≈ eSat)
+  @test !(eSat3 ≈ eSat)
+  @test !(eSat3 ≈ eSat2)
+  # but very similar
+  @test ≈(eSat2, eSat, rtol = 1e-2)
+  @test ≈(eSat3, eSat, rtol = 1e-2)
 end
 
 @testset "Esat_from_Tair_slope" begin
@@ -18,8 +25,40 @@ end
     delta = Esat_from_Tair_deriv.(Tair)
     delta2 = diff(Esat)/step 
     @test all(isapprox.(delta[2:end] - delta2, 0, atol=1e-3))
+    Esat3, delta3 = Esat_slope(Tair[1])
+    @test Esat3 ≈ Esat[1]
+    @test delta3 ≈ delta[1]
 end
-  
+
+@testset "LE_to_ET" begin
+  ET0 = 200.0
+  Tair = 25.0
+  res = LE_to_ET(ET0, Tair)
+  # regression test
+  @test ≈(res, 8.19e-5, atol =1e-7)
+  ET = ET_to_LE(res, Tair)
+  @test ET ≈ ET0
+end
+
+@testset "air_density" begin
+  ad = air_density(25.0,100.0) # Tair, pressure
+  # regression test
+  @test ≈(ad, 1.168, atol =0.001)
+end
+
+@testset "air_density" begin
+  ad = air_density(25.0,100.0) # Tair, pressure
+  # regression test
+  @test ≈(ad, 1.168, atol =0.001)
+end
+
+@testset "air_density" begin
+  ad = air_density(25.0,100.0) # Tair, pressure
+  # regression test
+  @test ≈(ad, 1.168, atol =0.001)
+end
+
+
 
 @testset "e_to_rH" begin
   Tair = 25.0
