@@ -21,7 +21,8 @@ end
 end
 
 @testset "kinematic_viscosity" begin
-  vis = kinematic_viscosity(25,100)
+  Tair,pressure = 25,100
+  vis = kinematic_viscosity(Tair,pressure)
   # regression test
   @test ≈(vis, 1.58e-5, atol =1e-7)
 end

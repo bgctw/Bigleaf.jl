@@ -40,6 +40,17 @@ end
   @test ET ≈ ET0
 end
 
+@testset "LE_to_ET" begin
+  G_ms,Tair,pressure = 0.005,25,100
+  rmol = ms_to_mol(G_ms,Tair,pressure)
+  # regression test
+  @test ≈(rmol, 0.2017, atol =1e-4)
+  rms = mol_to_ms(rmol, Tair, pressure)
+  @test rms ≈ G_ms
+end
+
+
+
 @testset "air_density" begin
   ad = air_density(25.0,100.0) # Tair, pressure
   # regression test

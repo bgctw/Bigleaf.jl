@@ -128,8 +128,14 @@ where Tair is in Kelvin and pressure in Pa (converted from kPa internally).
 Jones, H_G_ 1992_ Plants and microclimate: a quantitative approach to 
   environmental plant physiology_
   2nd Edition_, Cambridge University Press, Cambridge_ 428 
-```@example
-ms_to_mol(0.005,25,100)
+
+# Examples
+```jldoctest; output = false
+G_ms,Tair,pressure = 0.005,25,100
+rmol = ms_to_mol(G_ms,Tair,pressure)
+≈(rmol, 0.2017, atol =1e-4)
+# output
+true
 ```
 """
 function ms_to_mol(G_ms,Tair,pressure; constants=bigleaf_constants())

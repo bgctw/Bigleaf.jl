@@ -346,9 +346,12 @@ Massman, W.J., 1999b: Molecular diffusivities of Hg vapor in air,
             of air near STP. Atmospheric Environment 33, 453-457.      
             
 # Examples            
-```@example doc 
-kinematic_viscosity(25,100)
-error("test throwing error in docString Example")
+```jldoctest; output = false
+Tair,pressure = 25,100
+vis = kinematic_viscosity(Tair,pressure)
+≈(vis, 1.58e-5, atol =1e-7)
+# output
+true
 ```
 """         
 function kinematic_viscosity(Tair,pressure; constants=bigleaf_constants())
