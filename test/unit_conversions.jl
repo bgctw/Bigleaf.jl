@@ -1,10 +1,12 @@
-@testset "Esat_from_Tair" begin
+#@testset "Esat_from_Tair" begin
   Tair = 25.2
   formula=Val(:Sonntag_1990)
   constants=bigleaf_constants()
   eSat = Esat_from_Tair(Tair; formula, constants)
   # regression test
   @test isapprox(eSat, 3.197, atol=1e-3)
+  eSat2 = Esat_from_Tair(Tair; formula = Val(:Alduchov_1996), constants)
+  @test !(eSat2 ≈ eSat)
 end
 
 @testset "Esat_from_Tair_slope" begin

@@ -1,24 +1,26 @@
-function op(a, b, ::Type{Mul})
-    return a*b
-end
-
-using Symbolics
-@variables a b c Tair
-Esat = a * exp((b * Tair) / (c + Tair))
-Symbolics.derivative(Esat, Tair; simplify = true)
-
-# provide example dataset as Parquet and linked local
-# look at generated docu
-
-using DataDeps
-using RData
-import CodecBzip2, CodecXz
-register(DataDep(
-    "DE_Tha_Jun_2014.rda",
-    "downloading exampple dataset DE_Tha_Jun_2014 from bitbucket.org/juergenknauer/bigleaf",
-    "https://bitbucket.org/juergenknauer/bigleaf/raw/0ebe11626b4409305951e8add9f6436703c82584/data/DE_Tha_Jun_2014.rda",
-    "395f02e1a1a2d175ac7499c200d9d48b1cb58ff4755dfd2d7fe96fd18258d73c"
-))
-#println(datadep"DE_Tha_Jun_2014.rda")
-ENV["DATADEPS_ALWAYS_ACCEPT"]="true" # avoid question to download
-DE_Tha_Jun_2014 = first(values(load(joinpath(datadep"DE_Tha_Jun_2014.rda/DE_Tha_Jun_2014.rda"))))
+using DataFrames
+Tair = 0:0.25:12
+#Tair = [10.0,20.0]
+eform_def = Val(:Sonntag_1990)
+Esat_def = Esat_from_Tair.(Tair; formula = eform_def)
+eforms = (Val(:Sonntag_1990), Val(:Alduchov_1996), Val(:Allen_1998))
+eform = eforms[2]
+string.(eforms)
+df = mapreduce(vcat, eforms) do eform 
+    Esat = Esat_from_Tair.(Tair; formula = eform)
+    local dff # make sure to not override previous results
+    dff = DataFrame(
+        formula = eform, Tair = Tair, 
+        Esat = Esat,
+        dEsat = Esat - Esat_def,
+        )
+end;
+#using Chain
+using Pipe
+using Plots, StatsPlots
+dfw = @pipe df |> select(_, 1,2, :Esat) |> unstack(_, :formula, 3)
+dfws = @pipe df |> select(_, 1,2, :dEsat) |> unstack(_, :formula, 3)
+@df dfw plot(:Tair, cols(2:4), legend = :topleft, xlab="Tair (degC)", ylab="Esat (kPa)")
+savefig("Esat_abs.svg")
+@df dfws plot(:Tair, cols(2:4), legend = :topleft, xlab="Tair (degC)", ylab="Esat -ESat_Sonntag_1990 (kPa)")
+savefig("Esat_rel.svg")

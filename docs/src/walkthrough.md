@@ -114,6 +114,42 @@ wetbulb_temp(25.0, 100.0, 1.0) # Tair, pressure, VPD
 pressure_from_elevation(500.0, 25.0) # elev, Tair
 ```
 
+There are several formulations describing the empirical function `Esat(Tair)`.
+The following figure compares them at absole scale and as difference to the 
+default method. The differences are small.
+
+```@setup doc
+using DataFrames
+Tair = 0:0.25:12
+#Tair = [10.0,20.0]
+eform_def = Val(:Sonntag_1990)
+Esat_def = Esat_from_Tair.(Tair; formula = eform_def)
+eforms = (Val(:Sonntag_1990), Val(:Alduchov_1996), Val(:Allen_1998))
+eform = eforms[2]
+string.(eforms)
+df = mapreduce(vcat, eforms) do eform 
+    Esat = Esat_from_Tair.(Tair; formula = eform)
+    local dff # make sure to not override previous results
+    dff = DataFrame(
+        formula = eform, Tair = Tair, 
+        Esat = Esat,
+        dEsat = Esat - Esat_def,
+        )
+end;
+#using Chain
+using Pipe
+using Plots, StatsPlots
+dfw = @pipe df |> select(_, 1,2, :Esat) |> unstack(_, :formula, 3)
+dfws = @pipe df |> select(_, 1,2, :dEsat) |> unstack(_, :formula, 3)
+@df dfw plot(:Tair, cols(2:4), legend = :topleft, xlab="Tair (degC)", ylab="Esat (kPa)")
+savefig("Esat_abs.svg")
+@df dfws plot(:Tair, cols(2:4), legend = :topleft, xlab="Tair (degC)", ylab="Esat -ESat_Sonntag_1990 (kPa)")
+savefig("Esat_rel.svg")
+```
+
+![](Esat_abs.svg)
+
+![](Esat_rel.svg)
 
 ## Unit interconversions
 
@@ -139,5 +175,10 @@ ms_to_mol(0.01, 25, 100) # mC, Tair, pressure
 # umol CO2 m-2 s-1 to g C m-2 d-1
 umolCO2_to_gC(20)
 ```
+
+Many functions provide constant empirical parameters. Those can
+be changed by overriding the default values with 
+[`bigleaf_constants`](@ref) 
+and passing this Dictionary to the respective function.
 
 
