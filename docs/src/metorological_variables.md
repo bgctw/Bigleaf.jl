@@ -13,5 +13,5 @@ pressure_from_elevation
 psychrometric_constant
 kinematic_viscosity
 dew_point
-wetbulb_temperature
+wetbulb_temp
 ```

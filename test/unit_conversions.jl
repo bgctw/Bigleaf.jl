@@ -1,4 +1,4 @@
-#@testset "Esat_from_Tair" begin
+@testset "Esat_from_Tair" begin
   Tair = 25.2
   formula=Val(:Sonntag_1990)
   constants=bigleaf_constants()
