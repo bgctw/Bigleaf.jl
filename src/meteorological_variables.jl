@@ -1,26 +1,32 @@
-#' Air Density
-#' 
-#' Air density of moist air from air temperature and pressure_
-#' 
-#' @param Tair      Air temperature (deg C)
-#' @param pressure  Atmospheric pressure (kPa)
-#' @param constants Kelvin - conversion degC to Kelvin \cr
-#'                  Rd - gas constant of dry air (J kg-1 K-1) \cr
-#'                  kPa2Pa - conversion kilopascal (kPa) to pascal (Pa)
-#' 
-#' @details Air density (\eqn{\rho}) is calculated as:
-#' 
-#'   ```\rho = pressure / (Rd * Tair)}
-#' 
-#' @return \item{\eqn{\rho}}{air density (kg m-3)}
-#' 
-#' @examples 
-#' # air density at 25degC and standard pressure (101.325kPa)
-#' air_density(25,101.325)
-#' 
-#' @references Foken, T, 2008: Micrometeorology_ Springer, Berlin, Germany_ 
-#' 
-#' @export
+"""
+    air_density(Tair,pressure; ...)
+
+Air density of moist air from air temperature and pressure_
+
+# Arguments
+- Tair:      Air temperature (deg C)
+- pressure:  Atmospheric pressure (kPa)
+optional 
+- `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with entries 
+   Kelvin, kPa2Pa
+
+# Details 
+Air density ``\\rho`` is calculated as:
+
+  ``\\rho = {pressure \\over Rd * Tair}``
+
+# Value 
+air density (kg m-3)
+
+# Examples
+```@example doc 
+# air density at 25degC and standard pressure (101.325kPa)
+air_density(25,101.325)
+```
+
+# References  
+Foken, T, 2008: Micrometeorology. Springer, Berlin, Germany.
+"""
 function air_density(Tair,pressure; constants=bigleaf_constants())
   Tair_K     = Tair + constants[:Kelvin]
   pressure_Pa = pressure * constants[:kPa2Pa]
@@ -28,86 +34,96 @@ function air_density(Tair,pressure; constants=bigleaf_constants())
 end
 
 
+"""
+    pressure_from_elevation(elev,Tair,VPD=missing;...)
 
-#' Atmospheric Pressure from Hypsometric Equation
-#' 
-#' An estimate of mean pressure at a given elevation as predicted by the
-#'              hypsometric equation_
-#'              
-#' @param elev      Elevation a_s_l_ (m)
-#' @param Tair      Air temperature (deg C)
-#' @param VPD       Vapor pressure deficit (kPa); optional
-#' @param constants Kelvin- conversion degC to Kelvin \cr
-#'                  pressure0 - reference atmospheric pressure at sea level (Pa) \cr
-#'                  Rd - gas constant of dry air (J kg-1 K-1) \cr
-#'                  g -  gravitational acceleration (m s-2) \cr
-#'                  Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
-#' 
-#' @details Atmospheric pressure is approximated by the hypsometric equation:
-#' 
-#'          ```pressure = pressure_0 / (exp(g * elevation / (Rd Temp)))}
-#'       
-#' @note The hypsometric equation gives an estimate of the standard pressure
-#'       at a given altitude_ 
-#'       If VPD is provided, humidity correction is applied and the
-#'       virtual temperature instead of air temperature is used_ VPD is 
-#'       internally converted to specific humidity_
-#'
-#' @return \item{pressure -}{Atmospheric pressure (kPa)}
-#'                            
-#' @references Stull B_, 1988: An Introduction to Boundary Layer Meteorology_
-#'             Kluwer Academic Publishers, Dordrecht, Netherlands_
-#' 
-#' @examples
-#' # mean pressure at 500m altitude at 25 deg C and VPD of 1 kPa
-#' pressure_from_elevation(500,Tair=25,VPD=1)
-#' 
-#' @export                           
+An estimate of mean pressure at a given elevation as predicted by the
+             hypsometric equation.
+
+# Arguments             
+- elev:      Elevation a_s_l_ (m)
+- Tair:      Air temperature (deg C)
+- VPD:       Vapor pressure deficit (kPa); optional
+optional 
+- `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with entries 
+    Kelvin, pressure0, Rd, g, Pa2kPa
+
+# Details 
+Atmospheric pressure is approximated by the hypsometric equation:
+
+``pressure = pressure_0 / (exp(g * elevation / (Rd Temp)))``
+      
+The hypsometric equation gives an estimate of the standard pressure
+      at a given altitude.
+      If VPD is provided, humidity correction is applied and the
+      virtual temperature instead of air temperature is used_ VPD is 
+      internally converted to specific humidity.
+
+# Value 
+Atmospheric pressure (kPa)
+                           
+# References  
+Stull B_, 1988: An Introduction to Boundary Layer Meteorology.
+            Kluwer Academic Publishers, Dordrecht, Netherlands.
+
+# Examples
+```@example doc
+# mean pressure at 500m altitude at 25 deg C and VPD of 1 kPa
+pressure_from_elevation(500,25,1)
+```
+"""                           
 function pressure_from_elevation(elev,Tair,VPD=missing; constants=bigleaf_constants())
   Tair_K     = Tair + constants[:Kelvin]
-  if is_missing(VPD)
+  if ismissing(VPD)
     pressure = constants[:pressure0] / exp(constants[:g] * elev / (constants[:Rd]*Tair_K))
   else 
     pressure1   = constants[:pressure0] / exp(constants[:g] * elev / (constants[:Rd]*Tair_K))
     Tv          = virtual_temp(Tair_K - constants[:Kelvin],pressure1 * constants[:Pa2kPa],
-                                VPD;Esat_formula=Val("Sonntag_1990"),constants) + constants[:Kelvin]
+                                VPD;Esat_formula=Val(:Sonntag_1990),constants) + constants[:Kelvin]
     pressure    = constants[:pressure0] / exp(constants[:g] * elev / (constants[:Rd]*Tv))
   end
   pressure = pressure * constants[:Pa2kPa]
 end 
 
-#' Psychrometric Constant
-#' 
-#' Calculates the psychrometric 'constant'_
-#' 
-#' @param Tair      Air temperature (deg C)
-#' @param pressure  Atmospheric pressure (kPa)
-#' @param constants cp - specific heat of air for constant pressure (J K-1 kg-1) \cr
-#'                  eps - ratio of the molecular weight of water vapor to dry air (-)
-#'                  
-#' @details The psychrometric constant (\eqn{\gamma}) is given as:
-#' 
-#'    ```\gamma = cp * pressure / (eps * \lambda)}
-#'  
-#'  where \eqn{\lambda} is the latent heat of vaporization (J kg-1), 
-#'  as calculated from \code{\link{latent_heat_vaporization}}_
-#'  
-#' @return \item{\eqn{\gamma} -}{the psychrometric constant (kPa K-1)}
-#'  
-#' @references Monteith J_L_, Unsworth M_H_, 2008: Principles of Environmental Physics_
-#'             3rd Edition_ Academic Press, London_ 
-#' 
-#' @examples 
-#' psychrometric_constant(seq(5,45,5),100)
-#' 
-#' @export
+"""
+    psychrometric_constant(Tair,pressure; ...)
+
+Computes the psychrometric 'constant'.
+
+# Argumens
+- Tair:      Air temperature (deg C)
+- pressure:  Atmospheric pressure (kPa)
+optional 
+- `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with entries 
+    cp, eps
+                 
+# Details 
+The psychrometric constant (``\\gamma``) is given as:
+
+``\\gamma = cp * pressure / (eps * \\lambda)``
+ 
+ where ``\\lambda`` is the latent heat of vaporization (J kg-1), 
+ as calculated from [`latent_heat_vaporization`](@ref).
+ 
+# Value 
+the psychrometric constant (kPa K-1)
+ 
+# References  
+Monteith J.L., Unsworth M.H., 2008: Principles of Environmental Physics.
+            3rd Edition. Academic Press, London.
+
+# Examples            
+```@example doc 
+psychrometric_constant.(5.0:5.0:25.0, 100)
+```
+"""
 function psychrometric_constant(Tair,pressure; constants=bigleaf_constants())
   lambda = latent_heat_vaporization(Tair)
   gamma  = (constants[:cp] * pressure) / (constants[:eps] * lambda)
 end
 
 """
-    $(SIGNATURES)
+    latent_heat_vaporization(Tair) 
 
 Latent heat of vaporization as a function of air temperature
 using 
@@ -127,7 +143,7 @@ using
 
 
 ```@example
-latent_heat_vaporization.(range(5,45,5))        
+latent_heat_vaporization.(5:5:45)        
 ```
 """            
 function latent_heat_vaporization(Tair) 
@@ -145,7 +161,7 @@ end
 #' @param gamma        Psychrometric constant (kPa K-1)
 #' @param accuracy     Accuracy of the result (degC)
 #' @param Esat_formula Optional: formula to be used for the calculation of esat and the slope of esat_
-#'                     One of \code{"Sonntag_1990"} (Default), \code{"Alduchov_1996"}, or \code{"Allen_1998"}_
+#'                     One of \code{:Sonntag_1990} (Default), \code{"Alduchov_1996"}, or \code{"Allen_1998"}_
 #'                     See \code{\link{Esat_slope}}_ 
 #' @param constants    Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
 #' 
@@ -173,13 +189,15 @@ end
 #' @param VPD       Vapor pressure deficit (kPa)
 #' @param accuracy  Accuracy of the result (deg C)
 #' @param Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat_
-#'                      One of \code{"Sonntag_1990"} (Default), \code{"Alduchov_1996"}, or \code{"Allen_1998"}_
+#'                      One of \code{:Sonntag_1990} (Default), \code{"Alduchov_1996"}, or \code{"Allen_1998"}_
 #'                      See \code{\link{Esat_slope}}_ 
-#' @param constants cp - specific heat of air for constant pressure (J K-1 kg-1) \cr
+#' @param optional 
+#' - `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with entries 
+#' cp - specific heat of air for constant pressure (J K-1 kg-1) \cr
 #'                  eps - ratio of the molecular weight of water vapor to dry air (-) \cr
 #'                  Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
 #' 
-#' @details Wet-bulb temperature (Tw) is calculated from the following expression:
+#' #Details Wet-bulb temperature (Tw) is calculated from the following expression:
 #'          
 #'            ```e = Esat(Tw) - gamma* (Tair - Tw)}
 #'          
@@ -187,17 +205,18 @@ end
 #'          Actual vapor pressure e (kPa) is calculated from VPD using the function \code{\link{VPD_to_e}}_
 #'          The psychrometric constant gamma (kPa K-1) is calculated from \code{\link{psychrometric_constant}}_
 #'          
-#' @return \item{Tw -}{wet-bulb temperature (degC)}      
+#' # Value \item{Tw -}{wet-bulb temperature (degC)}      
 #'              
-#' @references Monteith J_L_, Unsworth M_H_, 2008: Principles of Environmental Physics_
+#' #References  Monteith J_L_, Unsworth M_H_, 2008: Principles of Environmental Physics_
 #'             3rd edition_ Academic Press, London_
 #'             
-#' @examples 
+#' @example doc 
 #' wetbulb_temp(Tair=c(20,25),pressure=100,VPD=c(1,1.6))             
 #'        
 #' @importFrom stats optimize                  
-#' @export
-# function wetbulb_temp(Tair,pressure,VPD;accuracy=1e-03,Esat_formula=Val("Sonntag_1990"),
+"""
+"""
+# function wetbulb_temp(Tair,pressure,VPD;accuracy=1e-03,Esat_formula=Val(:Sonntag_1990),
 #                          constants=bigleaf_constants()){
 #   if (!is_numeric(accuracy)){
 #     stop("'accuracy' must be numeric!")
@@ -217,88 +236,69 @@ end
 # end
 
 
-#' Solver function for dew point temperature
-#' 
-#' Solver function used in dew_point()
-#' 
-#' @param ea           Air vapor pressure (kPa)
-#' @param accuracy     Accuracy of the result (degC)
-#' @param Esat_formula Optional: formula to be used for the calculation of esat and the slope of esat_
-#'                     One of \code{"Sonntag_1990"} (Default), \code{"Alduchov_1996"}, or \code{"Allen_1998"}_
-#'                     See \code{\link{Esat_slope}}_ 
-#' @param constants    Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
-#' 
-#' @note Arguments \code{accuracy} and \code{Esat_formula} are passed to this function by dew_point()_
-#' 
-#' @importFrom stats optimize 
-#' 
-#' @keywords internal
-# function dew_point_solver(ea,accuracy,Esat_formula; constants=bigleaf_constants()){
-  
-#   Td_optim = optimize(function(Td){abs(ea - Esat_slope(Td,Esat_formula,constants)[,"Esat"])end,
-#                        interval=c(-100,100),tol=accuracy)
-#   return(Td_optim)
-# end
+"""              
+    dew_point(Tair,VPD; ...)
+    dew_point_from_e(ea; ...)
 
+Calculate the dew point, the temperature to which air must be 
+             cooled to become saturated (i_e_ e = Esat(Td))
 
+# Arguments             
+- Tair:     Air temperature (degC)
+- VPD:      Vapor pressure deficit (kPa)
+- ea:       actual water vapor pressure (kPa)
+optional
+- accuracy = 1e-03: Accuracy of the result (deg C)
+- `Esat_formula`: formula used in [`Esat_from_Tair`](@ref)
+- `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with entries 
+    Pa2kPa 
 
-#' Dew Point
-#' 
-#' calculates the dew point, the temperature to which air must be 
-#'              cooled to become saturated (i_e_ e = Esat(Td))
-#'
-#' @param Tair     Air temperature (degC)
-#' @param VPD      Vapor pressure deficit (kPa)
-#' @param accuracy Accuracy of the result (deg C)
-#' @param Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat_
-#'                      One of \code{"Sonntag_1990"} (Default), \code{"Alduchov_1996"}, or \code{"Allen_1998"}_
-#'                      See \code{\link{Esat_slope}}_ 
-#' @param constants Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
-#' 
-#' @details Dew point temperature (Td) is defined by:
-#' 
-#'           ```e = Esat(Td)}
-#'    
-#'          where e is vapor pressure of the air and Esat is the vapor pressure deficit_
-#'          This equation is solved for Td using \code{\link[stats]{optimize}}_
-#'          
-#' @return \item{Td -}{dew point temperature (degC)}
-#' 
-#' @references Monteith J_L_, Unsworth M_H_, 2008: Principles of Environmental Physics_
-#'             3rd edition_ Academic Press, London_
-#'             
-#' @examples
-#' dew_point(c(25,30),1.5)                
-#' 
-#' @importFrom stats optimize 
-#' @export              
-# function dew_point(Tair,VPD,accuracy=1e-03,Esat_formula=Val("Sonntag_1990"),
-#                       constants=bigleaf_constants()){
-  
-#   if (!is_numeric(accuracy)){
-#     stop("'accuracy' must be numeric!")
-#   }
-  
-#   if (accuracy > 1){
-#     print("'accuracy' is set to 1 degC")
-#     accuracy = 1
-#   }
-  
-#   # determine number of digits to print
-#   ndigits = as_numeric(strsplit(format(accuracy,scientific = TRUE),"-")[[1]][2])
-#   ndigits = ifelse(is_na(ndigits),0,ndigits)
-  
-#   ea = VPD_to_e(VPD,Tair,Esat_formula)
-#   Td = sapply(seq_along(ea),function(i) round(dew_point_solver(ea[i],accuracy=accuracy,
-#                                                                 Esat_formula,constants)$minimum,ndigits))
-  
-#   return(Td)
-# }
+# Details 
+Dew point temperature (Td) is defined by the temperature for which
+saturaed vapour pressure equals current vapour pressure, i.e. below which 
+water would start to condensate.
+
+``e = Esat(Td)``
+
+where e is vapor pressure of the air and Esat is the vapor pressure deficit.
+         This equation is solved for Td by optimization.
+         
+# Value 
+dew point temperature (degC)
+
+# References  
+Monteith J.L., Unsworth M.H., 2008: Principles of Environmental Physics.
+            3rd edition. Academic Press, London.
+
+# Examples            
+```@example doc
+Tair = 20.0
+VPD = 1.5
+Td = dew_point(Tair, VPD; accuracy = 1e-2)                
+(e = VPD_to_e(VPD,Tair), esat_Td = Esat_from_Tair(Td))
+```
+"""
+function dew_point(Tair, VPD; accuracy=1e-03,Esat_formula=Val(:Sonntag_1990),
+                      constants=bigleaf_constants())
+  ea = VPD_to_e(VPD,Tair;Esat_formula)
+  dew_point_from_e(ea; accuracy, Esat_formula, constants)
+end,
+function dew_point_from_e(ea;accuracy=1e-03,Esat_formula=Val(:Sonntag_1990), constants=bigleaf_constants())
+  if accuracy > one(accuracy)
+    @warn ("'accuracy' is set to 1 degC")
+    accuracy = one(accuracy)
+  end
+  fopt(Td) = abs(ea - Esat_from_Tair(Td;formula = Esat_formula,constants))
+  resopt = optimize(fopt, -100, 100, abs_tol = accuracy)
+  roundmult(resopt.minimizer, accuracy)
+end
+# https://discourse.julialang.org/t/rounding-to-a-multiple-of-float/21295/21
+roundmult(val, prec) = (inv_prec = 1 / prec; round(val * inv_prec) / inv_prec)
 
 
 
 """
-$(SIGNATURES)
+    virtual_temp(Tair,pressure,VPD; ...)
 
 Virtual temperature, defined as the temperature at which dry air would have the same
              density as moist air at its actual temperature.
@@ -308,7 +308,8 @@ Virtual temperature, defined as the temperature at which dry air would have the 
 - `pressure`:  Atmospheric pressure (kPa)
 - `VPD`:       Vapor pressure deficit (kPa)
 - `Esat_formula`: formula used in [`Esat_from_Tair`](@ref)
-- `constants` Dictionary with entries
+optional 
+- `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with entries 
   - :Kelvin - conversion degree Celsius to Kelvin
   - :eps - ratio of the molecular weight of water vapor to dry air (-) 
 
@@ -324,15 +325,16 @@ The virtual temperature is given by:
 virtual temperature (deg C)
 
 # References
-- Monteith J_L_, Unsworth M_H_, 2008: Principles of Environmental Physics.
-            3rd edition_ Academic Press, London.
+- Monteith J.L., Unsworth M.H., 2008: Principles of Environmental Physics.
+            3rd edition. Academic Press, London.
  
 # Examples            
 ```@example
-virtual_temp(25,100,1.5)                        
+using bigleaf # hide
+virtual_temp(25,100,1.5)  
 ```         
 """
-function virtual_temp(Tair,pressure,VPD;Esat_formula=Val("Sonntag_1990"),
+function virtual_temp(Tair,pressure,VPD;Esat_formula=Val(:Sonntag_1990),
                          constants=bigleaf_constants())
   e    = VPD_to_e(VPD,Tair;Esat_formula)
   Tair = Tair + constants[:Kelvin]
@@ -342,33 +344,37 @@ function virtual_temp(Tair,pressure,VPD;Esat_formula=Val("Sonntag_1990"),
 end
 
 
+"""         
+    kinematic_viscosity(Tair,pressure; ...)
 
-#' Kinematic Viscosity of Air
-#' 
-#' calculates the kinematic viscosity of air_
-#' 
-#' @param Tair      Air temperature (deg C)
-#' @param pressure  Atmospheric pressure (kPa)
-#' @param constants Kelvin - conversion degree Celsius to Kelvin \cr
-#'                  pressure0 - reference atmospheric pressure at sea level (Pa) \cr
-#'                  Tair0 - reference air temperature (K) \cr
-#'                  kPa2Pa - conversion kilopascal (kPa) to pascal (Pa)
-#' 
-#' @details where v is the kinematic viscosity of the air (m2 s-1), 
-#'          given by (Massman 1999b):
-#'          
-#'            ```v = 1.327 * 10^-5(pressure0/pressure)(Tair/Tair0)^1.81}
-#'          
-#' @return \item{v -}{kinematic viscosity of air (m2 s-1)}
-#' 
-#' @references Massman, W_J_, 1999b: Molecular diffusivities of Hg vapor in air, 
-#'             O2 and N2 near STP and the kinematic viscosity and thermal diffusivity
-#'             of air near STP_ Atmospheric Environment 33, 453-457_      
-#'             
-#' @examples 
-#' kinematic_viscosity(25,100)    
-#' 
-#' @export         
+Calculate the kinematic viscosity of air.
+
+# Parameters
+- Tair      Air temperature (deg C)
+- pressure  Atmospheric pressure (kPa)
+optional 
+- `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with entries 
+    Kelvin, pressure0, Tair0, kPa2Pa
+
+# Details 
+Eq where v is the kinematic viscosity of the air (m2 s-1), 
+         given by (Massman 1999b):
+         
+``v = 1.327 * 10^-5(pressure0/pressure)(Tair/Tair0)^{1.81}``
+         
+# Value 
+kinematic viscosity of air (m2 s-1)
+
+# References  
+Massman, W.J., 1999b: Molecular diffusivities of Hg vapor in air, 
+            O2 and N2 near STP and the kinematic viscosity and thermal diffusivity
+            of air near STP. Atmospheric Environment 33, 453-457.      
+            
+# Examples            
+```@example doc 
+kinematic_viscosity(25,100)
+```
+"""         
 function kinematic_viscosity(Tair,pressure; constants=bigleaf_constants())
   
   Tair     = Tair + constants[:Kelvin]

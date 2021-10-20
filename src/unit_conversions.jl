@@ -9,8 +9,7 @@ Saturation Vapor Pressure (Esat) and Slope of the Esat Curve
 - `Tair`:      Air temperature (deg C)
 - `formula=Val(:Sonntag_1990)`:   Formula to be used. Either 
    `Val(:Sonntag_1990)` (Default), `Val(:Alduchov_1996`, or `Val(:Allen_1998)`.
-- `constants=bigleaf_constants()`: Dictionary with entry  :Pa2kPa - 
-  conversion pascal (Pa) to kilopascal
+- `constants=bigleaf_constants()`: Dictionary with entry  :Pa2kPa 
 
 # Details
 Esat (kPa) is calculated using the Magnus equation:
@@ -51,7 +50,7 @@ Esat_from_Tair_deriv(20.0)    # its derivative to temperature in kPa K-1
 Esat_slope(20.0)              # both as a tuple
 ```
 """
-function Esat_slope(Tair::Number; formula=:Sonntag_1990, constants=bigleaf_constants()) 
+function Esat_slope(Tair::Number; formula=Val(:Sonntag_1990), constants=bigleaf_constants()) 
   Esat = Esat_from_Tair(Tair; formula, constants)
   Delta = Esat_from_Tair_deriv(Tair; formula, constants)
   Esat, Delta
@@ -183,7 +182,7 @@ function VPD_to_rH(VPD,Tair; Esat_formula=Val(:Sonntag_1990),
                       constants=bigleaf_constants())
   esat = Esat_from_Tair(Tair; formula = Esat_formula,constants)
   rH   = 1 - VPD/esat
-end
+end,
 function rH_to_VPD(rH,Tair; Esat_formula=Val(:Sonntag_1990),
                       constants=bigleaf_constants())
   if !ismissing(rH) && rH > 1 
@@ -191,7 +190,7 @@ function rH_to_VPD(rH,Tair; Esat_formula=Val(:Sonntag_1990),
   end
   esat = Esat_from_Tair(Tair; formula = Esat_formula,constants)
   VPD  = esat - rH*esat
-end
+end,
 function e_to_rH(e,Tair; Esat_formula=Val(:Sonntag_1990),
                     constants=bigleaf_constants())
   esat = Esat_from_Tair(Tair; formula = Esat_formula,constants)
@@ -200,29 +199,29 @@ function e_to_rH(e,Tair; Esat_formula=Val(:Sonntag_1990),
              Returning rH=1 for those cases.")
   end
   rH  = min(1, e/esat)
-end
+end,
 function VPD_to_e(VPD,Tair; Esat_formula=Val(:Sonntag_1990),
                      constants=bigleaf_constants())
   esat = Esat_from_Tair(Tair; formula = Esat_formula,constants)
   e    = esat - VPD
-end
+end,
 function e_to_VPD(e,Tair; Esat_formula=Val(:Sonntag_1990),
                      constants=bigleaf_constants())
   esat = Esat_from_Tair(Tair; formula = Esat_formula,constants)
   VPD  = esat - e
-end
+end,
 function e_to_q(e,pressure; constants=bigleaf_constants())
   q = constants[:eps]  * e / (pressure - (1-constants[:eps] ) * e)
-end
+end,
 function q_to_e(q,pressure; constants=bigleaf_constants())
   e = q * pressure / ((1-constants[:eps] ) * q + constants[:eps] )
-end
+end,
 function q_to_VPD(q,Tair,pressure; Esat_formula=Val(:Sonntag_1990),
                      constants=bigleaf_constants())
   esat = Esat_from_Tair(Tair; formula = Esat_formula,constants)
   e    = q_to_e(q,pressure; constants)
   VPD  = esat - e
-end
+end,
 function VPD_to_q(VPD,Tair,pressure; Esat_formula=Val(:Sonntag_1990),
                      constants=bigleaf_constants())
   esat = Esat_from_Tair(Tair; formula = Esat_formula,constants)

@@ -31,9 +31,10 @@ using bigleaf
 # Preparing the data
 
 In this tutorial, we will work with a dataset from the eddy covariance site Tharandt (DE-Tha), a spruce forest in Eastern Germany. The DataFrame `DE_Tha_Jun_2014` is downloaded from the `bigleaf` 
-[R package]() repository and contains half-hourly data of meteorological and flux measurements made in June 2014:
+[R package](https://bitbucket.org/juergenknauer/bigleaf/) repository and contains half-hourly data of meteorological and flux measurements made in June 2014:
 
 ```@setup doc
+using bigleaf
 using Latexify, DataFrames
 using DataDeps
 using RData
@@ -81,4 +82,62 @@ There are a few general guidelines that are important to consider when using the
 ## Units
 
 It is imperative that variables are provided in the right units, as the plausibility of the input units is not checked in most cases. The required units of the input arguments can be found in the respective help file of the function. The good news is that units do not change across functions. For example, pressure is always required in kPa, and temperature always in °c.
+
+## TODO ##
+
+## Meteorological variables
+
+The `bigleaf.jl` package provides calculation routines for a number of meteorological variables, which are basic to the calculation of many other variables. A few examples on their usage are given below:
+
+```@example doc
+# Saturation vapor pressure (kPa) and slope of the saturation vapor pressure curve (kPa K-1)
+Esat_slope(25.0)
+```
+```@example doc
+# psychrometric constant (kPa K-1)
+psychrometric_constant(25.0,100.0) # Tair, pressure
+```
+```@example doc
+# air density (kg m-3)
+air_density(25.0,100.0) # Tair, pressure
+```
+```@example doc
+# dew point (degC)
+dew_point(25.0,1.0) # Tair, VPD
+```
+```@example doc
+# wetbulb temperature (degC)
+# TODO wetbulb_temp(25.0, 100.0, 1.0) # Tair, pressure, VPD
+```
+```@example doc
+# estimate atmospheric pressure from elevation (hypsometric equation)
+pressure_from_elevation(500.0, 25.0) # elev, Tair
+```
+
+
+## Unit interconversions
+
+The package further provides a number of useful unit interconversions, which are straightforward to use (please make sure that the input variable is in the right unit, e_g. rH has to be between 0 and 1 and not in percent):
+
+```@example doc
+# VPD to vapor pressure (e, kPa)
+VPD_to_e(2, 25)
+```
+```@example doc
+# vapor pressure to specific humidity (kg kg-1)
+e_to_q(1, 100)
+```
+```@example doc
+# relative humidity to VPD (kPa)
+rH_to_VPD(0.6, 25)
+```
+```@example doc
+# conductance from ms-1 to mol m-2 s-1
+ms_to_mol(0.01, 25, 100) # mC, Tair, pressure
+```
+```@example doc
+# umol CO2 m-2 s-1 to g C m-2 d-1
+umolCO2_to_gC(20)
+```
+
 
