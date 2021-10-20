@@ -36,7 +36,7 @@ In this tutorial, we will work with a dataset from the eddy covariance site Thar
 ```@setup doc
 using bigleaf
 using Latexify, DataFrames
-using DataDeps
+using DataDeps, Suppressor
 using RData
 import CodecBzip2, CodecXz
 @suppress_err register(DataDep(
