@@ -39,7 +39,7 @@ using Latexify, DataFrames
 using DataDeps
 using RData
 import CodecBzip2, CodecXz
-register(DataDep(
+@suppress_err register(DataDep(
     "DE_Tha_Jun_2014.rda",
     "downloading exampple dataset DE_Tha_Jun_2014 from bitbucket.org/juergenknauer/bigleaf",
     "https://bitbucket.org/juergenknauer/bigleaf/raw/0ebe11626b4409305951e8add9f6436703c82584/data/DE_Tha_Jun_2014.rda",
