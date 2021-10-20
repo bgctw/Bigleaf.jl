@@ -1,6 +1,10 @@
 using bigleaf
 using Documenter, Latexify
 
+# allow plot to work without display
+# https://discourse.julialang.org/t/generation-of-documentation-fails-qt-qpa-xcb-could-not-connect-to-display/60988/2
+ENV["GKSwstype"] = "100"
+
 DocMeta.setdocmeta!(bigleaf, :DocTestSetup, :(using bigleaf, Latexify); recursive=true)
 doctest(bigleaf, manual = false)
 
