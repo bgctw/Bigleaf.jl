@@ -82,9 +82,11 @@ end
   rH = e_to_rH.(e, Tair)
   @test  rH ≈ rH0
   #
-  @test_logs (:warn,"higher than saturation")
-    rHOversat = e_to_rH(eSat + 1e-3, Tair)
+  rHOversat = @test_logs (:warn,r"higher than saturation") e_to_rH(eSat + 1e-3, Tair)
   @test rHOversat == 1.0
+  #
+  vpd2 = @test_logs (:warn,r"between 0 and 1") rH_to_VPD(1.2, Tair)
+  @test vpd2 < 0 # garbage in garbage out
 end
 
 @testset "e_to_q" begin
