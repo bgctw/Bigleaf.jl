@@ -107,7 +107,7 @@ dew_point(25.0,1.0) # Tair, VPD
 ```
 ```@example doc
 # wetbulb temperature (degC)
-# TODO wetbulb_temp(25.0, 100.0, 1.0) # Tair, pressure, VPD
+wetbulb_temp(25.0, 100.0, 1.0) # Tair, pressure, VPD
 ```
 ```@example doc
 # estimate atmospheric pressure from elevation (hypsometric equation)

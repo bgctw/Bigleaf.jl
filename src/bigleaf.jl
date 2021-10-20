@@ -10,7 +10,8 @@ export Esat_slope, Esat_from_Tair, Esat_from_Tair_deriv,
      Rg_to_PPFD, PPFD_to_Rg, kg_to_mol, umolCO2_to_gC, gC_to_umolCO2
 export air_density, pressure_from_elevation, psychrometric_constant,
     latent_heat_vaporization, virtual_temp, kinematic_viscosity,
-    dew_point_from_e, dew_point
+    dew_point_from_e, dew_point,
+    wetbulb_temp_from_e_Tair_gamma, wetbulb_temp
 
 include("bigleaf_constants.jl")
 include("unit_conversions.jl")

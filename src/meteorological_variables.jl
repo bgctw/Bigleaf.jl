@@ -152,89 +152,62 @@ function latent_heat_vaporization(Tair)
   lambda = ( k1 - k2 * Tair ) * 1e+06
 end
 
-#' Solver Function for Wet-Bulb Temperature
-#' 
-#' Solver function used in wetbulb_temp()
-#' 
-#' @param ea           Air vapor pressure (kPa)
-#' @param Tair         Air temperature (degC)
-#' @param gamma        Psychrometric constant (kPa K-1)
-#' @param accuracy     Accuracy of the result (degC)
-#' @param Esat_formula Optional: formula to be used for the calculation of esat and the slope of esat_
-#'                     One of \code{:Sonntag_1990} (Default), \code{"Alduchov_1996"}, or \code{"Allen_1998"}_
-#'                     See \code{\link{Esat_slope}}_ 
-#' @param constants    Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
-#' 
-#' @note Arguments \code{accuracy} and \code{Esat_formula} are passed to this function by wetbulb_temp()_
-#' 
-#' @importFrom stats optimize 
-#' 
-#' @keywords internal
-# function wetbulb_solver(ea,Tair,gamma,accuracy,Esat_formula; constants=bigleaf_constants())
-#   wetbulb_optim = optimize(function(Tw)
-#   abs(ea - c((Esat_slope(Tw,Esat_formula,constants)[,"Esat"] - 0.93*gamma*(Tair - Tw))))end,
-#                             interval=c(-100,100),tol=accuracy)
-#   return(wetbulb_optim)
-# end
 
-
-
-#' Wet-Bulb Temperature
-#' 
-#' calculates the wet bulb temperature, i_e_ the temperature
-#'              that the air would have if it was saturated_
-#' 
-#' @param Tair      Air temperature (deg C)
-#' @param pressure  Atmospheric pressure (kPa)
-#' @param VPD       Vapor pressure deficit (kPa)
-#' @param accuracy  Accuracy of the result (deg C)
-#' @param Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat_
-#'                      One of \code{:Sonntag_1990} (Default), \code{"Alduchov_1996"}, or \code{"Allen_1998"}_
-#'                      See \code{\link{Esat_slope}}_ 
-#' @param optional 
-#' - `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with entries 
-#' cp - specific heat of air for constant pressure (J K-1 kg-1) \cr
-#'                  eps - ratio of the molecular weight of water vapor to dry air (-) \cr
-#'                  Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
-#' 
-#' #Details Wet-bulb temperature (Tw) is calculated from the following expression:
-#'          
-#'            ```e = Esat(Tw) - gamma* (Tair - Tw)}
-#'          
-#'          The equation is solved for Tw using \code{\link[stats]{optimize}}_
-#'          Actual vapor pressure e (kPa) is calculated from VPD using the function \code{\link{VPD_to_e}}_
-#'          The psychrometric constant gamma (kPa K-1) is calculated from \code{\link{psychrometric_constant}}_
-#'          
-#' # Value \item{Tw -}{wet-bulb temperature (degC)}      
-#'              
-#' #References  Monteith J_L_, Unsworth M_H_, 2008: Principles of Environmental Physics_
-#'             3rd edition_ Academic Press, London_
-#'             
-#' @example doc 
-#' wetbulb_temp(Tair=c(20,25),pressure=100,VPD=c(1,1.6))             
-#'        
-#' @importFrom stats optimize                  
 """
-"""
-# function wetbulb_temp(Tair,pressure,VPD;accuracy=1e-03,Esat_formula=Val(:Sonntag_1990),
-#                          constants=bigleaf_constants()){
-#   if (!is_numeric(accuracy)){
-#     stop("'accuracy' must be numeric!")
-#   end
-#   if (accuracy > 1){
-#     print("'accuracy' is set to 1 degC")
-#     accuracy = 1
-#   end
-#   # determine number of digits to print
-#   ndigits = as_numeric(strsplit(format(accuracy,scientific = TRUE),"-")[[1]][2])
-#   ndigits = ifelse(is_na(ndigits),0,ndigits)
-#   gamma  = psychrometric_constant(Tair,pressure)
-#   ea     = VPD_to_e(VPD,Tair,Esat_formula)
-#   Tw = sapply(seq_along(ea),function(i) round(wetbulb_solver(ea[i],Tair[i],gamma[i],
-#                                                               accuracy=accuracy,Esat_formula,constants)$minimum,ndigits))
-#   return(Tw)
-# end
+    wetbulb_temp(Tair, pressure, VPD; ...)
 
+Calculate the wet bulb temperature, i_e_ the temperature
+             that the air would have if it was saturated
+
+# Arguments              
+- Tair:      Air temperature (deg C)
+- pressure:  Atmospheric pressure (kPa)
+- VPD:       Vapor pressure deficit (kPa)
+optional
+- accuracy:  Accuracy of the result (deg C)
+- `Esat_formula`: formula used in [`Esat_from_Tair`](@ref)
+- `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with entries 
+     cp, eps,Pa2kPa
+
+# Details 
+Wet-bulb temperature (Tw) is calculated from the following expression:
+         
+``e = Esat(Tw) - gamma* (Tair - Tw)``
+         
+The equation is optimized for Tw.
+Actual vapor pressure e (kPa) is calculated from VPD using [`VPD_to_e`](@ref).
+The psychrometric constant gamma (kPa K-1) is calculated using
+[`psychrometric_constant`](@ref).
+         
+# Value 
+wet-bulb temperature (degC)
+             
+# References  
+Monteith J.L., Unsworth M.H., 2008: Principles of Environmental Physics.
+            3rd edition. Academic Press, London.
+   
+# Examples            
+```@example doc 
+wetbulb_temp.([20,25.0], 100, [1,1.6])             
+```
+"""
+function wetbulb_temp(Tair, pressure, VPD; accuracy=1e-03,
+  Esat_formula=Val(:Sonntag_1990), constants=bigleaf_constants())
+  gamma  = psychrometric_constant(Tair,pressure)
+  ea     = VPD_to_e(VPD,Tair;Esat_formula)
+  wetbulb_temp_from_e_Tair_gamma(ea,Tair,gamma; accuracy,Esat_formula,constants)
+end,
+function wetbulb_temp_from_e_Tair_gamma(ea, Tair, gamma; accuracy=1e-03,
+  Esat_formula=Val(:Sonntag_1990), constants=bigleaf_constants())
+  if accuracy > one(accuracy)
+    @warn ("'accuracy' is set to 1 degC")
+    accuracy = one(accuracy)
+  end
+  fopt(Tw) = abs(ea - (Esat_from_Tair(Tw; formula = Esat_formula,constants) - 
+    0.93*gamma*(Tair - Tw)))
+  resopt = optimize(fopt, -100, 100, abs_tol = accuracy)
+  roundmult(resopt.minimizer, accuracy)
+end
 
 """              
     dew_point(Tair,VPD; ...)
