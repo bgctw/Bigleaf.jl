@@ -15,10 +15,13 @@ end
 end
 
 @testset "virtual_temp" begin
-  vt = virtual_temp(25,100,1.5)  
+  Tair,pressure,VPD = 25,100,1.5
+  vt = virtual_temp(Tair,pressure,VPD)  
   # regression test
-  @test ≈(vt, 26.883, atol =0.001)
+  @test ≈(vt, 26.9, atol =0.1)
 end
+
+vt ≈ 26.9 atol =0.1
 
 @testset "kinematic_viscosity" begin
   Tair,pressure = 25,100

@@ -302,12 +302,13 @@ virtual temperature (deg C)
             3rd edition. Academic Press, London.
  
 # Examples            
-```@jldoctest; output = false
-virtual_temp(25,100,1.5)  
-≈(vt, 26.883, atol =0.001) # hide
-= output
+```jldoctest; output = false
+Tair,pressure,VPD = 25,100,1.5
+vt = virtual_temp(Tair,pressure,VPD)  
+≈(vt, 26.9, atol =0.1)
+# output
 true
-```         
+```
 """
 function virtual_temp(Tair,pressure,VPD;Esat_formula=Val(:Sonntag_1990),
                          constants=bigleaf_constants())

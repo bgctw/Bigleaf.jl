@@ -51,26 +51,6 @@ end
 
 
 
-@testset "air_density" begin
-  ad = air_density(25.0,100.0) # Tair, pressure
-  # regression test
-  @test ≈(ad, 1.168, atol =0.001)
-end
-
-@testset "air_density" begin
-  ad = air_density(25.0,100.0) # Tair, pressure
-  # regression test
-  @test ≈(ad, 1.168, atol =0.001)
-end
-
-@testset "air_density" begin
-  ad = air_density(25.0,100.0) # Tair, pressure
-  # regression test
-  @test ≈(ad, 1.168, atol =0.001)
-end
-
-
-
 @testset "e_to_rH" begin
   Tair = 25.0
   eSat = Esat_from_Tair(Tair)
