@@ -1,0 +1,551 @@
+
+
+
+## Function arguments
+
+Most functions of the `bigleaf.jl` package require an input matrix or (more common) a data.frame, from which the required variables are extracted. This is usually the first argument of a function. Most functions further provide default values for their arguments, such that in many cases it is not necessary to provide them explicitly.
+
+Another convenient feature of the `bigleaf.jl` package is that it supports functions
+that accept a DataFrame with columnnames corresponding to required arguments.
+
+We can demonstrate the usage with a simple example:
+
+```julia
+potential.ET(tha,Tair="Tair",pressure="pressure",Rn="Rn",VPD="VPD",approach="Priestley-Taylor")
+potential.ET(tha)
+potential.ET(tha,Tair=tha$Tair)
+potential.ET(tha,Tair=25)
+potential.ET(Tair=25,pressure=100,Rn=200)
+```
+
+In the first line above, the input arguments are provided as the names of the data.frame. In this case we do not need to provide them explicitly because the column names correspond to the default names of the function (i.e. the command can be written as in line 2). In the third example, we replace one variable name with a numeric vector. In the fourth row, we calculate PET for a constant temperature of 25°C, but take all other variables from the data.frame. For some applications, in particular for exploratory or sensitivity analyses, application nr. 5 can be useful. In this case, we did not provide a data.frame, but only numeric vectors of length one (or of any other length). This can be useful to see e.g. how sensitive the results of a given functions are with respect to one of the input variables. We could, for instance, investigate how potential ET as calculated with the Priestley-Taylor formulation changes when $R_n$ increases from 200 $\text{W m}^{-2}$ to 400 $\text{W m}^{-2}$ when all other variables are held constant:
+
+```julia
+potential.ET(Tair=25,pressure=100,Rn=200)
+potential.ET(Tair=25,pressure=100,Rn=400)
+```
+
+When using your own data, it is not mandatory to use exactly the same variable names as here, but working with `bigleaf.jl` is easier if you do so because then the variable names do not have to be specified when calling a function.
+
+
+## Ground heat flux and storage fluxes
+
+Many functions require the available energy ($A$), which is defined as ($A = R_n - G - S$, all in $\text{W m}^{-2}$), where $R_n$ is the net radiation, $G$ is the ground heat flux, and $S$ is the sum of all storage fluxes of the ecosystem (see e.g. Leuning et al. 2012 for an overview). For some sites, $G$ is not available, and for most sites, only a few components of $S$ are measured. In `bigleaf.jl` it is not a problem if $G$ and/or $S$ are missing (other than the results might be (slightly) biased), but special options exist for the treatment of missing $S$ and $G$ values. If the options `missing.G.as.NA = TRUE` or `missing.S.as.NA = TRUE`, then the output variable is not calculated for that time period. Otherwise missing $S$ and $G$ values are set to O automatically. Please note that the default is to ignore $S$ and $G$ values. If $G$ and/or $S$ are available, they always have to be added explicitly to the function call (by providing the column name of $G$/$S$ or a vector).  
+
+
+
+
+\vspace{1cm}
+
+
+
+## Function walkthrough
+
+In the following, we explain how to use several of the package's key functions. Further information on the functions can be found on the respective function help pages and the references therein.
+
+
+## Data filtering
+
+For most applications it is meaningful to filter your data. There are two main reasons why we want to filter our data before we start calculating ecosystem properties. The first one is to exclude datapoints that do not fulfill the requirements of the EC technique or that are of bad quality due to e.g. instrument failure or gap-filling with poor confidence. Note that the quality assessment of the EC data is not the purpose of the `bigleaf.jl` package. This is done by other packages (e.g. `REddyProc`), which often provide quality control flags for the variables. These quality control flags are used here to filter out bad-quality datapoints.
+
+A second reason for filtering our data is that some derived properties are only meaningful if certain meteorological conditions are met. For instance, if we are interested in properties related to plant gas exchange, it makes most sense to focus on time periods when plants are photosynthetically active (i.e. in the growing season and at daytime).
+
+The bigleaf package provides the function `filter.data` that filters the data according to the criteria described above. We start with an example where the data.frame is filtered only with respect to data quality (`quality.control=TRUE`):
+
+```julia
+tha_filtered1 = filter.data(tha,quality.control=TRUE,vars.qc=c("LE","H","NEE","Tair","VPD","wind"),
+                             quality.ext="_qc",good.quality = c(0,1),missing.qc.as.bad=TRUE)
+```
+
+In the function call above, `vars.qc` lists the variables that should be filtered with respect to their quality. This is usually a vector of type character that contains the column names of the variables that are to be filtered. `quality.ext` denotes the extension of the variable name that identifies the column as a quality control indicator of a given variable. The variables "LE" and "LE_qc", for example, denote the variable itself (latent heat flux), and the quality of the variable "LE", respectively. The argument `good.quality` specifies the values that the quality control indicator has to take in order to be considered as acceptable quality (i.e. to not be filtered). For example, if `good.quality=c(0,1)`, then all "LE" values whose "LE_qc" variable is larger than 1 are set to `NA`. The variable `missing.qc.as.bad` is required to decide what to do in case of missing values in the quality control variable. By default this is (conservatively) set to `TRUE`, i.e. all entries where the qc variable is missing is filtered out. The function prints some information on the amount of data filtered out. In this case, only a few values did not fulfill the quality criteria.
+In the next example, we filter for meteorological conditions only, including growing season (`filter.growseas=TRUE`):
+
+```julia
+tha_filtered2 = filter.data(tha,quality.control=FALSE,filter.growseas=TRUE,
+                             filter.vars=c("PPFD","ustar","LE","VPD"),
+                             filter.vals.min=c(200,0.2,0,0.01), filter.vals.max=c(NA,NA,NA,NA),
+                             NA.as.invalid = TRUE,
+                             # arguments for growing season filter:
+                             GPP="GPP",doy="doy",year="year",tGPP=0.4,ws=15,min.int=5) 
+```
+
+The arguments `filter.vars`, `filter.vals.min`, and `filter.vals.max` control the variables to be filtered (corresponding to the column names of the data.frame), the minimum and the maximum acceptable values, respectively. If there is no minimum or maximum, the respective entry can be set to `NA`. In this case we filter for time periods in which PPFD (photosynthetic photon flux density) has to be higher than 200 $\mu$mol m$^{-2}$ s$^{-1}$, but no maximum limit is considered.
+
+If `filter.growseas=TRUE`, the function implements a simple growing season filter based on daily smoothed GPP time series. The arguments `GPP`, `doy` and `year` are required at halfhourly/hourly time scale. GPP is aggregated to daily sums internally. The arguments `tGPP`, `ws`, and `min.int` determine how the growing season is filtered. `tGPP` determines how high daily GPP has to be in relation to its peak value within the year. In this case, the value of 0.4 denotes that smoothed GPP has to be at least 40% of the 95th quantile. `ws` controls the degree of smoothing in the timeseries (the purpose of which is to minimize the high variation of GPP between days), and should probably be between 10-20 days. `min.int` is a parameter that avoids that data are switching from inside the growing season and out from one day to the next, but determines the minimum number of days that the growing season should have. The growing season filter is applicable to all sites, with one more more growing seasons, but it's advisable that other parameter settings are used depending on the site.
+
+In this case, it does not really make sense to filter for growing season, since it's only one month of which we know that vegetation is active at the site. Luckily, the algorithm realizes that as well and does not filter out any data if `filter.growseas=TRUE` (same will happen at sites with a year-round growing season). In the function output we further see that almost half of the data were filtered because radiation was not high enough (night-time). Another 23.5% were filtered because they showed negative LE values. However, most of them occur during the night, and only 5.2% of them were not already filtered by the radiation filter (denoted as "additional data points" above).
+
+As a last step we will filter for precipitation events. This is often meaningful for ecophysiological studies because data during and shortly after rainfall events do not contain much information on the physiological activity of the vegetation (i.e. they comprise significant fractions of evaporation from the soil and plant surfaces). The purpose of such a filter is mostly to minimize the fraction of soil and interception evaporation on the total water flux. This filter simply excludes periods following a precipitation event. A precipitation event is here defined as any time step with a recorded precipitation higher than `tprecip` (in mm per timestep). The function then filters all time periods following a precipitation event. The number of subsequent time periods excluded is controlled by the argument `precip.hours`. Here, we exclude rainfall events and the following 24 hours.
+
+```julia
+tha_filtered3 = filter.data(tha,quality.control=FALSE,filter.growseas=FALSE,
+                             filter.precip=TRUE,precip="precip",tprecip=0.02,
+                             records.per.hour=2,precip.hours=24)
+```
+
+We can also do all the steps described above with a single function call, which is also the intention of the function:
+
+```julia
+tha_filtered = filter.data(tha,quality.control=TRUE,filter.growseas=TRUE,
+                            filter.precip=TRUE, filter.vars=c("PPFD","ustar","LE","VPD"),
+                            filter.vals.min=c(200,0.2,0,0.01),filter.vals.max=c(NA,NA,NA,NA),
+                            NA.as.invalid = TRUE,vars.qc=c("GPP","LE","H","NEE","Tair","VPD","wind"),
+                            quality.ext="_qc",good.quality = c(0,1),missing.qc.as.bad=TRUE,
+                            GPP="GPP",doy="doy",year="year",tGPP=0.4,ws=15,min.int=5,
+                            precip="precip",tprecip=0.02,records.per.hour=2,precip.hours=24)
+```
+
+When looking at the function output we see that we these settings, we exclude in total 1013 data points (70.35% of the data). In total, 29.65% of all data remained. The output of the `filter.data` function is another data.frame (tha_filtered), in which all filtered timesteps are set to NA. (Note that this is the default case. If we add `filtered.data.to.NA=TRUE`, the data are left untouched, but an additional column "valid" is added to the data.frame that specifies whether the time points fulfull the criteria or not). In the following examples we will work mostly with the filtered data.frame `tha_filtered`.
+
+
+
+
+
+
+
+
+
+
+## Aerodynamic conductance
+
+An important metric for many calculations in the `bigleaf.jl` package is the aerodynamic conductance ($G_a$) between the land surface and the measurement height. $G_a$ characterizes how efficiently mass and energy is transferred between the land surface and the atmosphere. $G_a$ consists of two parts: $G_{am}$, the aerodynamic conductance for momentum, and $G_b$, the canopy boundary layer (or quasi-laminar) conductance. $G_a$ can be defined as $G_a = 1/(1/G_{am} + 1/G_b)$. In this tutorial we will focus on how to use the function `aerodynamic.conductance`. For further details on the equations, the reader is directed to the publication of the bigleaf package (Knauer et al. 2018) and the references therein. A good overview is provided by e.g. Verma 1989.
+
+$G_a$ and in particular $G_b$ can be calculated with varying degrees of complexity. We start with the simplest version, in which $G_b$ is calculated empirically based on the friction velocity ($u_*$) according to Thom 1972:
+
+```julia
+summary(aerodynamic.conductance(tha_filtered))
+```
+
+Note that by not providing additional arguments, the default values are taken (type ?aerodynamic.conductance to see default values of the function arguments). We also do not need most of the arguments that can be provided to the function in this case (i.e. if `Rb_model="Thom_1972"`). These are only required if we use a more complex formulation of $G_b$.
+The output of the function is another data.frame which contains separate columns for conductances and resistances of different scalars (momentum, heat, and CO$_2$ by default).
+For comparison, we now calculate a second estimate of $G_a$, where the calculation of $G_b$ is more physically-based (Su et al. 2001), and which requires more input variables compared to the first version. In particular, we now need LAI, the leaf characteristic dimension ($D_l$, assumed to be 1cm here), and information on sensor and canopy height ($z_r$ and $z_h$), as well as the displacement height (assumed to be 0.7*$z_h$):
+
+
+```julia
+Ga_Su = aerodynamic.conductance(tha_filtered,Rb_model="Su_2001",LAI=LAI,zh=zh,d=0.7*zh,
+                                 zr=zr,Dl=Dl)
+summary(Ga_Su)
+tha_filtered = cbind(tha_filtered,Ga_Su)
+```
+
+We add the output of this function (`Ga_Su`) to our dataframe `tha_filtered`. We see that the values are different compared to the first, empirical estimate. This is because this formulation takes additional aerodynamically relevant properties (LAI, $D_l$) into account that were not considered by the simple empirical formulation.
+
+
+
+
+## Surface conditions
+
+When we have an estimate of $G_a$, we are able to infer surface conditions of temperature and atmospheric humidity by inverting the bulk transfer relations of the sensible and latent heat fluxes. E.g. for temperature we can solve the following relation for $T_s$, the aerodynamic surface temperature:
+
+  $T_a = T_s - \frac{H}{(\rho \cdot G_{ah} \cdot c_p)}$
+
+where $T_a$ is air temperature, $H$ is the sensible heat flux ($\text{W m}^{-2}$) $\rho$ is air density ($\text{kg m}^{-3}$), $G_{\text{ah}}$ is the aerodynamic conductance for heat ($\text{m s}^{-1}$), and $c_p$ is the specific heat of air ($\text{J K}^{-1} \text{kg}^{-1}$). 
+In `bigleaf.jl`, the following function calculates conditions at the big-leaf surface:
+
+```julia
+surf = surface.conditions(tha_filtered,calc.surface.CO2=TRUE)
+summary(surf)
+tha_filtered = cbind(tha_filtered,surf)
+```
+
+By default, the function calculates surface temperature and several humidity measures, including VPD and relative humidity. If we set `calc.surface.CO2=TRUE`, the CO$_2$ concentration at the surface is calculated additionally. Useful to know is that the expression "surface" depends on what kind of aerodynamic conductance we provide. If $G_a = G_{ah}$, we derive the conditions at the notional canopy surface (or the "big-leaf" surface). If $G_a = G_{am}$, we derive conditions in the intercanopy airspace (because $G_a$ does not account for the leaf boundary layer).
+
+We can compare the surface and air temperature:
+
+```julia
+par(mfrow=c(1,2),mar=c(5,4,2,0.5))
+plot(tha_filtered[,"Tair"] ~ tha_filtered[,"Tsurf"],xlim=c(8,35),ylim=c(8,35),las=1,
+     xlab="Tsurf (degC)",ylab="Tair (degC)",mgp=c(2.2,0.5,0),tcl=-0.2)
+abline(0,1)
+plot(tha_filtered[,"VPD"] ~ tha_filtered[,"VPD_surf"],xlim=c(0,4),ylim=c(0,4),las=1,
+     xlab="VPD surface (kPa)",ylab="VPD air (kPa)",mgp=c(2.2,0.5,0),tcl=-0.2)
+abline(0,1)
+```
+Both surface temperature and VPD are in most cases higher than the ones measured at tower height.  
+
+
+
+
+## Surface conductance
+
+Knowledge on $G_a$ allows us to calculate the bulk surface conductance ($G_s$) of the site (In this case by inverting the Penman-Monteith equation). Gs represents the combined conductance of the vegetation and the soil to water vapor transfer (and as such it is not a purely physiological quantity). Calculating $G_s$ in `bigleaf.jl` is simple:
+
+```julia
+summary(surface.conductance(tha_filtered))
+```
+The function output is another data.frame with two columns which only differ in the unit of $G_s$ (i.e. a hopeless attempt to make both physicists and physiologists happy). One in m s$^{-1}$ and one in mol m$^{-2}$ s$^{-1}$. In this function we have ignored the ground heat flux ($G$) and the storage fluxes ($S$), and the function politely reminds us of this omission by printing the first two lines of the output (it also tells us what it does, it assumes they are 0 in each time step). In this case we do not have information on the storage fluxes, but we have measurements on the ground heat flux, which we should add to the function call:
+
+```julia
+Gs = surface.conductance(tha_filtered,G="G")
+summary(Gs)
+tha_filtered = cbind(tha_filtered,Gs)
+```
+
+Again, we have added the two output columns to our data.frame `tha_filtered`.
+
+
+
+
+
+
+
+
+
+## Stomatal slope parameter
+
+With both $G_s$ and $G_a$ available, we can estimate the stomatal slope parameter $g_1$. The $g_1$ parameter characterizes the slope between the surface conductance and the gross carbon uptake (GPP) of the ecosystem, and is thus strongly related to the ecosystem-level intrinsic water-use efficiency. However, it corrects for the confounding effects of VPD and $C_a$, and is thus better comparable across sites than e.g. GPP/$G_s$. 
+
+```julia
+## stomatal slope from the USO model (Medlyn et al. 2011)
+g1_USO = stomatal.slope(tha_filtered,model="USO",g0=0,robust.nls=TRUE)
+g1_USO
+```
+
+In this case, we have estimated $g_1$ from the USO (optimal stomatal optimization) model as described in Medlyn et al. 2011. The output is a model object that prints the model formulat that is used to estimate $g_1$, the estimated parameter value(s), as well as the weighted residual sum-of-squares. Further information on this model object can be obtained using the `summary` function.
+In this case we have fixed the model intercept $g_0$ to 0 (this could also be any other value). We can also try to estimate $g_1$ and $g_0$ simultaneously (if we add `fitg0=TRUE` to the function call above), but note that the two parameters are usually correlated, and that the values of $g_0$ are not straightforward to interpret (especially at ecosystem level). The option `robust.nls=TRUE` specifies that $g_1$ is determined by a robust non-linear regression routine (from the `robustbase` package). We recommend to use this option since otherwise the parameter estimates are sensitive to outliers in $G_s$, which often occur even in filtered EC datasets.
+By default, the model takes VPD and atmospheric CO$_2$ concentration as measured at the tower as input. We can also calculate $g_1$ by taking the surface conditions, which are probably more relevant for plant physiological processes than those measured a certain distance above the canopy:
+
+```julia
+## stomatal slope from the USO model (Medlyn et al. 2011)
+stomatal.slope(tha_filtered,Tair="Tsurf",VPD="VPD_surf",Ca="Ca_surf",model="USO",
+               g0=0,robust.nls=TRUE)
+```
+which in this case, does not change our $g_1$ value significantly.
+
+We can also calculate $g_1$ using two different models. One is the long-standing Ball & Berry model (Ball et al. 1987), and the other one is a modification of the Ball & Berry model suggested by Leuning 1995:
+
+```julia
+## Ball&Berry slope
+stomatal.slope(tha_filtered,model="Ball&Berry",g0=0,robust.nls=TRUE)
+```
+```julia
+## Leuning slope
+stomatal.slope(tha_filtered,model="Leuning",g0=0,fitD0=TRUE,robust.nls=TRUE)
+```
+
+Note that the absolute value of the $g_1$ parameter depends on the model. In the Leuning model, we have a third parameter $D_0$ that can again either be estimated (as in the example above) or fixed to a pre-defined value (by default 1.5 kPa). $D_0$ describes the stomatal sensitivity to VPD (higher values correspond to a lower stomatal sensitivity to VPD - note however that $g_1$ and $D_0$ are strongly correlated, which makes an independent estimates of $D_0$ difficult to achieve). 
+
+We can visualize the $g_1$ parameter by plotting $G_s$ against the "stomatal index":
+
+```julia
+stomatal_index = tha_filtered[,"GPP"] / (tha_filtered[,"Ca"] * sqrt(tha_filtered[,"VPD"]))
+
+plot(tha_filtered[,"Gs_mol"] ~ stomatal_index,las=1,
+     xlab=expression("GPP / (C"["a"]~sqrt("D"["a"])*")"),
+     ylab=expression("G"["sw"]~"(mol m"^{-2}~"s"^{-1}*")"),
+     tcl=0.2,mgp=c(2.2,0.5,0),xlim=c(0,0.12))
+```
+
+
+
+## Wind profile
+
+The 'big-leaf' framework assumes that wind speed is zero at height d + $z_{0m}$ (where $z_{0m}$ is the roughness length for momentum) and then increases exponentially with height. The shape of the wind profile further depends on the stability conditions of the air above the canopy.
+In `bigleaf.jl`, a wind profile can be calculated assuming an exponential increase with height, which is affected by atmospheric stability. Here, we calculate wind speed at heights of 22-60m in steps of 2m. As expected, the gradient in wind speed is strongest close to the surface and weaker at greater heights:
+
+```julia
+wind_heights = seq(22,60,2)
+wp = wind.profile(tha_filtered,heights=wind_heights,zh=zh,zr=zr)
+wp_means = colMeans(wp,na.rm=TRUE)
+wp_sd    = apply(wp,2,sd,na.rm=TRUE)
+
+plot(wind_heights ~ wp_means,xlab=expression("wind speed (m s"^{-1}*")"),ylab="height (m)",
+     las=1,mgp=c(2.2,0.5,0),tcl=0.2,xlim=c(0,5))
+arrows(wp_means-wp_sd,wind_heights,wp_means+wp_sd,wind_heights,angle=90,
+       length=0.02,code=3)
+points(x=mean(tha_filtered[,"wind"],na.rm=TRUE),y=zr,col="blue",pch=16)
+arrows(mean(tha_filtered[,"wind"],na.rm=TRUE)-sd(tha_filtered[,"wind"],na.rm=TRUE),
+       zr,mean(tha_filtered[,"wind"],na.rm=TRUE)+sd(tha_filtered[,"wind"],na.rm=TRUE),
+       zr,angle=90,length=0.02,code=3,col="blue")
+```
+Here, the points denote the mean wind speed and the bars denote the standard deviation. The blue point/bar represent the values that were measured at 42m. In this case we see that the wind speed as "back-calculated" from the wind profile agrees well with the actual measurements.
+
+
+
+## Potential evapotranspiration
+
+For many hydrological applications, it is relevant to get an estimate on the potential evapotranspiration (PET). At the moment, the `bigleaf.jl` package contains two formulations for the estimate of PET: the Priestley-Taylor equation, and the Penman-Monteith equation:
+
+```julia
+summary(potential.ET(tha_filtered,G="G",approach="Priestley-Taylor"))
+summary(potential.ET(tha_filtered,G="G",approach="Penman-Monteith"),
+        Gs_pot=quantile(tha_filtered$Gs_mol,0.95,na.rm=TRUE))
+```
+
+In the second calculation it is important to provide an estimate of `Gs_pot`, which corresponds to the potential surface conductance under optimal conditions. Here, we have approximated `Gs_pot` with the 95$^{\text{th}}$ percentile of all $G_s$ values of the site. 
+
+
+
+
+
+## Energy balance closure (EBC)
+
+The `bigleaf.jl` package offers a function which characterizes the degree of the EBC (i.e. $A = \lambda E + H$, where A is available energy, $\lambda E$ is the latent heat flux, and H is the sensible heat flux, all in $\text{W m}^{-2}$). We can calculate the EBC with the following command:
+
+```julia
+energy.closure(tha)
+```
+
+The output tells us the number of observations that were used for the calculation of the EBC (n; note that we took the unfiltered data.frame here), the intercept and slope of the LE + H ~ A plot, the $r^2$ of the regression, and the energy balance ratio (EBR = $\frac{\lambda E + H}{R_n - G -S}$). Thus, the degree of EBC is characterized by two metrics, the slope of the $\lambda E$ + H ~ A relationship, and the EBR. In this case they agree relatively well; both indicate a gap in the energy balance of ~ 30%. In the calculations above, we did not include the ground heat $G$ into the equation, which is the default setting (i.e. $A$ was assumed to equal $R_n$). We can now have a look to what extent the EBC improves when we consider G (i.e. $A = R_n - G$):
+
+```julia
+energy.closure(tha,G="G")
+```
+
+In this case the ground heat flux improves the EBC, but only marginally. This implies that there are other reasons for the EBC, including an underestimation of the turbulent fluxes. It should be clear, however, that this example is not representative for all EC sites. In general, $G$ is more important (and $S$ is less important) at sites with low biomass and short vegetation.
+
+
+
+
+
+## Meteorological variables
+
+The `bigleaf.jl` package provides calculation routines for a number of meteorological variables, which are basic to the calculation of many other variables. A few examples on their usage are given below:
+
+```julia
+# Saturation vapor pressure (kPa) and slope of the saturation vapor pressure curve (kPa K-1)
+Esat.slope(Tair=25)
+```
+```julia
+# psychrometric constant (kPa K-1)
+psychrometric.constant(Tair=25,pressure=100)
+```
+```julia
+# air density (kg m-3)
+air.density(Tair=25,pressure=100)
+```
+```julia
+# dew point (degC)
+dew.point(Tair=25,VPD=1)
+```
+```julia
+# wetbulb temperature (degC)
+wetbulb.temp(Tair=25,pressure=100,VPD=1)
+```
+```julia
+# estimate atmospheric pressure from elevation (hypsometric equation)
+pressure.from.elevation(elev=500,Tair=25)
+```
+
+
+## Unit interconversions
+
+The package further provides a number of useful unit interconversions, which are straightforward to use (please make sure that the input variable is in the right unit, e.g. rH has to be between 0 and 1 and not in percent):
+
+```julia
+# VPD to vapor pressure (e, kPa)
+VPD.to.e(VPD=2,Tair=25)
+```
+```julia
+# vapor pressure to specific humidity (kg kg-1)
+e.to.q(e=1,pressure=100)
+```
+```julia
+# relative humidity to VPD (kPa)
+rH.to.VPD(rH=0.6,Tair=25)
+```
+```julia
+# conductance from ms-1 to mol m-2 s-1
+ms.to.mol(G_ms=0.01,Tair=25,pressure=100)
+```
+```julia
+# umol CO2 m-2 s-1 to g C m-2 d-1
+umolCO2.to.gC(CO2_flux=20)
+```
+
+
+\vspace{1cm}
+
+# Useful hints for advanced users
+
+
+## Hide function messages
+
+As shown earlier in this tutorial, many functions of the `bigleaf.jl` package print messages to make the reader aware that e.g. some flux components are missing. This output can be a bit annoying when functions are used in loops or `apply`-functions. A simple way to not show these messages is to use a combination of `invisible` and `capture.output`:
+
+```julia
+## instead of 
+PET = potential.ET(Tair=25,pressure=100,Rn=200)
+## one can use
+invisible(capture.output(PET = potential.ET(Tair=25,pressure=100,Rn=200)))
+```
+
+
+
+## Constants
+
+The `bigleaf.jl` package contains a single list of constants (see `?bigleaf.constants`). Whenever one or more constants are used in a function, this list is provided as a default argument, so the user does usually not need to interact with this list. However, should you wish to change a certain constant for the calculations (which could make sense in some cases, e.g. using a different value for the von-Karman constant (k)), individual constants can be changed within a function call. As an example, let's call a function with the `bigleaf.jl` default value of k=0.41, and the alternative, often used value of k=0.4:
+
+```julia
+summary(aerodynamic.conductance(tha_filtered,wind_profile=TRUE,zr=zr,d=0.7*zh,z0m=2.65)[,"Ga_h"])
+summary(aerodynamic.conductance(tha_filtered,wind_profile=TRUE,zr=zr,d=0.7*zh,z0m=2.65,
+                                constants=bigleaf.constants(k=0.4))[,"Ga_h"])
+```
+
+We see that in this case, small changes in k have an effect on the calculated values of $G_{ah}$, but they do not change the results significantly (however, the same value of k should be used for all calculations).
+
+
+
+## Boundary layer conductance for trace gases
+
+By default, the function `aerodynamic.conductance` returns the (quasi-laminar) canopy boundary layer ($G_{b}$) for heat and water vapor (which are assumed to be equal in the `bigleaf.jl` package), as well as for CO$_2$. The function further provides the possibility to calculate $G_b$ for other trace gases, provided that the respective Schmidt number is known. Further, if we are only interested in $G_b$ (or the kB$^{-1}$ parameter) we can use one of the following functions: `Gb.Thom`, `Gb.Choudhury`, `Gb.Su`. These functions are integrated in the main function `aerodynamic.conductance`, but the modular design of the package allows them to be called separately. We can demonstrate the calculation of $G_b$ for methane (CH$_4$) with a simple example:
+
+```julia
+summary(Gb.Thom(tha_filtered$ustar))
+summary(Gb.Thom(tha_filtered$ustar,Sc=0.99,Sc_name="CH4"))
+```
+
+In the first line we get the standard output of the function, whereas in the second line we get in addition the $G_b$ for methane.  
+
+
+## Dealing with uncertainties
+
+It is important to note that the `bigleaf.jl` package does not calculate uncertainties of most variables. This is firstly because it is challenging to properly account for all the uncertainties present in EC data, and secondly because this would lead to much slower and more complex function calls. Nevertheless, uncertainties of the calculated ecosystem properties should not be ignored. Here, we present two main strategies on how to quantify uncertainties: 1) bootstrapping, and 2) Monte Carlo analysis. In general, we leave the calculations/function calls untouched, but we add wrapper functions that use different techniques (e.g. bootstrapping) to calculate uncertainties of the output variables.
+
+### Bootstrapping
+
+As a first example, we use bootstrapping to estimate the uncertainty of the $g_1$ parameter calculated above. The principle is easy: we calculate $g_1$ a given number of times (in this case 300 times), and each time we only use a (different) subset of the data. In each iteration, 25% of the data are discarded. To do this, we can define the following function (note that this function can be written in a more efficient way, but by using a loop the principle becomes clear):
+
+```julia
+G1.bootstrap = function(dat,LoopNum,SampSizeRel){
+  # dat         = input data.frame
+  # LoopNum     = number of iterations
+  # SampSizeRel = fraction of data sampled for each iteration
+  dfout=data.frame(matrix(NA,nrow = LoopNum,ncol = 0)) #Define output dataframe
+  dat$RunNum=1:nrow(dat)
+  SampSize=round(length(dat$RunNum)*SampSizeRel) #calculate number of data used for resampling
+
+  for (m in 1:LoopNum){
+    # sample data:
+    SampIDX=sample(x = dat$RunNum,size = SampSize,replace = T) 
+    # run the function on the sample data:
+    dfout$G1[m]=summary(stomatal.slope(data = dat[SampIDX,],
+                                       Tair = dat$Tair[SampIDX],
+                                       Gs=dat$Gs_mol[SampIDX],
+                                       pressure = dat$pressure[SampIDX],
+                                       GPP = dat$GPP[SampIDX],
+                                       VPD = dat$VPD[SampIDX],
+                                       Ca = dat$Ca[SampIDX],
+                       model="USO",g0=0,robust.nls=T))$coef[1,1] 
+  }
+
+  return(dfout) # return output dataframe
+}
+```
+
+We can use this function with our data:
+
+```{r, results="hide"}
+# 300 times resampling; each time 75 % of the data: 
+tha_G1BT = G1.bootstrap(dat = tha_filtered,LoopNum = 300,SampSizeRel = 0.75) 
+# estimate using all data:
+g1_mean = summary(g1_USO)$coef[1,1]
+g1_se   = summary(g1_USO)$coef[1,2]
+
+par(mar=c(2,6,1,1))
+boxplot(tha_G1BT,ylab=expression(italic("g")["1,USO"]~"(kPa"^{0.5}*")"),las=1,mgp=c(2,0.5,0))
+points(g1_mean,col="blue",pch=16,cex=1.5)
+arrows(1,g1_mean - g1_se,1,g1_mean + g1_se,angle=90,length=0.2,code=3,col="blue",lwd=2)
+```
+
+The blue point shows the estimate (+/- standard error) when we take all data, as calculated above. The two estimates agree very well, indicating that in this case we can be very confident on the calculated $g_1$ estimate. The bootstrapping technique can also be applied to other (regression-based) functions in the package.
+
+
+
+
+### Monte Carlo analysis
+
+In the second example we implement a simple Monte Carlo analysis in which we propagate uncertainties in the calculation of $G_a$ to uncertainties in $G_s$ (which takes $G_a$ as input). To do this, we first estimate the uncertainty in $G_a$ that is caused by uncertainties in three of its input parameters: the leaf characteristic dimension $D_l$, the LAI, and the roughness length $z_{0m}$. The uncertainty of other parameters could be included, but for demonstration purposes we only use these three. 
+First, we have to assess the mean and the error distribution of the input parameters. We estimated $D_l$ = 1cm, LAI=7.6 (as measured at the site), and $z_{0m}=2.65m$ (10% of the vegetation height), and we assume that their errors are normally distributed with a standard deviation (sd) equal to 25% of the mean in case of $z_{0m}$ and $D_l$. In case of LAI we assume a sd of 0.5. 
+
+```julia
+n_pert = 200
+z0m1   = 2.65
+Dl1    = 0.01
+LAI1   = 7.6
+z0m_sample = pmax(rnorm(n=n_pert,mean=z0m1,sd=0.25*z0m1),0)
+Dl_sample  = pmax(rnorm(n=n_pert,mean=Dl1,sd=0.25*Dl1),0)
+LAI_sample = rnorm(n=n_pert,mean=LAI1,sd=0.5)
+```
+
+In the example above we create a parameter space that we use for the subsequent calculations. We have chosen the most simple settings here, that means we assume that parameters have a normal error distribution and that they are independent of each other. In many cases these assumptions are not valid. For example, measured fluxes are more likely to have a Laplace error distribution (Hollinger & Richardson 2005), which would be better sampled using `rlaplace` from the `rmutil` package instead of `rnorm`. In many cases, the parameters are also not independent of each other. In our case, $z_{0m}$ and $D_l$ may not be strongly correlated, but one would possibly expect a correlation between LAI and $z_{0m}$. We can account for dependencies among variables by doing the sampling based on a variance-covariance matrix that prescribes correlations between variables.
+ 
+
+```julia
+unc_all = mapply(aerodynamic.conductance,Dl=Dl_sample,z0m=z0m_sample,LAI=LAI_sample,
+                        MoreArgs=list(data=tha_filtered,zr=42,zh=26.5,d=0.7*26.5,
+                                      N=2,stab_correction=T,
+                                      stab_formulation="Dyer_1970",
+                                      Rb_model="Su_2001")
+                  )
+
+# select "Ga_h" output variable and convert to matrix
+unc_Ga_h = matrix(unlist(unc_all["Ga_h",]),ncol=n_pert,byrow=FALSE) 
+
+# calculate 2.5th, 50th, and 97.5th quantile of the n_pert calculations for every timestep
+Ga_low  = apply(unc_Ga_h,1,quantile,0.025,na.rm=T)
+Ga_mean = apply(unc_Ga_h,1,quantile,0.5,na.rm=T)
+Ga_high = apply(unc_Ga_h,1,quantile,0.975,na.rm=T)
+Ga = cbind(Ga_low,Ga_mean,Ga_high)
+summary(Ga)
+
+
+# calculate the Gs for the three Ga estimates
+Gs_low  = surface.conductance(tha_filtered,Ga=Ga[,"Ga_low"],G="G")[,"Gs_mol"]
+Gs_mean = surface.conductance(tha_filtered,Ga=Ga[,"Ga_mean"],G="G")[,"Gs_mol"]
+Gs_high = surface.conductance(tha_filtered,Ga=Ga[,"Ga_high"],G="G")[,"Gs_mol"]
+Gs = cbind(Gs_low,Gs_mean,Gs_high)
+summary(Gs)
+```
+The first and the last columns of the output give us now an uncertainty envelope around our $G_a$ and $G_s$ calculations. The example shows that variations in the three input parameters are sensitive for the estimation of $G_a$, but not so much for $G_s$:
+
+
+```julia
+par(mfrow=c(1,2))
+ind = c(1:48) # first day
+plot(Ga_mean[ind],type="l",lwd=2,xlab="timestep",ylab=expression("G"["ah"]~"(m s"^{-1}*")"),
+     las=1,mgp=c(2.2,0.5,0),tcl=-0.2,ylim=c(0.045,0.14))
+
+ok = which(!is.na(Ga_mean[ind]))
+polygon(c(ok,rev(ok)),c(Ga_high[ind][ok],rev(Ga_low[ind][ok])),
+        col="grey70",border=NA)
+points(Ga_mean[ind],type="l",lwd=2)
+
+
+plot(Gs_mean[ind],type="l",lwd=2,xlab="timestep",tcl=-0.2,
+     ylab=expression("G"["sw"]~"(mol m"^{-2}~"s"^{-1}*")"),las=1,mgp=c(2.2,0.5,0))
+
+ok = which(!is.na(Gs_mean[ind]))
+polygon(c(ok,rev(ok)),c(Gs_high[ind][ok],rev(Gs_low[ind][ok])),
+        col="grey70",border=NA)
+points(Gs_mean[ind],type="l",lwd=2)
+```
+
+In general, these operations are more effectively implemented elsewhere, and we just show an example for demonstration purposes. The reader might be interested in the `FME` package (in particular the `sensRange` function). The package also provides functions (e.g. `Norm`) that generates parameter sets based on a parameter variance-covariance matrix.
+
+
+
+\vspace{1cm}
+
+
+## References
+
+Ball, J. T.; Woodrow, I. E. & Berry, J. A. Biggins, J. (Ed.) A model predicting stomatal conductance and its contribution to the control of photosynthesis under different environmental conditions Progress in photosynthesis research, Martinus Nijhoff Publishers, Dordrecht, Netherlands, 1987, 221-224.
+
+Grünwald, T. & Bernhofer, C. A decade of carbon, water and energy flux measurements of an old spruce forest at the Anchor Station Tharandt Tellus B, Wiley Online Library, 2007, 59, 387-396.
+
+Hollinger, D. & Richardson, A. Uncertainty in eddy covariance measurements and its application to physiological models. Tree physiology, 2005, 25, 873-885.
+
+Knauer, J., El-Madany, T.S., Zaehle, S., Migliavacca, M. An R package for the calculation of physical and physiological ecosystem properties from eddy covariance data. PLoS ONE, 2018, e0201114.
+
+Leuning, R. A critical appraisal of a combined stomatal-photosynthesis model for C3 plants Plant, Cell & Environment, Wiley Online Library, 1995, 18, 339-355.
+
+Leuning, R.; Van Gorsel, E.; Massman, W. J. & Isaac, P. R. Reflections on the surface energy imbalance problem Agricultural and Forest Meteorology, 2012, 156, 65-74.
+
+Medlyn, B. E.; Duursma, R. A.; Eamus, D.; Ellsworth, D. S.; Prentice, I. C.; Barton, C. V.; Crous, K. Y.; de Angelis, P.; Freeman, M. & Wingate, L. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology, 2011, 17, 2134-2144.
+
+Su, Z.; Schmugge, T.; Kustas, W. & Massman, W. An evaluation of two models for estimation of the roughness height for heat transfer between the land surface and the atmosphere. Journal of Applied Meteorology, 2001, 40, 1933-1951.
+
+Thom, A. Momentum, mass and heat exchange of vegetation. Quarterly Journal of the Royal Meteorological Society, 1972, 98, 124-134.
+
+Verma, S. Black, T.; Spittlehouse, D.; Novak, M. & Price, D. (Eds.) Aerodynamic resistances to transfers of heat, mass and momentum Estimation of areal evapotranspiration, Estimation of areal evapotranspiration, International Association of Hydrological Sciences, 1989, 177, 13-20.

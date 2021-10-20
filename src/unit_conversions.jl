@@ -80,11 +80,12 @@ get_EsatCoef(::Val{:Allen_1998}) = (a=610.8,b=17.27,c=237.3)
 Convert evaporative water flux from mass (ET=evapotranspiration)
              to energy (LE=latent heat flux) units, or vice versa.
 
-## Arguments
+# Arguments
 - LE   Latent heat flux (W m-2)
 - ET   Evapotranspiration (kg m-2 s-1)
 - Tair Air temperature (deg C)
 
+# Details
 The conversions are given by:
 - ``ET = LE/\\lambda``
 - ``LE = \\lambda ET``
@@ -233,7 +234,8 @@ end
     Rg_to_PPFD(Rg,J_to_mol=4.6,frac_PAR=0.5)
     PPFD_to_Rg(PPFD,J_to_mol=4.6,frac_PAR=0.5)
 
-Conversions between Global Radiation (W m-2) and Photosynthetic Photon Flux Density (umol m-2 s-1)
+Conversions between Global Radiation (W m-2) and Photosynthetic Photon Flux 
+Density (umol m-2 s-1)
 
 # Arguments
 - Rg:       Global radiation = incoming short-wave radiation at the surface (W m-2)

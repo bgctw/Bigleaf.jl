@@ -1,6 +1,5 @@
 module bigleaf
 
-using DataFrames
 using DocStringExtensions
 
 export bigleaf_constants

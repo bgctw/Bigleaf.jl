@@ -1,7 +1,7 @@
 using bigleaf
-using Documenter, DocStringExtensions
+using Documenter, DocStringExtensions, Latexify
 
-DocMeta.setdocmeta!(bigleaf, :DocTestSetup, :(using bigleaf); recursive=true)
+DocMeta.setdocmeta!(bigleaf, :DocTestSetup, :(using bigleaf, Latexify); recursive=true)
 doctest(bigleaf, manual = false)
 
 makedocs(;
@@ -18,6 +18,7 @@ makedocs(;
         "Home" => "index.md",
         #"Meteorological variables" => "metorological_variables.md",
         #"Unit conversions" => "unit_conversions.md",
+        "Walkthrough" => "walkthrough.md",
         hide("metorological_variables.md"),
         hide("unit_conversions.md"),
         "Index" => "autodocs.md",

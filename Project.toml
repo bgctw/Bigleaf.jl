@@ -4,7 +4,6 @@ authors = ["Thomas Wutzler <twutz@bgc-jena.mpg.de> and contributors"]
 version = "0.1.0"
 
 [deps]
-DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 libblastrampoline_jll = "8e850b90-86db-534c-a0d3-1478176c7d93"
 
