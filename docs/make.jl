@@ -5,7 +5,7 @@ using Documenter, Latexify
 # https://discourse.julialang.org/t/generation-of-documentation-fails-qt-qpa-xcb-could-not-connect-to-display/60988/2
 ENV["GKSwstype"] = "100"
 
-DocMeta.setdocmeta!(bigleaf, :DocTestSetup, :(using bigleaf, Latexify); recursive=true)
+DocMeta.setdocmeta!(bigleaf, :DocTestSetup, :(using bigleaf, Latexify); recursive=true, warn=false)
 doctest(bigleaf, manual = false)
 
 makedocs(;
