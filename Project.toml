@@ -9,6 +9,7 @@ DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 libblastrampoline_jll = "8e850b90-86db-534c-a0d3-1478176c7d93"
 
 [compat]
+DocStringExtensions = "0.8"
 julia = "1"
 
 [extras]
