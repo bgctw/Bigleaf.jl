@@ -16,11 +16,15 @@ The use of more detailed models is not within the scope of the `bigleaf.jl` pack
 # Preparing the data
 
 In this tutorial, we will work with a dataset from the eddy covariance site Tharandt (DE-Tha), a spruce forest in Eastern Germany. The DataFrame `DE_Tha_Jun_2014` is downloaded from the `bigleaf` 
-[R package](https://bitbucket.org/juergenknauer/bigleaf/) repository and contains half-hourly data of meteorological and flux measurements made in June 2014:
+[R package](https://bitbucket.org/juergenknauer/bigleaf/) repository and contains half-hourly data of meteorological and flux measurements made in June 2014. For loading the RData into Julia, see the 
+[source](# Preparing the data) of this file. We give the data.frame a shorter name here.
 
-```@setup doc
+```@example doc
 using bigleaf
-using Latexify, DataFrames
+using DataFrames
+```
+```@setup doc
+using Latexify
 using DataDeps, Suppressor
 using RData
 import CodecBzip2, CodecXz
@@ -36,17 +40,17 @@ DE_Tha_Jun_2014 = first(values(load(joinpath(datadep"DE_Tha_Jun_2014.rda/DE_Tha_
 nothing
 ```
 ```@example doc
-# downloading and caching code not shown
 tha = DE_Tha_Jun_2014
 mdtable(select(describe(tha), :variable, :eltype, :min, :max), latex=false) # hide
 ```
+
 
 And the first six rows of tha:
 ```@example doc
 mdtable(tha[1:6,:],latex=false) # hide
 ```
 
-We give the data.frame a shorter name here. More information on the data (e.g. meaning of column names and units) can be found at the 
+More information on the data (e.g. meaning of column names and units) can be found at the 
 [bigleaf R package](https://bitbucket.org/juergenknauer/bigleaf/src/master/man/DE_Tha_Jun_2014.Rd). 
 For more information on the site see e.g. Grünwald & Bernhofer 2007.
 In addition, we will need some ancillary data for this site throughout this tutorial. To ensure consistency, we define them here at the beginning:
