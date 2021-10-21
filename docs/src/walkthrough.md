@@ -13,21 +13,6 @@ Please also keep in mind that the `bigleaf.jl` package does NOT provide formulat
 The use of more detailed models is not within the scope of the `bigleaf.jl` package, but it is preferable to use such approaches when important assumptions of the "big-leaf" approach are not met. This is the case in particular when the ecosystem is sparsely covered with vegetation (low LAI, e.g. sparse crops, some savanna systems). 
 
 
-# Installation and Loading
-
-The `bigleaf.jl` R package can be installed with the usual command once:
-
-```julia
-using Pkg
-Pkg.add(bigleaf)
-```
-
-And then importet to the every Julia session by:
-```julia
-using bigleaf
-```
-
-
 # Preparing the data
 
 In this tutorial, we will work with a dataset from the eddy covariance site Tharandt (DE-Tha), a spruce forest in Eastern Germany. The DataFrame `DE_Tha_Jun_2014` is downloaded from the `bigleaf` 

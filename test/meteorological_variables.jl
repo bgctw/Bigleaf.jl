@@ -21,8 +21,6 @@ end
   @test ≈(vt, 26.9, atol =0.1)
 end
 
-vt ≈ 26.9 atol =0.1
-
 @testset "kinematic_viscosity" begin
   Tair,pressure = 25,100
   vis = kinematic_viscosity(Tair,pressure)
