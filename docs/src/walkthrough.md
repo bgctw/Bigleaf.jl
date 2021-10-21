@@ -17,7 +17,7 @@ The use of more detailed models is not within the scope of the `bigleaf.jl` pack
 
 In this tutorial, we will work with a dataset from the eddy covariance site Tharandt (DE-Tha), a spruce forest in Eastern Germany. The DataFrame `DE_Tha_Jun_2014` is downloaded from the `bigleaf` 
 [R package](https://bitbucket.org/juergenknauer/bigleaf/) repository and contains half-hourly data of meteorological and flux measurements made in June 2014. For loading the RData into Julia, see the 
-[source](# Preparing the data) of this file. We give the data.frame a shorter name here.
+[source](https://github.com/bgctw/bigleaf.jl/blob/main/docs/src/walkthrough.md?plain=1#L26) of this file. We give the data.frame a shorter name here.
 
 ```@example doc
 using bigleaf
