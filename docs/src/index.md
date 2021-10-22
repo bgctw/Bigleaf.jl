@@ -15,7 +15,7 @@ Pages = ["metorological_variables.md",]
 
 ## Global radiation
 ```@index
-Pages = ["global_radiation",]
+Pages = ["global_radiation.md",]
 ```
 
 ## Unit conversions

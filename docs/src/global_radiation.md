@@ -1,7 +1,6 @@
 ## Global radiation
-
 ```@index
-Pages = ["global_radiation",]
+Pages = ["global_radiation.md",]
 ```
 
 ```@docs
