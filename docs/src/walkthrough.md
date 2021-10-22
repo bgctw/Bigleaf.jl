@@ -105,46 +105,46 @@ pressure_from_elevation(500.0, 25.0) # elev, Tair
 
 There are several formulations describing the empirical function `Esat(Tair)`.
 The following figure compares them at absole scale and as difference to the 
-default method. The differences are small.
+#default method. The differences are small.
 
 ```@setup doc
-using DataFrames
-Tair = 0:0.25:12
-#Tair = [10.0,20.0]
-eform_def = Val(:Sonntag_1990)
-Esat_def = Esat_from_Tair.(Tair; formula = eform_def)
-eforms = (Val(:Sonntag_1990), Val(:Alduchov_1996), Val(:Allen_1998))
-eform = eforms[2]
-string.(eforms)
-df = mapreduce(vcat, eforms) do eform 
-    Esat = Esat_from_Tair.(Tair; formula = eform)
-    local dff # make sure to not override previous results
-    dff = DataFrame(
-        formula = eform, Tair = Tair, 
-        Esat = Esat,
-        dEsat = Esat - Esat_def,
-        )
-end;
-#using Chain
-using Pipe
-using Plots, StatsPlots
-dfw = @pipe df |> select(_, 1,2, :Esat) |> unstack(_, :formula, 3)
-dfws = @pipe df |> select(_, 1,2, :dEsat) |> unstack(_, :formula, 3)
-@df dfw plot(:Tair, cols(2:4), legend = :topleft, xlab="Tair (degC)", ylab="Esat (kPa)")
-savefig("Esat_abs.svg")
-@df dfws plot(:Tair, cols(2:4), legend = :topleft, xlab="Tair (degC)", ylab="Esat -ESat_Sonntag_1990 (kPa)")
-savefig("Esat_rel.svg")
+#using DataFrames
+#Tair = 0:0.25:12
+##Tair = [10.0,20.0]
+#eform_def = Val(:Sonntag_1990)
+#Esat_def = Esat_from_Tair.(Tair; formula = eform_def)
+#eforms = (Val(:Sonntag_1990), Val(:Alduchov_1996), Val(:Allen_1998))
+#eform = eforms[2]
+#string.(eforms)
+#df = mapreduce(vcat, eforms) do eform 
+#    Esat = Esat_from_Tair.(Tair; formula = eform)
+#    local dff # make sure to not override previous results
+#    dff = DataFrame(
+#        formula = eform, Tair = Tair, 
+#        Esat = Esat,
+#        dEsat = Esat - Esat_def,
+#        )
+#end;
+##using Chain
+#using Pipe
+#using Plots, StatsPlots
+#dfw = @pipe df |> select(_, 1,2, :Esat) |> unstack(_, :formula, 3)
+#dfws = @pipe df |> select(_, 1,2, :dEsat) |> unstack(_, :formula, 3)
+#@df dfw plot(:Tair, cols(2:4), legend = :topleft, xlab="Tair (degC)", #ylab="Esat (kPa)")
+#savefig("Esat_abs.svg")
+#@df dfws plot(:Tair, cols(2:4), legend = :topleft, xlab="Tair (degC)", #ylab="Esat -ESat_Sonntag_1990 (kPa)")
+#savefig("fig/Esat_rel.svg")
 ```
 
-![](Esat_abs.svg)
+![](fig/Esat_abs.svg)
 
-![](Esat_rel.svg)
+![](fig/Esat_rel.svg)
 
 ## Global radiation
 
 Computing solar position in horizontal coordinates
 ```@example doc
-using Plots, StatsPlots, DataFrames, Dates, Suppressor
+using Plots, StatsPlots, DataFrames, Dates, Pipe, Suppressor
 hours = 0:24
 lat,long = 51.0, 13.6 # Dresden Germany
 #deg2second = 24*3600/360
@@ -152,10 +152,10 @@ doy = 160
 datetimes = DateTime(2021) .+Day(doy-1) .+ Hour.(hours) #.- Second(round(long*deg2second))
 res3 = @suppress_err @pipe calc_sun_position_hor.(datetimes, lat, long) |> toDataFrame(_)
 @df res3 scatter(datetimes, cols([:altitude,:azimuth]), legend = :topleft, xlab="Date and Time", ylab = "rad")
-savefig("globrad.svg")
+savefig("fig/globrad.svg")
 ```
 
-![](globrad.svg)
+![](fig/globrad.svg)
 
 The hour-angle at noon represents the difference to
 local time. In the following example solar time is
