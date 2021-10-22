@@ -24,6 +24,7 @@ makedocs(;
         #"Unit conversions" => "unit_conversions.md",
         "Walkthrough" => "walkthrough.md",
         hide("metorological_variables.md"),
+        hide("global_radiation.md"),
         hide("unit_conversions.md"),
         hide("bigleaf_constants.md"),
         "Index" => "autodocs.md",

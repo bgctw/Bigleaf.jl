@@ -13,6 +13,11 @@ Pages = ["index.md",]
 Pages = ["metorological_variables.md",]
 ```
 
+## Global radiation
+```@index
+Pages = ["global_radiation",]
+```
+
 ## Unit conversions
 ```@index
 Pages = ["unit_conversions.md","bigleaf_constants.md",]

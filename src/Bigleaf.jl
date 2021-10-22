@@ -16,6 +16,7 @@ export air_density, pressure_from_elevation, psychrometric_constant,
     latent_heat_vaporization, virtual_temp, kinematic_viscosity,
     dew_point_from_e, dew_point,
     wetbulb_temp_from_e_Tair_gamma, wetbulb_temp
+export calc_sun_position_MOD, calc_sun_position_hor
 
 include("util.jl")    
 include("bigleaf_constants.jl")

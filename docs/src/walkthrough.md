@@ -140,6 +140,33 @@ savefig("Esat_rel.svg")
 
 ![](Esat_rel.svg)
 
+## Global radiation
+
+Computing solar position in horizontal coordinates
+```@example doc
+using Plots, StatsPlots, DataFrames, Dates, Suppressor
+hours = 0:24
+lat,long = 51.0, 13.6 # Dresden Germany
+#deg2second = 24*3600/360
+doy = 160
+datetimes = DateTime(2021) .+Day(doy-1) .+ Hour.(hours) #.- Second(round(long*deg2second))
+res3 = @suppress_err @pipe calc_sun_position_hor.(datetimes, lat, long) |> toDataFrame(_)
+@df res3 scatter(datetimes, cols([:altitude,:azimuth]), legend = :topleft, xlab="Date and Time", ylab = "rad")
+savefig("globrad.svg")
+```
+
+![](globrad.svg)
+
+The hour-angle at noon represents the difference to
+local time. In the following example solar time is
+about 55min ahead of local winter time.
+
+```@example doc
+summernoon = DateTime(2021) +Day(doy-1) + Hour(12) 
+sunpos = @suppress_err calc_sun_position_hor(summernoon, lat, long) 
+sunpos.hourangle * 24*60/(2*π) # convert angle to minutes
+```
+
 ## Unit interconversions
 
 The package further provides a number of useful unit interconversions, which are straightforward to use (please make sure that the input variable is in the right unit, e_g. rH has to be between 0 and 1 and not in percent):

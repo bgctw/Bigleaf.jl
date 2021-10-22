@@ -1,4 +1,3 @@
-export calc_sun_position_MOD, calc_sun_position_hor
 """
     calc_sun_position_hor(datetime::DateTime, lat, long)
 
@@ -10,9 +9,9 @@ Compute the Sun position at given time and observer coordinates in horizontal co
 
 # Value
 `SLVector`: sun position with entries
-- altitude: angle above the horizon [rad].
-- azimuth: angle ange the horizon plane eastwards of north [rad]
-- hourangle: [rad] as output by AstroLib.eq2hor
+- `altitude`: angle above the horizon [rad].
+- `azimuth`: angle ange the horizon plane eastwards of north [rad]
+- `hourangle`: [rad] as output by AstroLib.eq2hor
    Seems to represent time [day/2pi] after solar noon. 
    Value at local timezone noon provdes (local time - solar time).
 """
