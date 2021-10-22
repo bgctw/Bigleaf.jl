@@ -1,4 +1,4 @@
-module bigleaf
+module Bigleaf
 
 #using DocStringExtensions
 using Optim

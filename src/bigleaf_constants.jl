@@ -1,7 +1,7 @@
 """
   bigleaf_constants(;...)
 
-Constants Used in the bigleaf.jl Package
+Constants Used in the Bigleaf.jl Package
 
 Return a Dictionary Dict{Symbol, Real}.
 Default values can be overridden by the named arguments:

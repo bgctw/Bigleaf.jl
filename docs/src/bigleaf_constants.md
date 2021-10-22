@@ -1,4 +1,4 @@
-## Constants used in bigleaf
+## Constants used in Bigleaf
 
 ```@docs
 bigleaf_constants
