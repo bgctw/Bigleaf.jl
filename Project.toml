@@ -14,6 +14,12 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
 julia = "1"
+AstroLib = "0.4"
+DataFrames = "1"
+LabelledArrays = "1"
+Optim = "1"
+RecursiveArrayTools = "2"
+StaticArrays = "1"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
