@@ -1,14 +1,12 @@
-name = "bigleaf"
+name = "Bigleaf"
 uuid = "e2ae9153-b66f-47c5-85f1-c6d65380123f"
 authors = ["Thomas Wutzler <twutz@bgc-jena.mpg.de> and contributors"]
 version = "0.1.0"
 
 [deps]
 Optim = "429524aa-4258-5aef-a3af-852621145aeb"
-libblastrampoline_jll = "8e850b90-86db-534c-a0d3-1478176c7d93"
 
 [compat]
-DataFrames = "1"
 julia = "1"
 
 [extras]
