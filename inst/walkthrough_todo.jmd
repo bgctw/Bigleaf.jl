@@ -3,9 +3,9 @@
 
 ## Function arguments
 
-Most functions of the `bigleaf.jl` package require an input matrix or (more common) a data.frame, from which the required variables are extracted. This is usually the first argument of a function. Most functions further provide default values for their arguments, such that in many cases it is not necessary to provide them explicitly.
+Most functions of the `Bigleaf.jl` package require an input matrix or (more common) a data.frame, from which the required variables are extracted. This is usually the first argument of a function. Most functions further provide default values for their arguments, such that in many cases it is not necessary to provide them explicitly.
 
-Another convenient feature of the `bigleaf.jl` package is that it supports functions
+Another convenient feature of the `Bigleaf.jl` package is that it supports functions
 that accept a DataFrame with columnnames corresponding to required arguments.
 
 We can demonstrate the usage with a simple example:
@@ -25,12 +25,12 @@ potential.ET(Tair=25,pressure=100,Rn=200)
 potential.ET(Tair=25,pressure=100,Rn=400)
 ```
 
-When using your own data, it is not mandatory to use exactly the same variable names as here, but working with `bigleaf.jl` is easier if you do so because then the variable names do not have to be specified when calling a function.
+When using your own data, it is not mandatory to use exactly the same variable names as here, but working with `Bigleaf.jl` is easier if you do so because then the variable names do not have to be specified when calling a function.
 
 
 ## Ground heat flux and storage fluxes
 
-Many functions require the available energy ($A$), which is defined as ($A = R_n - G - S$, all in $\text{W m}^{-2}$), where $R_n$ is the net radiation, $G$ is the ground heat flux, and $S$ is the sum of all storage fluxes of the ecosystem (see e.g. Leuning et al. 2012 for an overview). For some sites, $G$ is not available, and for most sites, only a few components of $S$ are measured. In `bigleaf.jl` it is not a problem if $G$ and/or $S$ are missing (other than the results might be (slightly) biased), but special options exist for the treatment of missing $S$ and $G$ values. If the options `missing.G.as.NA = TRUE` or `missing.S.as.NA = TRUE`, then the output variable is not calculated for that time period. Otherwise missing $S$ and $G$ values are set to O automatically. Please note that the default is to ignore $S$ and $G$ values. If $G$ and/or $S$ are available, they always have to be added explicitly to the function call (by providing the column name of $G$/$S$ or a vector).  
+Many functions require the available energy ($A$), which is defined as ($A = R_n - G - S$, all in $\text{W m}^{-2}$), where $R_n$ is the net radiation, $G$ is the ground heat flux, and $S$ is the sum of all storage fluxes of the ecosystem (see e.g. Leuning et al. 2012 for an overview). For some sites, $G$ is not available, and for most sites, only a few components of $S$ are measured. In `Bigleaf.jl` it is not a problem if $G$ and/or $S$ are missing (other than the results might be (slightly) biased), but special options exist for the treatment of missing $S$ and $G$ values. If the options `missing.G.as.NA = TRUE` or `missing.S.as.NA = TRUE`, then the output variable is not calculated for that time period. Otherwise missing $S$ and $G$ values are set to O automatically. Please note that the default is to ignore $S$ and $G$ values. If $G$ and/or $S$ are available, they always have to be added explicitly to the function call (by providing the column name of $G$/$S$ or a vector).  
 
 
 
@@ -46,11 +46,11 @@ In the following, we explain how to use several of the package's key functions. 
 
 ## Data filtering
 
-For most applications it is meaningful to filter your data. There are two main reasons why we want to filter our data before we start calculating ecosystem properties. The first one is to exclude datapoints that do not fulfill the requirements of the EC technique or that are of bad quality due to e.g. instrument failure or gap-filling with poor confidence. Note that the quality assessment of the EC data is not the purpose of the `bigleaf.jl` package. This is done by other packages (e.g. `REddyProc`), which often provide quality control flags for the variables. These quality control flags are used here to filter out bad-quality datapoints.
+For most applications it is meaningful to filter your data. There are two main reasons why we want to filter our data before we start calculating ecosystem properties. The first one is to exclude datapoints that do not fulfill the requirements of the EC technique or that are of bad quality due to e.g. instrument failure or gap-filling with poor confidence. Note that the quality assessment of the EC data is not the purpose of the `Bigleaf.jl` package. This is done by other packages (e.g. `REddyProc`), which often provide quality control flags for the variables. These quality control flags are used here to filter out bad-quality datapoints.
 
 A second reason for filtering our data is that some derived properties are only meaningful if certain meteorological conditions are met. For instance, if we are interested in properties related to plant gas exchange, it makes most sense to focus on time periods when plants are photosynthetically active (i.e. in the growing season and at daytime).
 
-The bigleaf package provides the function `filter.data` that filters the data according to the criteria described above. We start with an example where the data.frame is filtered only with respect to data quality (`quality.control=TRUE`):
+The Bigleaf package provides the function `filter.data` that filters the data according to the criteria described above. We start with an example where the data.frame is filtered only with respect to data quality (`quality.control=TRUE`):
 
 ```julia
 tha_filtered1 = filter.data(tha,quality.control=TRUE,vars.qc=c("LE","H","NEE","Tair","VPD","wind"),
@@ -108,7 +108,7 @@ When looking at the function output we see that we these settings, we exclude in
 
 ## Aerodynamic conductance
 
-An important metric for many calculations in the `bigleaf.jl` package is the aerodynamic conductance ($G_a$) between the land surface and the measurement height. $G_a$ characterizes how efficiently mass and energy is transferred between the land surface and the atmosphere. $G_a$ consists of two parts: $G_{am}$, the aerodynamic conductance for momentum, and $G_b$, the canopy boundary layer (or quasi-laminar) conductance. $G_a$ can be defined as $G_a = 1/(1/G_{am} + 1/G_b)$. In this tutorial we will focus on how to use the function `aerodynamic.conductance`. For further details on the equations, the reader is directed to the publication of the bigleaf package (Knauer et al. 2018) and the references therein. A good overview is provided by e.g. Verma 1989.
+An important metric for many calculations in the `Bigleaf.jl` package is the aerodynamic conductance ($G_a$) between the land surface and the measurement height. $G_a$ characterizes how efficiently mass and energy is transferred between the land surface and the atmosphere. $G_a$ consists of two parts: $G_{am}$, the aerodynamic conductance for momentum, and $G_b$, the canopy boundary layer (or quasi-laminar) conductance. $G_a$ can be defined as $G_a = 1/(1/G_{am} + 1/G_b)$. In this tutorial we will focus on how to use the function `aerodynamic.conductance`. For further details on the equations, the reader is directed to the publication of the Bigleaf package (Knauer et al. 2018) and the references therein. A good overview is provided by e.g. Verma 1989.
 
 $G_a$ and in particular $G_b$ can be calculated with varying degrees of complexity. We start with the simplest version, in which $G_b$ is calculated empirically based on the friction velocity ($u_*$) according to Thom 1972:
 
@@ -140,7 +140,7 @@ When we have an estimate of $G_a$, we are able to infer surface conditions of te
   $T_a = T_s - \frac{H}{(\rho \cdot G_{ah} \cdot c_p)}$
 
 where $T_a$ is air temperature, $H$ is the sensible heat flux ($\text{W m}^{-2}$) $\rho$ is air density ($\text{kg m}^{-3}$), $G_{\text{ah}}$ is the aerodynamic conductance for heat ($\text{m s}^{-1}$), and $c_p$ is the specific heat of air ($\text{J K}^{-1} \text{kg}^{-1}$). 
-In `bigleaf.jl`, the following function calculates conditions at the big-leaf surface:
+In `Bigleaf.jl`, the following function calculates conditions at the big-leaf surface:
 
 ```julia
 surf = surface.conditions(tha_filtered,calc.surface.CO2=TRUE)
@@ -168,7 +168,7 @@ Both surface temperature and VPD are in most cases higher than the ones measured
 
 ## Surface conductance
 
-Knowledge on $G_a$ allows us to calculate the bulk surface conductance ($G_s$) of the site (In this case by inverting the Penman-Monteith equation). Gs represents the combined conductance of the vegetation and the soil to water vapor transfer (and as such it is not a purely physiological quantity). Calculating $G_s$ in `bigleaf.jl` is simple:
+Knowledge on $G_a$ allows us to calculate the bulk surface conductance ($G_s$) of the site (In this case by inverting the Penman-Monteith equation). Gs represents the combined conductance of the vegetation and the soil to water vapor transfer (and as such it is not a purely physiological quantity). Calculating $G_s$ in `Bigleaf.jl` is simple:
 
 ```julia
 summary(surface.conductance(tha_filtered))
@@ -241,7 +241,7 @@ plot(tha_filtered[,"Gs_mol"] ~ stomatal_index,las=1,
 ## Wind profile
 
 The 'big-leaf' framework assumes that wind speed is zero at height d + $z_{0m}$ (where $z_{0m}$ is the roughness length for momentum) and then increases exponentially with height. The shape of the wind profile further depends on the stability conditions of the air above the canopy.
-In `bigleaf.jl`, a wind profile can be calculated assuming an exponential increase with height, which is affected by atmospheric stability. Here, we calculate wind speed at heights of 22-60m in steps of 2m. As expected, the gradient in wind speed is strongest close to the surface and weaker at greater heights:
+In `Bigleaf.jl`, a wind profile can be calculated assuming an exponential increase with height, which is affected by atmospheric stability. Here, we calculate wind speed at heights of 22-60m in steps of 2m. As expected, the gradient in wind speed is strongest close to the surface and weaker at greater heights:
 
 ```julia
 wind_heights = seq(22,60,2)
@@ -264,7 +264,7 @@ Here, the points denote the mean wind speed and the bars denote the standard dev
 
 ## Potential evapotranspiration
 
-For many hydrological applications, it is relevant to get an estimate on the potential evapotranspiration (PET). At the moment, the `bigleaf.jl` package contains two formulations for the estimate of PET: the Priestley-Taylor equation, and the Penman-Monteith equation:
+For many hydrological applications, it is relevant to get an estimate on the potential evapotranspiration (PET). At the moment, the `Bigleaf.jl` package contains two formulations for the estimate of PET: the Priestley-Taylor equation, and the Penman-Monteith equation:
 
 ```julia
 summary(potential.ET(tha_filtered,G="G",approach="Priestley-Taylor"))
@@ -280,7 +280,7 @@ In the second calculation it is important to provide an estimate of `Gs_pot`, wh
 
 ## Energy balance closure (EBC)
 
-The `bigleaf.jl` package offers a function which characterizes the degree of the EBC (i.e. $A = \lambda E + H$, where A is available energy, $\lambda E$ is the latent heat flux, and H is the sensible heat flux, all in $\text{W m}^{-2}$). We can calculate the EBC with the following command:
+The `Bigleaf.jl` package offers a function which characterizes the degree of the EBC (i.e. $A = \lambda E + H$, where A is available energy, $\lambda E$ is the latent heat flux, and H is the sensible heat flux, all in $\text{W m}^{-2}$). We can calculate the EBC with the following command:
 
 ```julia
 energy.closure(tha)
@@ -300,7 +300,7 @@ In this case the ground heat flux improves the EBC, but only marginally. This im
 
 ## Meteorological variables
 
-The `bigleaf.jl` package provides calculation routines for a number of meteorological variables, which are basic to the calculation of many other variables. A few examples on their usage are given below:
+The `Bigleaf.jl` package provides calculation routines for a number of meteorological variables, which are basic to the calculation of many other variables. A few examples on their usage are given below:
 
 ```julia
 # Saturation vapor pressure (kPa) and slope of the saturation vapor pressure curve (kPa K-1)
@@ -361,7 +361,7 @@ umolCO2.to.gC(CO2_flux=20)
 
 ## Hide function messages
 
-As shown earlier in this tutorial, many functions of the `bigleaf.jl` package print messages to make the reader aware that e.g. some flux components are missing. This output can be a bit annoying when functions are used in loops or `apply`-functions. A simple way to not show these messages is to use a combination of `invisible` and `capture.output`:
+As shown earlier in this tutorial, many functions of the `Bigleaf.jl` package print messages to make the reader aware that e.g. some flux components are missing. This output can be a bit annoying when functions are used in loops or `apply`-functions. A simple way to not show these messages is to use a combination of `invisible` and `capture.output`:
 
 ```julia
 ## instead of 
@@ -374,12 +374,12 @@ invisible(capture.output(PET = potential.ET(Tair=25,pressure=100,Rn=200)))
 
 ## Constants
 
-The `bigleaf.jl` package contains a single list of constants (see `?bigleaf.constants`). Whenever one or more constants are used in a function, this list is provided as a default argument, so the user does usually not need to interact with this list. However, should you wish to change a certain constant for the calculations (which could make sense in some cases, e.g. using a different value for the von-Karman constant (k)), individual constants can be changed within a function call. As an example, let's call a function with the `bigleaf.jl` default value of k=0.41, and the alternative, often used value of k=0.4:
+The `Bigleaf.jl` package contains a single list of constants (see `?Bigleaf.constants`). Whenever one or more constants are used in a function, this list is provided as a default argument, so the user does usually not need to interact with this list. However, should you wish to change a certain constant for the calculations (which could make sense in some cases, e.g. using a different value for the von-Karman constant (k)), individual constants can be changed within a function call. As an example, let's call a function with the `Bigleaf.jl` default value of k=0.41, and the alternative, often used value of k=0.4:
 
 ```julia
 summary(aerodynamic.conductance(tha_filtered,wind_profile=TRUE,zr=zr,d=0.7*zh,z0m=2.65)[,"Ga_h"])
 summary(aerodynamic.conductance(tha_filtered,wind_profile=TRUE,zr=zr,d=0.7*zh,z0m=2.65,
-                                constants=bigleaf.constants(k=0.4))[,"Ga_h"])
+                                constants=Bigleaf.constants(k=0.4))[,"Ga_h"])
 ```
 
 We see that in this case, small changes in k have an effect on the calculated values of $G_{ah}$, but they do not change the results significantly (however, the same value of k should be used for all calculations).
@@ -388,7 +388,7 @@ We see that in this case, small changes in k have an effect on the calculated va
 
 ## Boundary layer conductance for trace gases
 
-By default, the function `aerodynamic.conductance` returns the (quasi-laminar) canopy boundary layer ($G_{b}$) for heat and water vapor (which are assumed to be equal in the `bigleaf.jl` package), as well as for CO$_2$. The function further provides the possibility to calculate $G_b$ for other trace gases, provided that the respective Schmidt number is known. Further, if we are only interested in $G_b$ (or the kB$^{-1}$ parameter) we can use one of the following functions: `Gb.Thom`, `Gb.Choudhury`, `Gb.Su`. These functions are integrated in the main function `aerodynamic.conductance`, but the modular design of the package allows them to be called separately. We can demonstrate the calculation of $G_b$ for methane (CH$_4$) with a simple example:
+By default, the function `aerodynamic.conductance` returns the (quasi-laminar) canopy boundary layer ($G_{b}$) for heat and water vapor (which are assumed to be equal in the `Bigleaf.jl` package), as well as for CO$_2$. The function further provides the possibility to calculate $G_b$ for other trace gases, provided that the respective Schmidt number is known. Further, if we are only interested in $G_b$ (or the kB$^{-1}$ parameter) we can use one of the following functions: `Gb.Thom`, `Gb.Choudhury`, `Gb.Su`. These functions are integrated in the main function `aerodynamic.conductance`, but the modular design of the package allows them to be called separately. We can demonstrate the calculation of $G_b$ for methane (CH$_4$) with a simple example:
 
 ```julia
 summary(Gb.Thom(tha_filtered$ustar))
@@ -400,7 +400,7 @@ In the first line we get the standard output of the function, whereas in the sec
 
 ## Dealing with uncertainties
 
-It is important to note that the `bigleaf.jl` package does not calculate uncertainties of most variables. This is firstly because it is challenging to properly account for all the uncertainties present in EC data, and secondly because this would lead to much slower and more complex function calls. Nevertheless, uncertainties of the calculated ecosystem properties should not be ignored. Here, we present two main strategies on how to quantify uncertainties: 1) bootstrapping, and 2) Monte Carlo analysis. In general, we leave the calculations/function calls untouched, but we add wrapper functions that use different techniques (e.g. bootstrapping) to calculate uncertainties of the output variables.
+It is important to note that the `Bigleaf.jl` package does not calculate uncertainties of most variables. This is firstly because it is challenging to properly account for all the uncertainties present in EC data, and secondly because this would lead to much slower and more complex function calls. Nevertheless, uncertainties of the calculated ecosystem properties should not be ignored. Here, we present two main strategies on how to quantify uncertainties: 1) bootstrapping, and 2) Monte Carlo analysis. In general, we leave the calculations/function calls untouched, but we add wrapper functions that use different techniques (e.g. bootstrapping) to calculate uncertainties of the output variables.
 
 ### Bootstrapping
 

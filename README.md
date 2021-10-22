@@ -1,13 +1,13 @@
-# bigleaf
+# Bigleaf
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://bgctw.github.io/bigleaf.jl/stable)
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://bgctw.github.io/bigleaf.jl/dev)
-[![Build Status](https://github.com/bgctw/bigleaf.jl/workflows/CI/badge.svg)](https://github.com/bgctw/bigleaf.jl/actions)
-[![Coverage](https://codecov.io/gh/bgctw/bigleaf.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/bgctw/bigleaf.jl)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://bgctw.github.io/Bigleaf.jl/stable)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://bgctw.github.io/Bigleaf.jl/dev)
+[![Build Status](https://github.com/bgctw/Bigleaf.jl/workflows/CI/badge.svg)](https://github.com/bgctw/Bigleaf.jl/actions)
+[![Coverage](https://codecov.io/gh/bgctw/Bigleaf.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/bgctw/Bigleaf.jl)
 
 
-**bigleaf.jl** is a partial Julia port of Jürgen Knauer's 
-[**bigleaf** R package](https://bitbucket.org/juergenknauer/bigleaf) 
+**Bigleaf.jl** is a partial Julia port of Jürgen Knauer's 
+[**bigleaf** R package](https://bitbucket.org/juergenknauer/Bigleaf) 
 for the calculation of physical (e.g. aerodynamic conductance, surface temperature) 
 and physiological (e.g. canopy conductance, water-use efficiency) ecosystem properties 
 from eddy covariance data and accompanying meteorological measurements. 
@@ -26,23 +26,23 @@ The `bigleaf.jl` R package can be installed with the usual command once:
 
 ```julia
 using Pkg
-Pkg.add(bigleaf)
+Pkg.add(Bigleaf)
 ```
 
 And then importet to the every Julia session by:
 ```julia
-using bigleaf
+using Bigleaf
 ```
 
 ## Usage
-See the [Documentation](https://bgctw.github.io/bigleaf.jl/dev/) 
-that includes a [walkthrough](https://bgctw.github.io/bigleaf.jl/dev/walkthrough/).
+See the [Documentation](https://bgctw.github.io/Bigleaf.jl/dev/) 
+that includes a [walkthrough](https://bgctw.github.io/Bigleaf.jl/dev/walkthrough/).
 
-[Please report bugs or issues here](https://github.com/bgctw/bigleaf.jl/issues)
+[Please report bugs or issues here](https://github.com/bgctw/Bigleaf.jl/issues)
 
 ## Package content 
-We are porting functionality of the [R package](https://bitbucket.org/juergenknauer/bigleaf) as needed. Please
-file an [issue](https://github.com/bgctw/bigleaf.jl/issues) if you need a specific feature.
+We are porting functionality of the [R package](https://bitbucket.org/juergenknauer/Bigleaf) as needed. Please
+file an [issue](https://github.com/bgctw/Bigleaf.jl/issues) if you need a specific feature.
 
 At the current state we ported
 - Meteorological variables

@@ -1,7 +1,7 @@
-using bigleaf
+using Bigleaf
 using Test
 
-@testset "bigleaf" begin
+@testset "Bigleaf" begin
     @testset "unit_conversions" begin
         include("unit_conversions.jl")
     end

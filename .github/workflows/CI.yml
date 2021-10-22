@@ -57,6 +57,6 @@ jobs:
       - run: |
           julia --project=docs -e '
             using Documenter: DocMeta, doctest
-            using bigleaf
-            DocMeta.setdocmeta!(bigleaf, :DocTestSetup, :(using bigleaf); recursive=true)
-            doctest(bigleaf)'
+            using Bigleaf
+            DocMeta.setdocmeta!(Bigleaf, :DocTestSetup, :(using Bigleaf); recursive=true)
+            doctest(Bigleaf)'

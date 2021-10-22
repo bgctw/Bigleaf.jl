@@ -1,7 +1,11 @@
-module bigleaf
+module Bigleaf
 
 #using DocStringExtensions
 using Optim
+using StaticArrays, LabelledArrays, RecursiveArrayTools
+using DataFrames
+using Dates
+using AstroLib
 
 export bigleaf_constants
 export Esat_slope, Esat_from_Tair, Esat_from_Tair_deriv,
@@ -13,8 +17,10 @@ export air_density, pressure_from_elevation, psychrometric_constant,
     dew_point_from_e, dew_point,
     wetbulb_temp_from_e_Tair_gamma, wetbulb_temp
 
+include("util.jl")    
 include("bigleaf_constants.jl")
 include("unit_conversions.jl")
 include("meteorological_variables.jl")
+include("sun_position.jl")
 
 end
