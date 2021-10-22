@@ -12,7 +12,9 @@ Compute the Sun position at given time and observer coordinates in horizontal co
 `SLVector`: sun position with entries
 - altitude: angle above the horizon [rad].
 - azimuth: angle ange the horizon plane eastwards of north [rad]
-- hourangle: [rad] as output by AstroLib.eq2hor 
+- hourangle: [rad] as output by AstroLib.eq2hor
+   Seems to represent time [day/2pi] after solar noon. 
+   Value at local timezone noon provdes (local time - solar time).
 """
 function calc_sun_position_hor(datetime::DateTime, lat, long)
     deg2rad = π/180
