@@ -54,7 +54,7 @@
 #'             Zhou, S., et al., 2014: The effect of vapor pressure deficit on water
 #'             use efficiency at the sub-daily time scale. Geophysical Research Letters 41.
 #'     
-#' @seealso \code{\link{stomatal_slope}} for a measure of intrinsic WUE          
+#' @seealso `\link{stomatal_slope`} for a measure of intrinsic WUE          
 #'                             
 #' ```@example; output = false
 #' ``` 

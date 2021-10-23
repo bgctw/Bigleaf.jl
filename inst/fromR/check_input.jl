@@ -12,8 +12,8 @@
 #' @note This function can be run for named variables (in which case the return
 #'       value will be named according to the given name), or for placeholder
 #'       variables that are assigned and named according to e.g. entries of a character 
-#'       vector. In the latter case, the input variable has to be named as \code{"var"} or
-#'       \code{"var_qc"}.
+#'       vector. In the latter case, the input variable has to be named as `"var"` or
+#'       `"var_qc"`.
 #' 
 #' @keywords internal
 function check_input(data,...)

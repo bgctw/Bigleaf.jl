@@ -108,8 +108,8 @@ end
 #'              corresponding slope of the saturation vapor pressure curve.
 #' 
 #' - Tair      Air temperature (deg C)
-#' - formula   Formula to be used. Either \code{"Sonntag_1990"} (Default), 
-#'                  \code{"Alduchov_1996"}, or \code{"Allen_1998"}.
+#' - formula   Formula to be used. Either `"Sonntag_1990"` (Default), 
+#'                  `"Alduchov_1996"`, or `"Allen_1998"`.
 #' - constants Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
 #' 
 #' # Details
@@ -126,7 +126,7 @@ end
 #'  
 #'    \deqn{\Delta = dEsat / dTair}
 #'  
-#'  which is solved using \code{\link[stats]{D}}.
+#'  which is solved using `\link[stats]{D`}.
 #' 
 #' # Value
  A dataframe with the following columns: 
@@ -203,7 +203,7 @@ end
 #'    \deqn{\gamma = cp * pressure / (eps * \lambda)}
 #'  
 #'  where \eqn{\lambda} is the latent heat of vaporization (J kg-1), 
-#'  as calculated from \code{\link{latent_heat_vaporization}}.
+#'  as calculated from `\link{latent_heat_vaporization`}.
 #'  
 #' # Value
  \item{\eqn{\gamma} -}{the psychrometric constant (kPa K-1)}
@@ -275,11 +275,11 @@ end
 #' - gamma        Psychrometric constant (kPa K-1)
 #' - accuracy     Accuracy of the result (degC)
 #' - Esat_formula Optional: formula to be used for the calculation of esat and the slope of esat.
-#'                     One of \code{"Sonntag_1990"} (Default), \code{"Alduchov_1996"}, or \code{"Allen_1998"}.
-#'                     See \code{\link{Esat_slope}}. 
+#'                     One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
+#'                     See `\link{Esat_slope`}. 
 #' - constants    Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
 #' 
-#' @note Arguments \code{accuracy} and \code{Esat_formula} are passed to this function by wetbulb_temp().
+#' @note Arguments `accuracy` and `Esat_formula` are passed to this function by wetbulb_temp().
 #' 
 #' @importFrom stats optimize 
 #' 
@@ -302,8 +302,8 @@ end
 #' - VPD       Vapor pressure deficit (kPa)
 #' - accuracy  Accuracy of the result (deg C)
 #' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
-#'                      One of \code{"Sonntag_1990"} (Default), \code{"Alduchov_1996"}, or \code{"Allen_1998"}.
-#'                      See \code{\link{Esat_slope}}. 
+#'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
+#'                      See `\link{Esat_slope`}. 
 #' - constants cp - specific heat of air for constant pressure (J K-1 kg-1) \cr
 #'                  eps - ratio of the molecular weight of water vapor to dry air (-) \cr
 #'                  Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
@@ -313,9 +313,9 @@ end
 #'          
 #'            \deqn{e = Esat(Tw) - gamma* (Tair - Tw)}
 #'          
-#'          The equation is solved for Tw using \code{\link[stats]{optimize}}.
-#'          Actual vapor pressure e (kPa) is calculated from VPD using the function \code{\link{VPD_to_e}}.
-#'          The psychrometric constant gamma (kPa K-1) is calculated from \code{\link{psychrometric_constant}}.
+#'          The equation is solved for Tw using `\link[stats]{optimize`}.
+#'          Actual vapor pressure e (kPa) is calculated from VPD using the function `\link{VPD_to_e`}.
+#'          The psychrometric constant gamma (kPa K-1) is calculated from `\link{psychrometric_constant`}.
 #'          
 #' # Value
  \item{Tw -}{wet-bulb temperature (degC)}      
@@ -374,11 +374,11 @@ end
 #' - ea           Air vapor pressure (kPa)
 #' - accuracy     Accuracy of the result (degC)
 #' - Esat_formula Optional: formula to be used for the calculation of esat and the slope of esat.
-#'                     One of \code{"Sonntag_1990"} (Default), \code{"Alduchov_1996"}, or \code{"Allen_1998"}.
-#'                     See \code{\link{Esat_slope}}. 
+#'                     One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
+#'                     See `\link{Esat_slope`}. 
 #' - constants    Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
 #' 
-#' @note Arguments \code{accuracy} and \code{Esat_formula} are passed to this function by dew_point().
+#' @note Arguments `accuracy` and `Esat_formula` are passed to this function by dew_point().
 #' 
 #' @importFrom stats optimize 
 #' 
@@ -401,8 +401,8 @@ end
 #' - VPD      Vapor pressure deficit (kPa)
 #' - accuracy Accuracy of the result (deg C)
 #' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
-#'                      One of \code{"Sonntag_1990"} (Default), \code{"Alduchov_1996"}, or \code{"Allen_1998"}.
-#'                      See \code{\link{Esat_slope}}. 
+#'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
+#'                      See `\link{Esat_slope`}. 
 #' - constants Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
 #' 
 #' # Details
@@ -411,7 +411,7 @@ end
 #'           \deqn{e = Esat(Td)}
 #'    
 #'          where e is vapor pressure of the air and Esat is the vapor pressure deficit.
-#'          This equation is solved for Td using \code{\link[stats]{optimize}}.
+#'          This equation is solved for Td using `\link[stats]{optimize`}.
 #'          
 #' # Value
  \item{Td -}{dew point temperature (degC)}
@@ -463,8 +463,8 @@ end
 #' - pressure  Atmospheric pressure (kPa)
 #' - VPD       Vapor pressure deficit (kPa)
 #' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat. 
-#'                      One of \code{"Sonntag_1990"} (Default), \code{"Alduchov_1996"}, or \code{"Allen_1998"}.
-#'                      See \code{\link{Esat_slope}}. 
+#'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
+#'                      See `\link{Esat_slope`}. 
 #' - constants Kelvin - conversion degree Celsius to Kelvin \cr
 #'                  eps - ratio of the molecular weight of water vapor to dry air (-) 
 #' 
@@ -474,7 +474,7 @@ end
 #'    \deqn{Tv = Tair / (1 - (1 - eps) e/pressure)}
 #' 
 #'  where Tair is in Kelvin (converted internally). Likewise, VPD is converted 
-#'  to actual vapor pressure (e in kPa) with \code{\link{VPD_to_e}} internally.
+#'  to actual vapor pressure (e in kPa) with `\link{VPD_to_e`} internally.
 #' 
 #' # Value
  \item{Tv -}{virtual temperature (deg C)}

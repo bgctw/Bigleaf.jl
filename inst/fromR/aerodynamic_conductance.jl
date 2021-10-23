@@ -16,27 +16,27 @@
 #' - zr                Instrument (reference) height (m)
 #' - zh                Canopy height (m)
 #' - d                 Zero-plane displacement height (m)
-#' - z0m               Roughness length for momentum (m), optional; if not provided, it is estimated from \code{roughness_parameters}
-#'                          (method="wind_profile"). Only used if \code{wind_profile = TRUE} and/or \code{Rb_model} = \code{"Su_2001"} or
-#'                          \code{"Choudhury_1988"}.
-#' - Dl                Characteristic leaf dimension (m) (if \code{Rb_model} = \code{"Su_2001"}) 
-#'                          or leaf width (if \code{Rb_model} = \code{"Choudhury_1988"}); ignored otherwise.
-#' - N                 Number of leaf sides participating in heat exchange (1 or 2); only used if \code{Rb_model = "Su_2001"}.
+#' - z0m               Roughness length for momentum (m), optional; if not provided, it is estimated from `roughness_parameters`
+#'                          (method="wind_profile"). Only used if `wind_profile = TRUE` and/or `Rb_model` = `"Su_2001"` or
+#'                          `"Choudhury_1988"`.
+#' - Dl                Characteristic leaf dimension (m) (if `Rb_model` = `"Su_2001"`) 
+#'                          or leaf width (if `Rb_model` = `"Choudhury_1988"`); ignored otherwise.
+#' - N                 Number of leaf sides participating in heat exchange (1 or 2); only used if `Rb_model = "Su_2001"`.
 #'                          Defaults to 2.
-#' - fc                Fractional vegetation cover (-); only used if \code{Rb_model = "Su_2001"}. See Details.
-#' - LAI               One-sided leaf area index (m2 m-2); only used if \code{Rb_model} = \code{"Choudhury_1988"} or \code{"Su_2001"}.
-#' - Cd                Foliage drag coefficient (-); only used if \code{Rb_model = "Su_2001"}. 
-#' - hs                Roughness length of bare soil (m); only used if \code{Rb_model = "Su_2001"}.
+#' - fc                Fractional vegetation cover (-); only used if `Rb_model = "Su_2001"`. See Details.
+#' - LAI               One-sided leaf area index (m2 m-2); only used if `Rb_model` = `"Choudhury_1988"` or `"Su_2001"`.
+#' - Cd                Foliage drag coefficient (-); only used if `Rb_model = "Su_2001"`. 
+#' - hs                Roughness length of bare soil (m); only used if `Rb_model = "Su_2001"`.
 #' - wind_profile      Should Ga for momentum be calculated based on the logarithmic wind profile equation? 
-#'                          Defaults to \code{FALSE}.
-#' - stab_correction   Should stability correction be applied? Defaults to \code{TRUE}. Ignored if \code{wind_profile = FALSE}.                         
-#' - stab_formulation  Stability correction function. Either \code{"Dyer_1970"} (default) or
-#'                          \code{"Businger_1971"}. Ignored if \code{wind_profile = FALSE} or if \code{stab_correction = FALSE}.
-#' - Rb_model          Boundary layer resistance formulation. One of \code{"Thom_1972","Choudhury_1988","Su_2001","constant_kB-1"}.
-#' - kB_h              kB-1 value for heat transfer; only used if \code{Rb_model = "constant_kB-1"}
+#'                          Defaults to `FALSE`.
+#' - stab_correction   Should stability correction be applied? Defaults to `TRUE`. Ignored if `wind_profile = FALSE`.                         
+#' - stab_formulation  Stability correction function. Either `"Dyer_1970"` (default) or
+#'                          `"Businger_1971"`. Ignored if `wind_profile = FALSE` or if `stab_correction = FALSE`.
+#' - Rb_model          Boundary layer resistance formulation. One of `"Thom_1972","Choudhury_1988","Su_2001","constant_kB-1"`.
+#' - kB_h              kB-1 value for heat transfer; only used if `Rb_model = "constant_kB-1"`
 #' - Sc                Optional: Schmidt number of additional quantities to be calculated
 #' - Sc_name           Optional: Name of the additonal quantities, has to be of same length than 
-#'                          \code{Sc_name}
+#'                          `Sc_name`
 #' - constants         k - von Karman constant \cr
 #'                          cp - specific heat of air for constant pressure (J K-1 kg-1) \cr
 #'                          Kelvin - conversion degree Celsius to Kelvin \cr
@@ -44,7 +44,7 @@
 #'                          pressure0 - reference atmospheric pressure at sea level (Pa) \cr
 #'                          Tair0 - reference air temperature (K) \cr
 #'                          Sc_CO2 - Schmidt number for CO2 \cr 
-#'                          Pr - Prandtl number (if \code{Sc} is provided)
+#'                          Pr - Prandtl number (if `Sc` is provided)
 #'
 #' # Details
 
@@ -64,44 +64,44 @@
 #'  additional stability correction function. 
 #'  
 #'  An alternative method to calculate Ra_m is provided
-#'  (calculated if \code{wind_profile = TRUE}):
+#'  (calculated if `wind_profile = TRUE`):
 #'  
 #'     \deqn{Ra_m = (ln((zr - d)/z0m) - psi_h) / (k ustar)}
 #'  
 #'  If the roughness parameters z0m and d are unknown, they can be estimated using
-#'  \code{\link{roughness_parameters}}. The argument \code{stab_formulation} determines the stability correction function used 
+#'  `\link{roughness_parameters`}. The argument `stab_formulation` determines the stability correction function used 
 #'  to account for the effect of atmospheric stability on Ra_m (Ra_m is lower for unstable
 #'  and higher for stable stratification). Stratification is based on a stability parameter zeta (z-d/L),
 #'  where z = reference height, d the zero-plane displacement height, and L the Monin-Obukhov length, 
-#'  calculated with \code{\link{Monin_Obukhov_length}}
-#'  The stability correction function is chosen by the argument \code{stab_formulation}. Options are 
-#'  \code{"Dyer_1970"} and \code{"Businger_1971"}.
+#'  calculated with `\link{Monin_Obukhov_length`}
+#'  The stability correction function is chosen by the argument `stab_formulation`. Options are 
+#'  `"Dyer_1970"` and `"Businger_1971"`.
 #'  
 #'  The model used to determine the canopy boundary layer resistance for heat (Rb_h) is specified by 
-#'  the argument \code{Rb_model}. The following options are implemented:
-#'  \code{"Thom_1972"} is an empirical formulation based on the friction velocity (ustar) (Thom 1972):
+#'  the argument `Rb_model`. The following options are implemented:
+#'  `"Thom_1972"` is an empirical formulation based on the friction velocity (ustar) (Thom 1972):
 #'  
 #'    \deqn{Rb_h = 6.2ustar^-0.667}
 #'    
-#'  The model by Choudhury & Monteith 1988 (\code{Rb_model = "Choudhury_1988"}),
-#'  calculates Rb_h based on leaf width, LAI and ustar (Note that function argument \code{Dl}
+#'  The model by Choudhury & Monteith 1988 (`Rb_model = "Choudhury_1988"`),
+#'  calculates Rb_h based on leaf width, LAI and ustar (Note that function argument `Dl`
 #'  represents leaf width (w) and not characteristic leaf dimension (Dl)
-#'  if \code{Rb_model} = \code{"Choudhury_1988"}):
+#'  if `Rb_model` = `"Choudhury_1988"`):
 #'   
 #'     \deqn{Gb_h = LAI((0.02/\alpha)*sqrt(u(zh)/w)*(1-exp(-\alpha/2)))}
 #'     
 #'  where \eqn{\alpha} is a canopy attenuation coefficient modeled in dependence on LAI,
-#'  u(zh) is wind speed at canopy height (calculated from \code{\link{wind_profile}}),
-#'  and w is leaf width (m). See \code{\link{Gb_Choudhury}} for further details.
+#'  u(zh) is wind speed at canopy height (calculated from `\link{wind_profile`}),
+#'  and w is leaf width (m). See `\link{Gb_Choudhury`} for further details.
 #'     
-#'  The option \code{Rb_model = "Su_2001"} calculates Rb_h based on the physically-based Rb model by Su et al. 2001,
+#'  The option `Rb_model = "Su_2001"` calculates Rb_h based on the physically-based Rb model by Su et al. 2001,
 #'  a simplification of the model developed by Massman 1999:
 #'  
 #'     \deqn{kB-1 = (k Cd fc^2) / (4Ct ustar/u(zh)) + kBs-1(1 - fc)^2}
 #'     
 #'  where Cd is a foliage drag coefficient (defaults to 0.2), fc is fractional
 #'  vegetation cover, Bs-1 is the inverse Stanton number for bare soil surface,
-#'  and Ct is a heat transfer coefficient. See \code{\link{Gb_Su}} for 
+#'  and Ct is a heat transfer coefficient. See `\link{Gb_Su`} for 
 #'  details on the model.
 #'     
 #'  
@@ -125,15 +125,15 @@
 #'         \item{Gb_h}{Canopy boundary layer conductance for heat transfer (m s-1)}
 #'         \item{Rb_h}{Canopy boundary layer resistance for heat transfer (s m-1)}
 #'         \item{kB_h}{kB-1 parameter for heat transfer}
-#'         \item{zeta}{Stability parameter 'zeta' (NA if \code{wind_profile = FALSE})}
-#'         \item{psi_h}{Integrated stability correction function (NA if \code{wind_profile = FALSE})}
+#'         \item{zeta}{Stability parameter 'zeta' (NA if `wind_profile = FALSE`)}
+#'         \item{psi_h}{Integrated stability correction function (NA if `wind_profile = FALSE`)}
 #'         \item{Ra_CO2}{Aerodynamic resistance for CO2 transfer (s m-1)}
 #'         \item{Ga_CO2}{Aerodynamic conductance for CO2 transfer (m s-1)}
 #'         \item{Gb_CO2}{Canopy boundary layer conductance for CO2 transfer (m s-1)}
-#'         \item{Ga_Sc_name}{Aerodynamic conductance for \code{Sc_name} (m s-1). Only added if \code{Sc_name} and 
-#'                           the respective \code{Sc} are provided}
-#'         \item{Gb_Sc_name}{Boundary layer conductance for \code{Sc_name} (m s-1). Only added if \code{Sc_name} and 
-#'                           the respective \code{Sc} are provided}
+#'         \item{Ga_Sc_name}{Aerodynamic conductance for `Sc_name` (m s-1). Only added if `Sc_name` and 
+#'                           the respective `Sc` are provided}
+#'         \item{Gb_Sc_name}{Boundary layer conductance for `Sc_name` (m s-1). Only added if `Sc_name` and 
+#'                           the respective `Sc` are provided}
 #'        
 #' @note The roughness length for water and heat (z0h) is not returned by this function, but 
 #'       it can be calculated from the following relationship (e.g. Verma 1989):
@@ -144,20 +144,20 @@
 #'       
 #'       \deqn{z0h = z0m / exp(kB-1)}
 #'       
-#'       \code{kB-1} is an output of this function.
+#'       `kB-1` is an output of this function.
 #'       
 #'       Input variables such as LAI, Dl, or zh can be either constants, or
-#'       vary with time (i.e. vectors of the same length as \code{data}).
+#'       vary with time (i.e. vectors of the same length as `data`).
 #'       
 #'       Note that boundary layer conductance to water vapor transfer (Gb_w) is often 
 #'       assumed to equal Gb_h. This assumption is also made in this R package, for 
-#'       example in the function \code{\link{surface_conductance}}.
+#'       example in the function `\link{surface_conductance`}.
 #'       
-#'       If the roughness length for momentum (\code{z0m}) is not provided as input, it is estimated 
-#'       from the function \code{roughness_parameters} within \code{wind_profile} if \code{wind_profile = TRUE} 
-#'       and/or \code{Rb_model} = \code{"Su_2001"} or \code{"Choudhury_1988"} The \code{roughness_parameters}
-#'       function estimates a single \code{z0m} value for the entire time period! If a varying \code{z0m} value 
-#'       (e.g. across seasons or years) is required, \code{z0m} should be provided as input argument.
+#'       If the roughness length for momentum (`z0m`) is not provided as input, it is estimated 
+#'       from the function `roughness_parameters` within `wind_profile` if `wind_profile = TRUE` 
+#'       and/or `Rb_model` = `"Su_2001"` or `"Choudhury_1988"` The `roughness_parameters`
+#'       function estimates a single `z0m` value for the entire time period! If a varying `z0m` value 
+#'       (e.g. across seasons or years) is required, `z0m` should be provided as input argument.
 #'       
 #'         
 #' @references Verma, S., 1989: Aerodynamic resistances to transfers of heat, mass and momentum.
@@ -173,7 +173,7 @@
 #'             Monteith, J_L., Unsworth, M_H., 2008: Principles of environmental physics.
 #'             Third Edition. Elsevier Academic Press, Burlington, USA. 
 #' 
-#' @seealso \code{\link{Gb_Thom}}, \code{\link{Gb_Choudhury}}, \code{\link{Gb_Su}} for calculations of Rb / Gb only
+#' @seealso `\link{Gb_Thom`}, `\link{Gb_Choudhury`}, `\link{Gb_Su`} for calculations of Rb / Gb only
 #' 
 #' ```@example; output = false
 #' ``` 

@@ -15,13 +15,13 @@
 #' - LE               Latent heat flux (W m-2)
 #' - VPD              Vapor pressure deficit (kPa)
 #' - Ga               Aerodynamic conductance for heat/water vapor (m s-1)
-#' - calc_surface_CO2 Calculate surface CO2 concentration? Defaults to \code{FALSE}.
-#' - Ca               Atmospheric CO2 concentration (mol mol-1). Required if \code{calc_surface_CO2 = TRUE}.
-#' - NEE              Net ecosystem exchange (umol m-2 s-1). Required if \code{calc_surface_CO2 = TRUE}.
-#' - Ga_CO2           Aerodynamic conductance for CO2 (m s-1). Required if \code{calc_surface_CO2 = TRUE}.
+#' - calc_surface_CO2 Calculate surface CO2 concentration? Defaults to `FALSE`.
+#' - Ca               Atmospheric CO2 concentration (mol mol-1). Required if `calc_surface_CO2 = TRUE`.
+#' - NEE              Net ecosystem exchange (umol m-2 s-1). Required if `calc_surface_CO2 = TRUE`.
+#' - Ga_CO2           Aerodynamic conductance for CO2 (m s-1). Required if `calc_surface_CO2 = TRUE`.
 #' - Esat_formula     Optional: formula to be used for the calculation of esat and the slope of esat.
-#'                         One of \code{"Sonntag_1990"} (Default), \code{"Alduchov_1996"}, or \code{"Allen_1998"}.
-#'                         See \code{\link{Esat_slope}}.           
+#'                         One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
+#'                         See `\link{Esat_slope`}.           
 #' - constants        cp - specific heat of air for constant pressure (J K-1 kg-1) \cr 
 #'                         eps - ratio of the molecular weight of water vapor to dry air (-) \cr
 #'                         Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
@@ -51,14 +51,14 @@
 #'          Note that Ga is assumed to be equal for water vapor and sensible heat.
 #'          Ga is further assumed to be the inverse of the sum of the turbulent part
 #'          and the canopy boundary layer conductance (1/Ga = 1/Ga_m + 1/Gb; 
-#'          see \code{\link{aerodynamic_conductance}}). Ga_CO2, the aerodynamic conductance
-#'          for CO2 is also calculated by \code{\link{aerodynamic_conductance}}.
+#'          see `\link{aerodynamic_conductance`}). Ga_CO2, the aerodynamic conductance
+#'          for CO2 is also calculated by `\link{aerodynamic_conductance`}.
 #'          If Ga is replaced by Ga_m (i.e. only the turbulent conductance part), 
 #'          the results of the functions represent conditions outside the canopy
 #'          boundary layer, i.e. in the canopy airspace.
 #' 
 #' @note The following sign convention for NEE is employed (relevant if 
-#'       \code{calc_surface_CO2 = TRUE}): 
+#'       `calc_surface_CO2 = TRUE`): 
 #'       negative values of NEE denote net CO2 uptake by the ecosystem.
 #' 
 #' # Value

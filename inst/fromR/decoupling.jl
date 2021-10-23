@@ -11,12 +11,12 @@
 #' - pressure    Atmospheric pressure (kPa)
 #' - Ga          Aerodynamic conductance to heat/water vapor (m s-1)
 #' - Gs          Surface conductance (m s-1)
-#' - approach    Approach used to calculate omega. Either \code{"Jarvis&McNaughton_1986"} (default)
-#'                    or \code{"Martin_1989"}.
-#' - LAI         Leaf area index (m2 m-2), only used if \code{approach = "Martin_1989"}.
+#' - approach    Approach used to calculate omega. Either `"Jarvis&McNaughton_1986"` (default)
+#'                    or `"Martin_1989"`.
+#' - LAI         Leaf area index (m2 m-2), only used if `approach = "Martin_1989"`.
 #' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
-#'                      One of \code{"Sonntag_1990"} (Default), \code{"Alduchov_1996"}, or \code{"Allen_1998"}.
-#'                      See \code{\link{Esat_slope}}. 
+#'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
+#'                      See `\link{Esat_slope`}. 
 #' - constants   Kelvin - conversion degree Celsius to Kelvin \cr
 #'                    cp - specific heat of air for constant pressure (J K-1 kg-1) \cr
 #'                    eps - ratio of the molecular weight of water vapor to dry air (-) \cr
@@ -31,7 +31,7 @@
 #'          and similar conditions at the canopy surface compared to the atmosphere above
 #'          the canopy. Values close to 1 indicate the opposite, i.e. decoupled conditions and 
 #'          a low stomatal control on transpiration (Jarvis & McNaughton 1986). \cr
-#'          The \code{"Jarvis&McNaughton_1986"} approach (default option) is the original
+#'          The `"Jarvis&McNaughton_1986"` approach (default option) is the original
 #'          formulation for the decoupling coefficient, given by (for an amphistomatous 
 #'          canopy):
 #'          
@@ -42,7 +42,7 @@
 #'          with s being the slope of the saturation vapor pressure curve (Pa K-1), and \eqn{\gamma} the 
 #'          psychrometric constant (Pa K-1).
 #'          
-#'          The approach \code{"Martin_1989"} by Martin 1989 additionally takes radiative coupling
+#'          The approach `"Martin_1989"` by Martin 1989 additionally takes radiative coupling
 #'          into account:
 #'          
 #'          \deqn{\Omega = \frac{\epsilon + 1 + \frac{Gr}{Ga}}{\epsilon + (1 + \frac{Ga}{Gs}) (1 + \frac{Gr}{Ga})}}{%
@@ -57,8 +57,8 @@
 #'             Martin P., 1989: The significance of radiative coupling between
 #'             vegetation and the atmosphere. Agricultural and Forest Meteorology 49, 45-53.
 #' 
-#' @seealso \code{\link{aerodynamic_conductance}}, \code{\link{surface_conductance}},
-#'          \code{\link{equilibrium_imposed_ET}}
+#' @seealso `\link{aerodynamic_conductance`}, `\link{surface_conductance`},
+#'          `\link{equilibrium_imposed_ET`}
 #' 
 #' ```@example; output = false
 #' ``` 

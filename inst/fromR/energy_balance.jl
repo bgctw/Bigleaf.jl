@@ -64,7 +64,7 @@ end
 #' # Value
  \item{EUE -}{Energy use efficiency (-)}
 #' 
-#' @seealso \code{\link{light_use_efficiency}}
+#' @seealso `\link{light_use_efficiency`}
 #' 
 #' ```@example; output = false
 #' ```
@@ -101,10 +101,10 @@ end
 #' - LE    Latent heat flux (W m-2)
 #' - H     Sensible heat flux (W m-2)
 #' - instantaneous    should the energy balance be calculated at the time step 
-#'                         of the observations (\code{TRUE}), or over the entire time period
-#'                         provided as input (\code{FALSE})
-#' - missing_G_as_NA  if \code{TRUE}, missing G are treated as \code{NA}s ,otherwise set to 0. 
-#' - missing_S_as_NA  if \code{TRUE}, missing S are treated as \code{NA}s, otherwise set to 0.
+#'                         of the observations (`TRUE`), or over the entire time period
+#'                         provided as input (`FALSE`)
+#' - missing_G_as_NA  if `TRUE`, missing G are treated as `NA`s ,otherwise set to 0. 
+#' - missing_S_as_NA  if `TRUE`, missing S are treated as `NA`s, otherwise set to 0.
 #' 
 #' 
 #' # Details
@@ -123,7 +123,7 @@ end
 #'         \item{r_squared}{r^2 of the OLS regression}
 #'         \item{EBR}{energy balance ratio}
 #'         
-#'         if \code{instantaneous = TRUE}, only \code{EBR} is returned.
+#'         if `instantaneous = TRUE`, only `EBR` is returned.
 #' 
 #' @references Wilson K., et al. 2002: Energy balance closure at FLUXNET sites.
 #'             Agricultural and Forest Meteorology 113, 223-243.

@@ -42,14 +42,14 @@ end
 #'
 #' Compute potential radiation for given geolocation and day of year.
 #'
-#' - doy          Integer vector with day of year (start at 1), same length as \code{hour} or length 1.
+#' - doy          Integer vector with day of year (start at 1), same length as `hour` or length 1.
 #' - hour         Numeric vector with daytime as decimal hour of local time zone
 #' - latDeg       Latitude (decimal degrees)
 #' - longDeg      Longitude (decimal degrees)
 #' - timezone     Time zone (hours)
 #' - useSolartime by default corrects hour (given in local winter time)
 #'                     for latitude to solar time (where noon is exactly at 12:00).
-#'                     Set this to \code{FALSE} to directly use local winter time.
+#'                     Set this to `FALSE` to directly use local winter time.
 #'
 #' # Value
  vector of potential radiation (W m-2)

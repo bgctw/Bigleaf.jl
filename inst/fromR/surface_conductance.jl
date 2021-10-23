@@ -16,16 +16,16 @@
 #' - LE        Latent heat flux (W m-2)
 #' - VPD       Vapor pressure deficit (kPa)
 #' - Ga        Aerodynamic conductance to heat/water vapor (m s-1)
-#' - missing_G_as_NA  if \code{TRUE}, missing G are treated as \code{NA}s, otherwise they are set to 0.
-#'                         Only used if \code{formulation = "Penman-Monteith"}.
-#' - missing_S_as_NA  if \code{TRUE}, missing S are treated as \code{NA}s, otherwise they are set to 0. 
-#'                          Only used if \code{formulation = "Penman-Monteith"}.
-#' - formulation Formulation used. Either \code{"Penman-Monteith"} (the default) 
-#'                    using the inverted Penman-Monteith equation, or \code{"Flux-Gradient"},
+#' - missing_G_as_NA  if `TRUE`, missing G are treated as `NA`s, otherwise they are set to 0.
+#'                         Only used if `formulation = "Penman-Monteith"`.
+#' - missing_S_as_NA  if `TRUE`, missing S are treated as `NA`s, otherwise they are set to 0. 
+#'                          Only used if `formulation = "Penman-Monteith"`.
+#' - formulation Formulation used. Either `"Penman-Monteith"` (the default) 
+#'                    using the inverted Penman-Monteith equation, or `"Flux-Gradient"`,
 #'                    for a simple flux-gradient approach requiring ET, pressure, and VPD only.
 #' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
-#'                      One of \code{"Sonntag_1990"} (Default), \code{"Alduchov_1996"}, or \code{"Allen_1998"}. 
-#'                      Only used if \code{formulation = "Penman-Monteith"}. See \code{\link{Esat_slope}}.
+#'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`. 
+#'                      Only used if `formulation = "Penman-Monteith"`. See `\link{Esat_slope`}.
 #' - constants   cp - specific heat of air for constant pressure (J K-1 kg-1) \cr
 #'                    eps - ratio of the molecular weight of water vapor to dry air (-) \cr
 #'                    Rd - gas constant of dry air (J kg-1 K-1) \cr
@@ -36,7 +36,7 @@
 #' 
 #' 
 #' # Details
- If \code{formulation = "Penman-Monteith"} (the default), surface conductance (Gs) in m s-1 
+ If `formulation = "Penman-Monteith"` (the default), surface conductance (Gs) in m s-1 
 #'          is calculated from the inverted Penman-Monteith equation:
 #' 
 #'     \deqn{Gs = ( LE * Ga * \gamma ) / ( \Delta * A + \rho * cp * Ga * VPD - LE * ( \Delta + \gamma ) )}
@@ -45,10 +45,10 @@
 #'  saturation vapor pressure curve (kPa K-1), and \eqn{\rho} is air density (kg m-3).
 #'  Available energy (A) is defined as A = Rn - G - S. If G and/or S are not provided, A = Rn.
 #'  
-#'  By default, any missing data in G and S are set to 0. If \code{missing_S_as_NA = TRUE}
-#'  or \code{missing_S_as_NA = TRUE}, Gs will give \code{NA} for these timesteps.
+#'  By default, any missing data in G and S are set to 0. If `missing_S_as_NA = TRUE`
+#'  or `missing_S_as_NA = TRUE`, Gs will give `NA` for these timesteps.
 #'  
-#'  If \code{formulation="Flux-Gradient"}, Gs (in mol m-2 s-1) is calculated from VPD and ET only:
+#'  If `formulation="Flux-Gradient"`, Gs (in mol m-2 s-1) is calculated from VPD and ET only:
 #'  
 #'     \deqn{Gs = ET/pressure * VPD}
 #'  
@@ -60,8 +60,8 @@
 #'  which gives Gs in m s-1. Note that Gs > Gc (canopy conductance) under conditions 
 #'  when a significant fraction of ET comes from interception or soil evaporation. 
 #'  
-#'  If \code{pressure} is not available, it can be approximated by elevation using the 
-#'  function \code{\link{pressure_from_elevation}}
+#'  If `pressure` is not available, it can be approximated by elevation using the 
+#'  function `\link{pressure_from_elevation`}
 #'  
 #' # Value
  a dataframe with the following columns: 

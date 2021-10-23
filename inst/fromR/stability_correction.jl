@@ -32,7 +32,7 @@
 #' 
 #' @references Foken, T, 2008: Micrometeorology. Springer, Berlin, Germany. 
 #' 
-#' @seealso \code{\link{stability_parameter}}
+#' @seealso `\link{stability_parameter`}
 #' 
 #' ```@example; output = false
 #' ``` 
@@ -77,8 +77,8 @@ end
 #'            \deqn{\zeta = (zr - d) / L}
 #'          
 #'          where L is the Monin-Obukhov length (m), calculated from the function
-#'          \code{\link{Monin_Obukhov_length}}. The displacement height d can 
-#'          be estimated from the function \code{\link{roughness_parameters}}.
+#'          `\link{Monin_Obukhov_length`}. The displacement height d can 
+#'          be estimated from the function `\link{roughness_parameters`}.
 #'          
 #' # Value
  \item{\eqn{\zeta} - }{stability parameter (-)}
@@ -109,13 +109,13 @@ end
 #'              from the exponential wind profile under non-neutral conditions.
 #'              
 #' - zeta         Stability parameter zeta (-)
-#' - formulation  Formulation for the stability function. Either \code{"Dyer_1970"}, 
-#'                     or \code{"Businger_1971"}
+#' - formulation  Formulation for the stability function. Either `"Dyer_1970"`, 
+#'                     or `"Businger_1971"`
 #'
 #' # Details
  The functions give the integrated form of the universal functions. They
 #'          depend on the value of the stability parameter \eqn{\zeta},
-#'          which can be calculated from the function \code{\link{stability_parameter}}.
+#'          which can be calculated from the function `\link{stability_parameter`}.
 #'          The integration of the universal functions is:
 #'          
 #'            \deqn{\psi = -x * zeta} 

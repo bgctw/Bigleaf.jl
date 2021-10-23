@@ -13,41 +13,41 @@
 #' - Rn        Net radiation (W m-2)
 #' - G         Ground heat flux (W m-2); optional
 #' - S         Sum of all storage fluxes (W m-2); optional
-#' - VPD       Vapor pressure deficit (kPa); only used if \code{approach = "Penman-Monteith"}.
-#' - Ga        Aerodynamic conductance to heat/water vapor (m s-1); only used if \code{approach = "Penman-Monteith"}.
-#' - approach  Approach used. Either \code{"Priestley-Taylor"} (default), or \code{"Penman-Monteith"}.
-#' - alpha     Priestley-Taylor coefficient; only used if \code{approach = "Priestley-Taylor"}.
+#' - VPD       Vapor pressure deficit (kPa); only used if `approach = "Penman-Monteith"`.
+#' - Ga        Aerodynamic conductance to heat/water vapor (m s-1); only used if `approach = "Penman-Monteith"`.
+#' - approach  Approach used. Either `"Priestley-Taylor"` (default), or `"Penman-Monteith"`.
+#' - alpha     Priestley-Taylor coefficient; only used if `approach = "Priestley-Taylor"`.
 #' - Gs_pot    Potential/maximum surface conductance (mol m-2 s-1); defaults to 0.6 mol m-2 s-1;
-#'                  only used if \code{approach = "Penman-Monteith"}.
-#' - missing_G_as_NA  if \code{TRUE}, missing G are treated as \code{NA}s, otherwise set to 0. 
-#' - missing_S_as_NA  if \code{TRUE}, missing S are treated as \code{NA}s, otherwise set to 0. 
+#'                  only used if `approach = "Penman-Monteith"`.
+#' - missing_G_as_NA  if `TRUE`, missing G are treated as `NA`s, otherwise set to 0. 
+#' - missing_S_as_NA  if `TRUE`, missing S are treated as `NA`s, otherwise set to 0. 
 #' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
-#'                      One of \code{"Sonntag_1990"} (Default), \code{"Alduchov_1996"}, or \code{"Allen_1998"}.
-#'                      See \code{\link{Esat_slope}}. 
+#'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
+#'                      See `\link{Esat_slope`}. 
 #' - constants cp - specific heat of air for constant pressure (J K-1 kg-1) \cr
 #'                  eps - ratio of the molecular weight of water vapor to dry air \cr
 #'                  Pa2kPa - conversion pascal (Pa) to kilopascal (kPa) \cr
-#'                  Rd - gas constant of dry air (J kg-1 K-1) (only used if \code{approach = "Penman-Monteith"}) \cr
-#'                  Rgas - universal gas constant (J mol-1 K-1) (only used if \code{approach = "Penman-Monteith"}) \cr
-#'                  Kelvin - conversion degree Celsius to Kelvin (only used if \code{approach = "Penman-Monteith"}) \cr
+#'                  Rd - gas constant of dry air (J kg-1 K-1) (only used if `approach = "Penman-Monteith"`) \cr
+#'                  Rgas - universal gas constant (J mol-1 K-1) (only used if `approach = "Penman-Monteith"`) \cr
+#'                  Kelvin - conversion degree Celsius to Kelvin (only used if `approach = "Penman-Monteith"`) \cr
 #' 
 #' # Details
  Potential evapotranspiration is calculated according to Priestley & Taylor, 1972
-#'          if \code{approach = "Priestley-Taylor"} (the default):
+#'          if `approach = "Priestley-Taylor"` (the default):
 #' 
 #'            \deqn{LE_pot,PT = (\alpha * \Delta * (Rn - G - S)) / (\Delta + \gamma)}
 #'
 #'          \eqn{\alpha} is the Priestley-Taylor coefficient, \eqn{\Delta} is the slope 
 #'          of the saturation vapor pressure curve (kPa K-1), and \eqn{\gamma} is the 
 #'          psychrometric constant (kPa K-1).
-#'          if \code{approach = "Penman-Monteith"}, potential evapotranspiration is calculated according
+#'          if `approach = "Penman-Monteith"`, potential evapotranspiration is calculated according
 #'          to the Penman-Monteith equation:
 #' 
 #'          \deqn{LE_pot,PM = (\Delta * (Rn - G - S) + \rho * cp * VPD * Ga) / (\Delta + \gamma * (1 + Ga/Gs_pot)}
 #'          
 #'          where \eqn{\Delta} is the slope of the saturation vapor pressure curve (kPa K-1),
 #'          \eqn{\rho} is the air density (kg m-3), and \eqn{\gamma} is the psychrometric constant (kPa K-1).
-#'          The value of \code{Gs_pot} is typically a maximum value of Gs observed at the site, e.g. the 90th
+#'          The value of `Gs_pot` is typically a maximum value of Gs observed at the site, e.g. the 90th
 #'          percentile of Gs within the growing season.
 #'          
 #' # Value
@@ -55,10 +55,10 @@
 #'         \item{ET_pot}{Potential evapotranspiration (kg m-2 s-1)}
 #'         \item{LE_pot}{Potential latent heat flux (W m-2)}
 #'         
-#' @note If the first argument \code{data} is provided (either a matrix or a DataFrame),
+#' @note If the first argument `data` is provided (either a matrix or a DataFrame),
 #'       the following variables can be provided as character (in which case they are interpreted as
-#'       the column name of \code{data}) or as numeric vectors, in which case they are taken
-#'       directly for the calculations. If \code{data} is not provided, all input variables have to be
+#'       the column name of `data`) or as numeric vectors, in which case they are taken
+#'       directly for the calculations. If `data` is not provided, all input variables have to be
 #'       numeric vectors.        
 #'   
 #' @references Priestley, C_H_B., Taylor, R_J., 1972: On the assessment of surface heat flux
@@ -71,7 +71,7 @@
 #'             Novick, K_A., et al. 2016: The increasing importance of atmospheric demand
 #'             for ecosystem water and carbon fluxes. Nature Climate Change 6, 1023 - 1027.
 #'             
-#' @seealso \code{\link{surface_conductance}}
+#' @seealso `\link{surface_conductance`}
 #'                                
 #' ```@example; output = false
 #' ``` 
@@ -160,16 +160,16 @@ end
 #' - Rn        Net radiation (W m-2)
 #' - G         Ground heat flux (W m-2); optional
 #' - S         Sum of all storage fluxes (W m-2); optional
-#' - missing_G_as_NA  if \code{TRUE}, missing G are treated as \code{NA}s, otherwise set to 0. 
-#' - missing_S_as_NA  if \code{TRUE}, missing S are treated as \code{NA}s, otherwise set to 0. 
+#' - missing_G_as_NA  if `TRUE`, missing G are treated as `NA`s, otherwise set to 0. 
+#' - missing_S_as_NA  if `TRUE`, missing S are treated as `NA`s, otherwise set to 0. 
 #' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
-#'                      One of \code{"Sonntag_1990"} (Default), \code{"Alduchov_1996"}, or \code{"Allen_1998"}.
-#'                      See \code{\link{Esat_slope}}. 
+#'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
+#'                      See `\link{Esat_slope`}. 
 #' - constants cp - specific heat of air for constant pressure (J K-1 kg-1) \cr
 #'                  eps - ratio of the molecular weight of water vapor to dry air \cr
-#'                  Rd - gas constant of dry air (J kg-1 K-1) (only if \code{approach = "Penman-Monteith"}) \cr
-#'                  Rgas - universal gas constant (J mol-1 K-1) (only if \code{approach = "Penman-Monteith"}) \cr
-#'                  Kelvin - conversion degree Celsius to Kelvin (only if \code{approach = "Penman-Monteith"}) \cr
+#'                  Rd - gas constant of dry air (J kg-1 K-1) (only if `approach = "Penman-Monteith"`) \cr
+#'                  Rgas - universal gas constant (J mol-1 K-1) (only if `approach = "Penman-Monteith"`) \cr
+#'                  Kelvin - conversion degree Celsius to Kelvin (only if `approach = "Penman-Monteith"`) \cr
 #' 
 #' @export                            
 function reference_ET(data,Gs_ref=0.0143,Tair="Tair",pressure="pressure",VPD="VPD",Rn="Rn",Ga="Ga_h",
@@ -197,11 +197,11 @@ end
 #' - Rn        Net radiation (W m-2)
 #' - G         Ground heat flux (W m-2); optional
 #' - S         Sum of all storage fluxes (W m-2); optional
-#' - missing_G_as_NA  if \code{TRUE}, missing G are treated as \code{NA}s, otherwise set to 0. 
-#' - missing_S_as_NA  if \code{TRUE}, missing S are treated as \code{NA}s, otherwise set to 0.
+#' - missing_G_as_NA  if `TRUE`, missing G are treated as `NA`s, otherwise set to 0. 
+#' - missing_S_as_NA  if `TRUE`, missing S are treated as `NA`s, otherwise set to 0.
 #' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
-#'                      One of \code{"Sonntag_1990"} (Default), \code{"Alduchov_1996"}, or \code{"Allen_1998"}.
-#'                      See \code{\link{Esat_slope}}. 
+#'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
+#'                      See `\link{Esat_slope`}. 
 #' - constants cp - specific heat of air for constant pressure (J K-1 kg-1) \cr
 #'                  eps - ratio of the molecular weight of water vapor to dry air (-) \cr
 #'                  Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
@@ -212,7 +212,7 @@ end
 #'            \deqn{ET = \Omega ET_eq + (1 - \Omega)ET_imp}
 #'          
 #'          where \eqn{\Omega} is the decoupling coefficient as calculated from
-#'          \code{\link{decoupling}}. \code{ET_eq} is the equilibrium evapotranspiration rate,
+#'          `\link{decoupling`}. `ET_eq` is the equilibrium evapotranspiration rate,
 #'          the ET rate that would occur under uncoupled conditions, where the heat budget
 #'          is dominated by radiation (when Ga -> 0):
 #'          
@@ -221,15 +221,15 @@ end
 #'          where \eqn{\Delta} is the slope of the saturation vapor pressure curve (kPa K-1),
 #'          \eqn{\lambda} is the latent heat of vaporization (J kg-1), and \eqn{\gamma}
 #'          is the psychrometric constant (kPa K-1).
-#'          \code{ET_imp} is the imposed evapotranspiration rate, the ET rate
+#'          `ET_imp` is the imposed evapotranspiration rate, the ET rate
 #'          that would occur under fully coupled conditions (when Ga -> inf):
 #'          
 #'            \deqn{ET_imp = (\rho * cp * VPD * Gs * \lambda) / \gamma}
 #'          
 #'          where \eqn{\rho} is the air density (kg m-3).
 #' 
-#' @note Surface conductance (Gs) can be calculated with \code{\link{surface_conductance}}.
-#'       Aerodynamic conductance (Ga) can be calculated using \code{\link{aerodynamic_conductance}}.
+#' @note Surface conductance (Gs) can be calculated with `\link{surface_conductance`}.
+#'       Aerodynamic conductance (Ga) can be calculated using `\link{aerodynamic_conductance`}.
 #'       
 #' # Value
  A DataFrame with the following columns:
@@ -244,7 +244,7 @@ end
 #'             Monteith, J_L., Unsworth, M_H., 2008: Principles of Environmental Physics.
 #'             3rd edition. Academic Press, London. 
 #'             
-#' @seealso \code{\link{decoupling}}            
+#' @seealso `\link{decoupling`}            
 #'             
 #' ```@example; output = false
 #' ``` 

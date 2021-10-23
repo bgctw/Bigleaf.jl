@@ -10,10 +10,10 @@
 #' - ustar     Friction velocity (m s-1)
 #' - Sc        Optional: Schmidt number of additional quantities to be calculated
 #' - Sc_name   Optional: Name of the additional quantities, has to be of same length than 
-#'                  \code{Sc_name}
+#'                  `Sc_name`
 #' - constants k - von-Karman constant \cr
 #'                  Sc_CO2 - Schmidt number for CO2 \cr 
-#'                  Pr - Prandtl number (if \code{Sc} is provided)
+#'                  Pr - Prandtl number (if `Sc` is provided)
 #'
 #'  
 #' # Details
@@ -33,8 +33,8 @@
 #'  \item{Gb_h}{Boundary layer conductance for heat transfer (m s-1)}
 #'  \item{Rb_h}{Boundary layer resistance for heat transfer (s m-1)}
 #'  \item{kB_h}{kB-1 parameter for heat transfer}
-#'  \item{Gb_Sc_name}{Boundary layer conductance for \code{Sc_name} (m s-1). Only added if \code{Sc_name} and 
-#'                    \code{Sc_name} are provided}
+#'  \item{Gb_Sc_name}{Boundary layer conductance for `Sc_name` (m s-1). Only added if `Sc_name` and 
+#'                    `Sc_name` are provided}
 #'  
 #' @references Thom, A., 1972: Momentum, mass and heat exchange of vegetation.
 #'             Quarterly Journal of the Royal Meteorological Society 98, 124-134.
@@ -43,7 +43,7 @@
 #'             A preliminary multiple resistance routine for deriving dry deposition velocities
 #'             from measured quantities. Water, Air, and Soil Pollution 36, 311-330.
 #' 
-#' @seealso \code{\link{Gb_Choudhury}}, \code{\link{Gb_Su}}, \code{\link{aerodynamic_conductance}}
+#' @seealso `\link{Gb_Choudhury`}, `\link{Gb_Su`}, `\link{aerodynamic_conductance`}
 #' 
 #' ```@example; output = false
 #' ``` 
@@ -96,25 +96,25 @@ end
 #' - LAI              One-sided leaf area index
 #' - zh               Canopy height (m)
 #' - zr               Instrument (reference) height (m)
-#' - d                Zero-plane displacement height (-), can be calculated using \code{roughness_parameters}
-#' - z0m              Roughness length for momentum (m). If not provided, calculated from \code{roughness_parameters} 
-#'                         within \code{wind_profile}
-#' - stab_formulation Stability correction function used (If \code{stab_correction = TRUE}).
-#'                         Either \code{"Dyer_1970"} or \code{"Businger_1971"}.
+#' - d                Zero-plane displacement height (-), can be calculated using `roughness_parameters`
+#' - z0m              Roughness length for momentum (m). If not provided, calculated from `roughness_parameters` 
+#'                         within `wind_profile`
+#' - stab_formulation Stability correction function used (If `stab_correction = TRUE`).
+#'                         Either `"Dyer_1970"` or `"Businger_1971"`.
 #' - Sc               Optional: Schmidt number of additional quantities to be calculated
 #' - Sc_name          Optional: Name of the additonal quantities, has to be of same length than 
-#'                         \code{Sc_name}
+#'                         `Sc_name`
 #' - constants        k - von-Karman constant \cr
 #'                         Sc_CO2 - Schmidt number for CO2 \cr 
-#'                         Pr - Prandtl number (if \code{Sc} is provided)
+#'                         Pr - Prandtl number (if `Sc` is provided)
 #'                         
 #' # Value
  A data frame with the following columns:
 #'  \item{Gb_h}{Boundary layer conductance for heat transfer (m s-1)}
 #'  \item{Rb_h}{Boundary layer resistance for heat transfer (s m-1)}
 #'  \item{kB_h}{kB-1 parameter for heat transfer}
-#'  \item{Gb_Sc_name}{Boundary layer conductance for \code{Sc_name} (m s-1). Only added if \code{Sc_name} and 
-#'                    \code{Sc_name} are provided}
+#'  \item{Gb_Sc_name}{Boundary layer conductance for `Sc_name` (m s-1). Only added if `Sc_name` and 
+#'                    `Sc_name` are provided}
 #' 
 #' # Details
  Boundary layer conductance according to Choudhury & Monteith 1988 is
@@ -138,10 +138,10 @@ end
 #'  
 #'          where Sc_x is the Schmidt number of quantity x, and Pr is the Prandtl number (0.71).
 #'          
-#' @note If the roughness length for momentum (\code{z0m}) is not provided as input, it is estimated 
-#'       from the function \code{roughness_parameters} within \code{wind_profile}. This function
-#'       estimates a single \code{z0m} value for the entire time period! If a varying \code{z0m} value 
-#'       (e.g. across seasons or years) is required, \code{z0m} should be provided as input argument.
+#' @note If the roughness length for momentum (`z0m`) is not provided as input, it is estimated 
+#'       from the function `roughness_parameters` within `wind_profile`. This function
+#'       estimates a single `z0m` value for the entire time period! If a varying `z0m` value 
+#'       (e.g. across seasons or years) is required, `z0m` should be provided as input argument.
 #'          
 #' @references Choudhury, B. J., Monteith J_L., 1988: A four-layer model for the heat
 #'             budget of homogeneous land surfaces. Q. J. R. Meteorol. Soc. 114, 373-398.
@@ -154,7 +154,7 @@ end
 #'             A preliminary multiple resistance routine for deriving dry deposition velocities
 #'             from measured quantities. Water, Air, and Soil Pollution 36, 311-330.
 #'             
-#' @seealso \code{\link{Gb_Thom}}, \code{\link{Gb_Su}}, \code{\link{aerodynamic_conductance}}
+#' @seealso `\link{Gb_Thom`}, `\link{Gb_Su`}, `\link{aerodynamic_conductance`}
 #'    
 #' ```@example; output = false
 #' ``` 
@@ -230,33 +230,33 @@ end
 #' - H         Sensible heat flux (W m-2)
 #' - zh        Canopy height (m)
 #' - zr        Reference height (m)
-#' - d         Zero-plane displacement height (-), can be calculated using \code{roughness_parameters}
-#' - z0m       Roughness length for momentum (m). If not provided, calculated from \code{roughness_parameters} 
-#'                  within \code{wind_profile}
+#' - d         Zero-plane displacement height (-), can be calculated using `roughness_parameters`
+#' - z0m       Roughness length for momentum (m). If not provided, calculated from `roughness_parameters` 
+#'                  within `wind_profile`
 #' - Dl        Leaf characteristic dimension (m)
 #' - fc        Fractional vegetation cover [0-1] (if not provided, calculated from LAI)
 #' - LAI       One-sided leaf area index (-)
 #' - N         Number of leaf sides participating in heat exchange (defaults to 2)
 #' - Cd        Foliage drag coefficient (-)
 #' - hs        Roughness height of the soil (m)
-#' - stab_formulation Stability correction function used (If \code{stab_correction = TRUE}).
-#'                         Either \code{"Dyer_1970"} or \code{"Businger_1971"}.
+#' - stab_formulation Stability correction function used (If `stab_correction = TRUE`).
+#'                         Either `"Dyer_1970"` or `"Businger_1971"`.
 #' - Sc        Optional: Schmidt number of additional quantities to be calculated
 #' - Sc_name   Optional: Name of the additional quantities, has to be of same length than 
-#'                  \code{Sc_name}
+#'                  `Sc_name`
 #' - constants Kelvin - conversion degree Celsius to Kelvin \cr
 #'                  pressure0 - reference atmospheric pressure at sea level (Pa) \cr
 #'                  Tair0 - reference air temperature (K) \cr
 #'                  Sc_CO2 - Schmidt number for CO2 \cr 
-#'                  Pr - Prandtl number (if \code{Sc} is provided)
+#'                  Pr - Prandtl number (if `Sc` is provided)
 #' 
 #' # Value
  A DataFrame with the following columns:
 #'  \item{Gb_h}{Boundary layer conductance for heat transfer (m s-1)}
 #'  \item{Rb_h}{Boundary layer resistance for heat transfer (s m-1)}
 #'  \item{kB_h}{kB-1 parameter for heat transfer}
-#'  \item{Gb_Sc_name}{Boundary layer conductance for \code{Sc_name} (m s-1). Only added if \code{Sc_name} and 
-#'                    \code{Sc_name} are provided}
+#'  \item{Gb_Sc_name}{Boundary layer conductance for `Sc_name` (m s-1). Only added if `Sc_name` and 
+#'                    `Sc_name` are provided}
 #'     
 #' # Details
  The formulation is based on the kB-1 model developed by Massman 1999. 
@@ -269,7 +269,7 @@ end
 #'            \deqn{fc = 1 - exp(-LAI/2)}
 #'          
 #'          The wind speed at the top of the canopy is calculated using function
-#'          \code{\link{wind_profile}}.
+#'          `\link{wind_profile`}.
 #'          
 #'          Ct is the heat transfer coefficient of the leaf (Massman 1999):
 #'          
@@ -291,10 +291,10 @@ end
 #'  
 #'          where Sc_x is the Schmidt number of quantity x, and Pr is the Prandtl number (0.71).
 #' 
-#' @note If the roughness length for momentum (\code{z0m}) is not provided as input, it is estimated 
-#'       from the function \code{roughness_parameters} within \code{wind_profile}. This function
-#'       estimates a single \code{z0m} value for the entire time period! If a varying \code{z0m} value 
-#'       (e.g. across seasons or years) is required, \code{z0m} should be provided as input argument.
+#' @note If the roughness length for momentum (`z0m`) is not provided as input, it is estimated 
+#'       from the function `roughness_parameters` within `wind_profile`. This function
+#'       estimates a single `z0m` value for the entire time period! If a varying `z0m` value 
+#'       (e.g. across seasons or years) is required, `z0m` should be provided as input argument.
 #' 
 #' 
 #' @references Su, Z., Schmugge, T., Kustas, W. & Massman, W., 2001: An evaluation of
@@ -308,7 +308,7 @@ end
 #'             A preliminary multiple resistance routine for deriving dry deposition velocities
 #'             from measured quantities. Water, Air, and Soil Pollution 36, 311-330.
 #' 
-#' @seealso \code{\link{Gb_Thom}}, \code{\link{Gb_Choudhury}}, \code{\link{aerodynamic_conductance}}
+#' @seealso `\link{Gb_Thom`}, `\link{Gb_Choudhury`}, `\link{aerodynamic_conductance`}
 #' 
 #' ```@example; output = false
 #' ``` 

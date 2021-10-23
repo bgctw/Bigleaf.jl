@@ -22,7 +22,7 @@
 #' \deqn{LE = \lambda ET}
 #'
 #' where \eqn{\lambda} is the latent heat of vaporization (J kg-1) as calculated by
-#' \code{\link{latent_heat_vaporization}}.
+#' `\link{latent_heat_vaporization`}.
 #'
 #' ```@example; output = false
 #' ```
@@ -125,8 +125,8 @@ end
 #' - VPD       Vapor pressure deficit (kPa)
 #' - rH        Relative humidity (-)
 #' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
-#'                      One of \code{"Sonntag_1990"} (Default), \code{"Alduchov_1996"}, or \code{"Allen_1998"}.
-#'                      See \code{\link{Esat_slope}}.
+#'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
+#'                      See `\link{Esat_slope`}.
 #' - constants eps - ratio of the molecular weight of water vapor to dry air (-) \cr
 #'                  Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
 #'
@@ -273,7 +273,7 @@ end
 #'
 #'  \deqn{PPFD = Rg * frac_PAR * J_to_mol}
 #'
-#' by default, the combined conversion factor (\code{frac_PAR * J_to_mol}) is 2.3
+#' by default, the combined conversion factor (`frac_PAR * J_to_mol`) is 2.3
 #'
 #' ```@example; output = false
 #' ```
@@ -308,7 +308,7 @@ end
 #'
 #' - mass      Numeric vector of mass in kg
 #' - molarMass Numeric vector of molar mass of the substance (kg mol-1)
-#'                  e.g. as provided by \code{\link{bigleaf_constants}}()$H2Omol
+#'                  e.g. as provided by `\link{bigleaf_constants`}()$H2Omol
 #'                  Default is molar mass of Water.
 #'
 #' # Value

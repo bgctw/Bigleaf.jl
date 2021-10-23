@@ -13,8 +13,8 @@
 #' - GPP              Gross primary productivity (umol CO2 m-2 s-1)
 #' - Gs               Surface conductance to water vapor (mol m-2 s-1)
 #' - Rleaf            Ecosystem respiration stemming from leaves (umol CO2 m-2 s-1); defaults to 0          
-#' - missing_Rleaf_as_NA if Rleaf is provided, should missing values be treated as \code{NA} (\code{TRUE})
-#'                            or set to 0 (\code{FALSE}, the default)?
+#' - missing_Rleaf_as_NA if Rleaf is provided, should missing values be treated as `NA` (`TRUE`)
+#'                            or set to 0 (`FALSE`, the default)?
 #' - constants        DwDc - Ratio of the molecular diffusivities for water vapor and CO2 (-)
 #' 
 #' # Details
@@ -26,7 +26,7 @@
 #'          Note that Gs is required in mol m-2 s-1 for water vapor. Gs is converted to
 #'          its value for CO2 internally.
 #'          Ca can either be atmospheric CO2 concentration (as measured), or surface
-#'          CO2 concentration as calculated from \code{\link{surface_CO2}}.
+#'          CO2 concentration as calculated from `\link{surface_CO2`}.
 #'          
 #' @note The equation is based on Fick's law of diffusion and is equivalent to the
 #'       often used equation at leaf level (ci = ca - An/gs).
@@ -87,7 +87,7 @@ end
 #'              CO2 concentration using the Farquhar et al. 1980 model for C3 photosynthesis.
 #'           
 #' - data      Data_Frame or matrix with all required columns   
-#' - C3        C3 vegetation (\code{TRUE}, the default) or C4 vegetation (\code{FALSE})?              
+#' - C3        C3 vegetation (`TRUE`, the default) or C4 vegetation (`FALSE`)?              
 #' - Temp      Surface (or air) temperature (degC) 
 #' - GPP       Gross primary productivity (umol m-2 s-1)
 #' - Ci        Bulk canopy intercellular CO2 concentration (umol mol-1)
@@ -113,11 +113,11 @@ end
 #' - Jmax_dS   Entropy term for Jmax (kJ mol-1 K-1)
 #' - Theta     Curvature term in the light response function of J (-)
 #' - alpha_canopy Canopy absorptance (-)
-#' - missing_Rleaf_as_NA if Rleaf is provided, should missing values be treated as \code{NA} (\code{TRUE})
-#'                            or set to 0 (\code{FALSE}, the default)?
+#' - missing_Rleaf_as_NA if Rleaf is provided, should missing values be treated as `NA` (`TRUE`)
+#'                            or set to 0 (`FALSE`, the default)?
 #' - Ci_C4        intercellular CO2 concentration below which photosynthesis
 #'                     is considered to be CO2-limited (umol mol-1), ignored
-#'                     if \code{C3 = TRUE}. 
+#'                     if `C3 = TRUE`. 
 #' - constants    Kelvin - conversion degree Celsius to Kelvin \cr
 #'                     Rgas - universal gas constant (J mol-1 K-1) \cr
 #'                     kJ2J - conversion kilojoule (kJ) to joule (J) \cr
@@ -129,7 +129,7 @@ end
 #'          transport rate at 25degC (Jmax25), which characterize photosynthetic capacity,
 #'          are calculated as at leaf level. 
 #'          The required variables Gs and Ci can be calculated from 
-#'          \code{\link{surface_conductance}} and \code{\link{intercellular_CO2}}, respectively.
+#'          `\link{surface_conductance`} and `\link{intercellular_CO2`}, respectively.
 #'          
 #'          Gas exchange parameters are taken from Bernacchi et al. 2001 (apparent values, which
 #'          assume an infinite mesophyll conductance). Negative and very low Ci values 
@@ -151,8 +151,8 @@ end
 #'          
 #'          In this function, bulk canopy photosynthesis is assumed to be Rubisco/RuBP-regeneration
 #'          limited, if incoming PPFD is above/below a specified threshold or range. These ranges
-#'          are determined by the parameters \code{PPFD_j} and \code{PPFD_c}. If, for example,
-#'          \code{PPFD_j = c(100,400)}, all conditions with a PPFD between 100 and 400 are assumed
+#'          are determined by the parameters `PPFD_j` and `PPFD_c`. If, for example,
+#'          `PPFD_j = c(100,400)`, all conditions with a PPFD between 100 and 400 are assumed
 #'          to be in the RuBP-regeneration (i.e. light-limited) photosynthesis domain. The electron
 #'          transport rate J is then only calculated for periods that meet this criterion.
 #'          
@@ -193,7 +193,7 @@ end
 #'          
 #'            \deqn{Vcmax = GPP}
 #'          
-#'          Note that in addition to the range \code{PPFD_c}, the range \code{Ci_C4}
+#'          Note that in addition to the range `PPFD_c`, the range `Ci_C4`
 #'          discards all periods with low Ci, in which photosynthesis is likely to
 #'          be CO2-limited (see von Caemmerer 2000 for details).
 #'          
@@ -206,11 +206,11 @@ end
 #'          
 #' @note   The critical assumption is that bulk canopy photosynthesis is limited by
 #'         one of the two limitation states. Incoming PPFD is assumed to determine
-#'         the limitation states. Note however that the ranges (\code{PPFD_j} and \code{PPFD_c})
+#'         the limitation states. Note however that the ranges (`PPFD_j` and `PPFD_c`)
 #'         are likely ecosystem-specific. E_g. dense canopies presumably require higher
-#'         \code{PPFD_c} thresholds than open canopies. A threshold of 500 umol m-2 s-1 PPFD
+#'         `PPFD_c` thresholds than open canopies. A threshold of 500 umol m-2 s-1 PPFD
 #'         for Rubisco-limited photosynthesis was assumed a reasonable working assumption (see Kosugi et al. 2013).
-#'         Here, \code{PPFD_c} defaults to 1000 umol m-2 s-1. Note that even under very high/low irradiances,
+#'         Here, `PPFD_c` defaults to 1000 umol m-2 s-1. Note that even under very high/low irradiances,
 #'         not all photosynthetically active plant material of an ecosystem will be in the same
 #'         limitation state. Note that parameters describing bulk canopy photosynthetic capacity are not directly 
 #'         comparable to their leaf-level counterparts, as the former integrate over the entire canopy
@@ -248,7 +248,7 @@ end
 #'             von Caemmerer, 2000: Biochemical models of leaf photosynthesis. Techniques
 #'             in plant sciences No. 2. CSIRO Publishing, Collingwood VIC, Australia.
 #'
-#' @seealso \code{\link{intercellular_CO2}}, \code{\link{Arrhenius_temp_response}}
+#' @seealso `\link{intercellular_CO2`}, `\link{Arrhenius_temp_response`}
 #'
 #' ```@example; output = false
 #' ``` 
@@ -482,21 +482,21 @@ end
 #' - VPD        Vapor pressure deficit (kPa)
 #' - Ca         Atmospheric CO2 concentration (air or surface) (umol mol-1)
 #' - Rleaf      Ecosystem respiration stemming from leaves (umol CO2 m-2 s-1); defaults to 0 
-#' - model      Stomatal model used. One of \code{"USO","Ball&Berry","Leuning"}.
-#' - robust_nls Use robust nonlinear regression (\code{\link[robustbase]{nlrob}})? Default is \code{FALSE}.
+#' - model      Stomatal model used. One of `"USO","Ball&Berry","Leuning"`.
+#' - robust_nls Use robust nonlinear regression (`\link[robustbase]{nlrob`})? Default is `FALSE`.
 #' - nmin       Minimum number of data required to perform the fit; defaults to 40.
 #' - fitg0      Should g0 and g1 be fitted simultaneously? 
-#' - g0         Minimum stomatal conductance (mol m-2 s-1); ignored if \code{fitg0 = TRUE}.
-#' - fitD0      Should D0 be fitted along with g1 (and g0 if \code{fitg0 = TRUE})?; only used if \code{model = "Leuning"}.
-#' - D0         Stomatal sensitivity parameter to VPD; only used if \code{model = "Leuning"} and \code{fitD0 = FALSE}.
-#' - Gamma      Canopy CO2 compensation point (umol mol-1); only used if \code{model = "Leuning"}. 
+#' - g0         Minimum stomatal conductance (mol m-2 s-1); ignored if `fitg0 = TRUE`.
+#' - fitD0      Should D0 be fitted along with g1 (and g0 if `fitg0 = TRUE`)?; only used if `model = "Leuning"`.
+#' - D0         Stomatal sensitivity parameter to VPD; only used if `model = "Leuning"` and `fitD0 = FALSE`.
+#' - Gamma      Canopy CO2 compensation point (umol mol-1); only used if `model = "Leuning"`. 
 #'                   Can be a constant or a variable. Defaults to 50 umol mol-1.
 #' - constants  Kelvin - conversion degree Celsius to Kelvin \cr
 #'                   Rgas - universal gas constant (J mol-1 K-1) \cr
 #'                   DwDc - Ratio of the molecular diffusivities for water vapor and CO2
-#' - missing_Rleaf_as_NA if Rleaf is provided, should missing values be treated as \code{NA} (\code{TRUE})
-#'                            or set to 0 (\code{FALSE}, the default)?
-#' - ...        Additional arguments to \code{\link[stats]{nls}} or \code{\link[robustbase]{nlrob}} if \code{robust_nls = TRUE}.
+#' - missing_Rleaf_as_NA if Rleaf is provided, should missing values be treated as `NA` (`TRUE`)
+#'                            or set to 0 (`FALSE`, the default)?
+#' - ...        Additional arguments to `\link[stats]{nls`} or `\link[robustbase]{nlrob`} if `robust_nls = TRUE`.
 #' 
 #' # Details
  All stomatal models were developed at leaf-level, but its parameters 
@@ -518,16 +518,16 @@ end
 #'          plant species. 
 #'          The equations above are valid at leaf-level. At ecosystem level, An is replaced by GPP (or GPP - Rleaf,
 #'          where Rleaf is leaf respiration), and gs (stomatal conductance) by Gs (surface conductance). 
-#'          The parameters in the models are estimated using nonlinear regression (\code{\link[stats]{nls}}) if
-#'          \code{robust_nls = FALSE} and weighted nonlinear regression if \code{robust_nls = TRUE}.
-#'          The weights are calculated from \code{\link[robustbase]{nlrob}}, and \code{\link[stats]{nls}}
+#'          The parameters in the models are estimated using nonlinear regression (`\link[stats]{nls`}) if
+#'          `robust_nls = FALSE` and weighted nonlinear regression if `robust_nls = TRUE`.
+#'          The weights are calculated from `\link[robustbase]{nlrob`}, and `\link[stats]{nls`}
 #'          is used for the actual fitting.
 #'          Alternatively to measured VPD and Ca (i.e. conditions at instrument height), conditions at 
-#'          the big-leaf surface can be provided. Those can be calculated using \code{\link{surface_conditions}}.
+#'          the big-leaf surface can be provided. Those can be calculated using `\link{surface_conditions`}.
 #'          
 #' 
 #' # Value
- A \code{nls} model object, containing information on the fitted parameters, their uncertainty range,
+ A `nls` model object, containing information on the fitted parameters, their uncertainty range,
 #'         model fit, etc.
 #' 
 #' @references Medlyn B_E., et al., 2011: Reconciling the optimal and empirical approaches to
@@ -544,7 +544,7 @@ end
 #'             Knauer, J. et al., 2018: Towards physiologically meaningful water-use efficiency estimates
 #'             from eddy covariance data. Global Change Biology 24, 694-710.
 #' 
-#' @seealso \code{\link{surface_conductance}}
+#' @seealso `\link{surface_conductance`}
 #' 
 #' ```@example; output = false
 #' ``` 
@@ -749,7 +749,7 @@ end
 #' - PPFD      Photosynthetic photon flux density (umol m-2 s-1)
 #' - PPFD_ref  Reference PPFD (umol m-2 s-1) for which GPP_ref is estimated.
 #'                  Default is 2000 umol m-2 s-1.
-#' - ...       Additional arguments to \code{\link[stats]{nls}}
+#' - ...       Additional arguments to `\link[stats]{nls`}
 #' 
 #' # Details
  A rectangular light response curve is fitted to NEE data. The curve
@@ -767,14 +767,14 @@ end
 #'          curve is that GPP_ref at PPFD_ref is more readily interpretable
 #'          as it constitutes a value observed in the ecosystem, in contrast to 
 #'          GPP_ref (mostly named 'beta') in the standard model that occurs at infinite light.
-#'          \code{PPFD_ref} defaults to 2000 umol m-2 s-1, but other values can be used. For 
+#'          `PPFD_ref` defaults to 2000 umol m-2 s-1, but other values can be used. For 
 #'          further details refer to Falge et al. 2001.
 #' 
 #' @note   Note the sign convention. Negative NEE indicates that carbon is taken up
 #'         by the ecosystem. Reco has to be 0 or larger.
 #' 
 #' # Value
- A \code{nls} model object containing estimates (+/- SE) for alpha and GPP_ref.
+ A `nls` model object containing estimates (+/- SE) for alpha and GPP_ref.
 #' 
 #' @references Falge E., et al. 2001: Gap filling strategies for defensible annual
 #'             sums of net ecosystem exchange. Agricultural and Forest Meteorology 107,
@@ -827,7 +827,7 @@ end
 #' # Value
  \item{LUE -}{Light use efficiency (-)}
 #' 
-#' @seealso \code{\link{energy_use_efficiency}}
+#' @seealso `\link{energy_use_efficiency`}
 #' 
 #' ```@example; output = false
 #' ```
@@ -853,7 +853,7 @@ end
 #' - data  Data_frame or matrix containing all required columns
 #' - Gs    Surface conductance to water vapor (mol m-2 s-1)
 #' - VPD   Vapor pressure deficit (kPa)
-#' - ...   Additional arguments to \code{\link[stats]{nls}}
+#' - ...   Additional arguments to `\link[stats]{nls`}
 #' 
 #' # Details
  The function fits the following equation (Oren et al. 1999):
@@ -862,12 +862,12 @@ end
 #'
 #'          where b is the reference surface conductance (Gs) at VPD=1kPa (in mol m-2 s-1),
 #'          and m is the sensitivity parameter of Gs to VPD (in mol m-2 s-1 log(kPa)-1).
-#'          The two parameters b and m are fitted using \code{\link[stats]{nls}}.
+#'          The two parameters b and m are fitted using `\link[stats]{nls`}.
 #'          VPD can be the one directly measured at instrument height, or the
-#'          one at the surface, as returned by \code{\link{surface_conditions}}.
+#'          one at the surface, as returned by `\link{surface_conditions`}.
 #'          
 #' # Value
- A \code{nls} model object containing (amongst others) estimates for the mean
+ A `nls` model object containing (amongst others) estimates for the mean
 #'         and standard errors of the parameters m and b.
 #' 
 #' @references Oren R., et al. 1999: Survey and synthesis of intra- and interspecific
@@ -877,7 +877,7 @@ end
 #'             Novick K_A., et al. 2016: The increasing importance of atmospheric demand
 #'             for ecosystem water and carbon fluxes. Nature Climate Change 6, 1023 - 1027.
 #'          
-#' @seealso \code{\link{surface_conductance}}          
+#' @seealso `\link{surface_conductance`}          
 #' 
 #' ```@example; output = false
 #' ```
