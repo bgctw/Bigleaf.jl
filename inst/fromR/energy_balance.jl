@@ -222,10 +222,10 @@ function isothermal_Rn(data,Rn="Rn",Tair="Tair",Tsurf="Tsurf",emissivity,
   
   check_input(data,list(Rn,Tair,Tsurf))
   
-  Tair  = Tair + constants$Kelvin
-  Tsurf = Tsurf + constants$Kelvin
+  Tair  = Tair + constants[:Kelvin]
+  Tsurf = Tsurf + constants[:Kelvin]
   
-  Rni = Rn + emissivity * constants$sigma * (Tsurf^4 - Tair^4)
+  Rni = Rn + emissivity * constants[:sigma] * (Tsurf^4 - Tair^4)
   
   return(Rni)
   

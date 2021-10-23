@@ -173,7 +173,7 @@ else { # same, but consider missing quality flag variables as good
         qc_invalid      = sum(get(paste0(var,quality_ext)) > max(good_quality) & !is_na(get(paste0(var,quality_ext))))
 end
       
-      qc_invalid_perc = round((qc_invalid/nrow(data))*constants$frac2percent,2)
+      qc_invalid_perc = round((qc_invalid/nrow(data))*constants[:frac2percent],2)
       
       cat(var,": ",qc_invalid," data points (",qc_invalid_perc,"%) set to NA",fill=TRUE,sep="")
 end
@@ -222,12 +222,12 @@ end
 end
   
   # 4) calculate number and percentage of filtered values
-  invalids_perc = sapply(invalids, function(x) round((length(x)/nrow(data))*constants$frac2percent,2))
+  invalids_perc = sapply(invalids, function(x) round((length(x)/nrow(data))*constants[:frac2percent],2))
   
   additional_invalids = sapply(2:length(invalids), function(x) 
     length(setdiff(invalids[[x]],unique(unlist(invalids[1:(x-1)])))))
   
-  additional_invalids_perc = round(additional_invalids/nrow(data)*constants$frac2percent,2)
+  additional_invalids_perc = round(additional_invalids/nrow(data)*constants[:frac2percent],2)
   
   
   # 5) write to output
@@ -252,10 +252,10 @@ end
     invalid        = unique(unlist(invalids))
     valid[invalid] = 0
   
-    excl_perc = round((length(invalid)/nrow(data))*constants$frac2percent,2)
+    excl_perc = round((length(invalid)/nrow(data))*constants[:frac2percent],2)
   
     cat(length(invalid)," data points (",excl_perc,"%) excluded in total",fill=TRUE,sep="")
-    cat(nrow(data) - length(invalid)," valid data points (",constants$frac2percent-excl_perc,"%) remaining.",fill=TRUE,sep="")
+    cat(nrow(data) - length(invalid)," valid data points (",constants[:frac2percent]-excl_perc,"%) remaining.",fill=TRUE,sep="")
   
   
     # 6) return input data frame with filtered time steps set to NA or an additional 'valid' column

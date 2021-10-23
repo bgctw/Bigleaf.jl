@@ -72,7 +72,7 @@ else
     Rleaf = 0
 end
   
-  Ci = Ca - (GPP - Rleaf)/(Gs/constants$DwDc)
+  Ci = Ca - (GPP - Rleaf)/(Gs/constants[:DwDc])
   
   return(Ci)
   
@@ -289,19 +289,19 @@ function photosynthetic_capacity(data,C3=TRUE,Temp,GPP="GPP",Ci,PPFD="PPFD",PPFD
   
   check_input(data,list(Temp,GPP,Ci,PPFD))
   
-  Temp = Temp + constants$Kelvin
-  Tref = 25.0 + constants$Kelvin
+  Temp = Temp + constants[:Kelvin]
+  Tref = 25.0 + constants[:Kelvin]
   
   if (C3){  # C3 vegetation
-    Kc_Ha    = Kc_Ha * constants$kJ2J
-    Ko_Ha    = Ko_Ha * constants$kJ2J
-    Gam_Ha   = Gam_Ha * constants$kJ2J
+    Kc_Ha    = Kc_Ha * constants[:kJ2J]
+    Ko_Ha    = Ko_Ha * constants[:kJ2J]
+    Gam_Ha   = Gam_Ha * constants[:kJ2J]
     
     # Temperature dependencies of photosynthetic parameters 
-    Kc  = Kc25 * exp(Kc_Ha * (Temp - Tref) / (Tref*constants$Rgas*Temp))
-    Ko  = Ko25 * exp(Ko_Ha * (Temp - Tref) / (Tref*constants$Rgas*Temp))
-    Gam = Gam25 * exp(Gam_Ha * (Temp - Tref) / (Tref*constants$Rgas*Temp))
-    Ko  = Ko * constants$J2kJ
+    Kc  = Kc25 * exp(Kc_Ha * (Temp - Tref) / (Tref*constants[:Rgas]*Temp))
+    Ko  = Ko25 * exp(Ko_Ha * (Temp - Tref) / (Tref*constants[:Rgas]*Temp))
+    Gam = Gam25 * exp(Gam_Ha * (Temp - Tref) / (Tref*constants[:Rgas]*Temp))
+    Ko  = Ko * constants[:J2kJ]
     
     # basic filtering on Ci 
     Ci[Ci < 80 | is_na(Ci)] = NA
@@ -355,18 +355,18 @@ else
 end
   
   # calculate Vcmax25 and Jmax25
-  Vcmax25 = Arrhenius_temp_response(Vcmax,Temp-constants$Kelvin,Ha=Vcmax_Ha,
+  Vcmax25 = Arrhenius_temp_response(Vcmax,Temp-constants[:Kelvin],Ha=Vcmax_Ha,
                                      Hd=Vcmax_Hd,dS=Vcmax_dS,constants=constants)
   
-  Jmax25 = Arrhenius_temp_response(Jmax,Temp[calcJmax]-constants$Kelvin,Ha=Jmax_Ha,
+  Jmax25 = Arrhenius_temp_response(Jmax,Temp[calcJmax]-constants[:Kelvin],Ha=Jmax_Ha,
                                     Hd=Jmax_Hd,dS=Jmax_dS,constants=constants)
   
   
   # calculate medians and standard errors of the median
   Vcmax25_Median = median(Vcmax25,na_rm=TRUE)
-  Vcmax25_SE     = constants$se_median * sd(Vcmax25,na_rm=TRUE)/sqrt((sum(!is_na(Vcmax25))))
+  Vcmax25_SE     = constants[:se_median] * sd(Vcmax25,na_rm=TRUE)/sqrt((sum(!is_na(Vcmax25))))
   Jmax25_Median  = median(Jmax25,na_rm=TRUE)
-  Jmax25_SE      = constants$se_median * sd(Jmax25,na_rm=TRUE)/sqrt((sum(!is_na(Jmax25))))
+  Jmax25_SE      = constants[:se_median] * sd(Jmax25,na_rm=TRUE)/sqrt((sum(!is_na(Jmax25))))
   
   return(c("Vcmax25"=round(Vcmax25_Median,2),"Vcmax25_SE"=round(Vcmax25_SE,2),
            "Jmax25"=round(Jmax25_Median,2),"Jmax25_SE"=round(Jmax25_SE,2)))
@@ -428,12 +428,12 @@ end
 #' @export             
 function Arrhenius_temp_response(param,Temp,Ha,Hd,dS,constants=bigleaf_constants())
   
-  Temp = Temp + constants$Kelvin
-  Tref = 25.0 + constants$Kelvin
+  Temp = Temp + constants[:Kelvin]
+  Tref = 25.0 + constants[:Kelvin]
   
-  Ha = ifelse(missing(Ha),NA,Ha*constants$kJ2J)
-  Hd = ifelse(missing(Hd),NA,Hd*constants$kJ2J)
-  dS = ifelse(missing(dS),NA,dS*constants$kJ2J)
+  Ha = ifelse(missing(Ha),NA,Ha*constants[:kJ2J])
+  Hd = ifelse(missing(Hd),NA,Hd*constants[:kJ2J])
+  dS = ifelse(missing(dS),NA,dS*constants[:kJ2J])
   
   if (is_na(Ha))
     
@@ -443,14 +443,14 @@ end
   
   if (is_na(Hd) & is_na(dS))
     
-    param25 = param / exp(Ha * (Temp - Tref) / (Tref*constants$Rgas*Temp))
+    param25 = param / exp(Ha * (Temp - Tref) / (Tref*constants[:Rgas]*Temp))
   
 else if (!is_na(Hd) & !is_na(dS))
     
     param25 = param /
-      ( exp(Ha * (Temp - Tref) / (Tref*constants$Rgas*Temp)) *
-        (1 + exp((Tref*dS - Hd) / (Tref * constants$Rgas))) /
-        (1 + exp((Temp*dS - Hd) / (Temp * constants$Rgas)))
+      ( exp(Ha * (Temp - Tref) / (Tref*constants[:Rgas]*Temp)) *
+        (1 + exp((Tref*dS - Hd) / (Tref * constants[:Rgas]))) /
+        (1 + exp((Temp*dS - Hd) / (Temp * constants[:Rgas])))
       )
     
 else if ((!is_na(Hd) & is_na(dS)) | (is_na(Hd) & !is_na(dS)) )
@@ -459,7 +459,7 @@ else if ((!is_na(Hd) & is_na(dS)) | (is_na(Hd) & !is_na(dS)) )
              that considers a temperature optimum and a deactivation term!
              Continue considering activation energy (Ha) only...")
     
-    param25 = param / exp(Ha * (Temp - Tref) / (Tref*constants$Rgas*Temp))
+    param25 = param / exp(Ha * (Temp - Tref) / (Tref*constants[:Rgas]*Temp))
     
 end
 
@@ -599,7 +599,7 @@ function stomatal_slope(data,Tair="Tair",pressure="pressure",GPP="GPP",Gs="Gs_mo
   check_input(data,list(Tair,pressure,GPP,Gs,VPD,Ca))
 
   df   = DataFrame(Tair,pressure,GPP,Gs,VPD,Ca)
-  DwDc = constants$DwDc  # ...to work within nls()
+  DwDc = constants[:DwDc]  # ...to work within nls()
   
   
   if (model == "Leuning")
@@ -644,7 +644,7 @@ end
 else 
         if (robust_nls)
           df$g0   = rep(g0,nrow(df))    # g0 as constant does not work in the nlrob function...
-          df$DwDc = rep(DwDc,nrow(df))  # same with constants$DwDc
+          df$DwDc = rep(DwDc,nrow(df))  # same with constants[:DwDc]
           mod_weights = nlrob(Gs ~ g0 + DwDc*(1.0 + g1/sqrt(VPD))*GPP/Ca,data=df,start=list(g1=3),
                                na_action=na_exclude,...)$w
           mod = nls(Gs ~ g0 + DwDc*(1.0 + g1/sqrt(VPD))*GPP/Ca,start=list(g1=3),weights=mod_weights,...)

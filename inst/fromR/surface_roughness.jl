@@ -183,18 +183,18 @@ end
       zeta  = stability_parameter(data=data,Tair=Tair,pressure=pressure,ustar=ustar,H=H,
                                    zr=zr,d=d,constants=constants)
       psi_m = stability_correction(zeta,formulation=stab_formulation)[,"psi_m"]
-      z0m_all = (zr - d) * exp(-constants$k*wind / ustar - psi_m)
+      z0m_all = (zr - d) * exp(-constants[:k]*wind / ustar - psi_m)
       
 else 
       
-      z0m_all = (zr - d) * exp(-constants$k*wind / ustar)
+      z0m_all = (zr - d) * exp(-constants[:k]*wind / ustar)
       
 end
     
     z0m_all[z0m_all > zh] = NA
     
     z0m    = median(z0m_all,na_rm=TRUE)
-    z0m_se = constants$se_median * (sd(z0m_all,na_rm=TRUE) / sqrt(length(z0m_all[complete_cases(z0m_all)])))
+    z0m_se = constants[:se_median] * (sd(z0m_all,na_rm=TRUE) / sqrt(length(z0m_all[complete_cases(z0m_all)])))
     
 end
   
@@ -325,11 +325,11 @@ end
     zeta  = stability_parameter(data=data,Tair=Tair,pressure=pressure,ustar=ustar,H=H,
                                  zr=z,d=d,constants=constants)
     psi_m = stability_correction(zeta,formulation=stab_formulation)[,"psi_m"]
-    wind_heights = pmax(0,(ustar / constants$k) * (log(pmax(0,(z - d)) / z0m) - psi_m))
+    wind_heights = pmax(0,(ustar / constants[:k]) * (log(pmax(0,(z - d)) / z0m) - psi_m))
       
 else 
       
-    wind_heights = pmax(0,(ustar / constants$k) * (log(pmax(0,(z - d)) / z0m)))
+    wind_heights = pmax(0,(ustar / constants[:k]) * (log(pmax(0,(z - d)) / z0m)))
       
 end
   

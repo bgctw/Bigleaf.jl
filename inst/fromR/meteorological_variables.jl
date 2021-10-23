@@ -31,10 +31,10 @@
 """
 function air_density(Tair,pressure,constants=bigleaf_constants())
   
-  Tair     = Tair + constants$Kelvin
-  pressure = pressure * constants$kPa2Pa
+  Tair     = Tair + constants[:Kelvin]
+  pressure = pressure * constants[:kPa2Pa]
   
-  rho = pressure / (constants$Rd * Tair) 
+  rho = pressure / (constants[:Rd] * Tair) 
   
   return(rho)
 end
@@ -80,22 +80,22 @@ end
 #' @export                           
 function pressure_from_elevation(elev,Tair,VPD=NULL,constants=bigleaf_constants())
   
-  Tair     = Tair + constants$Kelvin
+  Tair     = Tair + constants[:Kelvin]
   
   if(is_null(VPD))
     
-    pressure = constants$pressure0 / exp(constants$g * elev / (constants$Rd*Tair))
+    pressure = constants[:pressure0] / exp(constants[:g] * elev / (constants[:Rd]*Tair))
     
 else 
     
-    pressure1   = constants$pressure0 / exp(constants$g * elev / (constants$Rd*Tair))
-    Tv          = virtual_temp(Tair - constants$Kelvin,pressure1 * constants$Pa2kPa,
-                                VPD,Esat_formula="Sonntag_1990",constants) + constants$Kelvin
+    pressure1   = constants[:pressure0] / exp(constants[:g] * elev / (constants[:Rd]*Tair))
+    Tv          = virtual_temp(Tair - constants[:Kelvin],pressure1 * constants[:Pa2kPa],
+                                VPD,Esat_formula="Sonntag_1990",constants) + constants[:Kelvin]
     
-    pressure    = constants$pressure0 / exp(constants$g * elev / (constants$Rd*Tv))
+    pressure    = constants[:pressure0] / exp(constants[:g] * elev / (constants[:Rd]*Tv))
 end
   
-  pressure = pressure * constants$Pa2kPa
+  pressure = pressure * constants[:Pa2kPa]
   return(pressure)
 end 
 
@@ -177,11 +177,11 @@ end
   
   # saturation vapor pressure
   Esat = a * exp((b * Tair) / (c + Tair))
-  Esat = Esat * constants$Pa2kPa
+  Esat = Esat * constants[:Pa2kPa]
   
   # slope of the saturation vapor pressure curve
   Delta = eval(D(expression(a * exp((b * Tair) / (c + Tair))),name="Tair"))
-  Delta = Delta * constants$Pa2kPa
+  Delta = Delta * constants[:Pa2kPa]
   
   return(DataFrame(Esat,Delta))
 end
@@ -220,7 +220,7 @@ end
 function psychrometric_constant(Tair,pressure,constants=bigleaf_constants())
   
   lambda = latent_heat_vaporization(Tair)
-  gamma  = (constants$cp * pressure) / (constants$eps * lambda)
+  gamma  = (constants[:cp] * pressure) / (constants[:eps] * lambda)
   
   return(gamma)
 end
@@ -492,10 +492,10 @@ function virtual_temp(Tair,pressure,VPD,Esat_formula=c("Sonntag_1990","Alduchov_
                          constants=bigleaf_constants())
   
   e    = VPD_to_e(VPD,Tair,Esat_formula)
-  Tair = Tair + constants$Kelvin
+  Tair = Tair + constants[:Kelvin]
   
-  Tv = Tair / (1 - (1 - constants$eps) * e/pressure) 
-  Tv = Tv - constants$Kelvin
+  Tv = Tair / (1 - (1 - constants[:eps]) * e/pressure) 
+  Tv = Tv - constants[:Kelvin]
   
   return(Tv)
 end
@@ -533,9 +533,9 @@ end
 #' @export         
 function kinematic_viscosity(Tair,pressure,constants=bigleaf_constants())
   
-  Tair     = Tair + constants$Kelvin
-  pressure = pressure * constants$kPa2Pa
+  Tair     = Tair + constants[:Kelvin]
+  pressure = pressure * constants[:kPa2Pa]
   
-  v  = 1.327e-05*(constants$pressure0/pressure)*(Tair/constants$Tair0)^1.81
+  v  = 1.327e-05*(constants[:pressure0]/pressure)*(Tair/constants[:Tair0])^1.81
   return(v)
 end

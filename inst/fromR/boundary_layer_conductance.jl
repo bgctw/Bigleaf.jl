@@ -60,7 +60,7 @@ function Gb_Thom(ustar,Sc=NULL,Sc_name=NULL,constants=bigleaf_constants())
   
   Rb_h = 6.2*ustar^-0.667
   Gb_h = 1/Rb_h
-  kB_h = Rb_h*constants$k*ustar
+  kB_h = Rb_h*constants[:k]*ustar
   
   if (!is_null(Sc) | !is_null(Sc_name))
     if (length(Sc) != length(Sc_name))
@@ -71,8 +71,8 @@ end
 end
 end
   
-  Sc   = c(constants$Sc_CO2,Sc)
-  Gb_x = DataFrame(lapply(Sc,function(x) Gb_h / (x/constants$Pr)^0.67))
+  Sc   = c(constants[:Sc_CO2],Sc)
+  Gb_x = DataFrame(lapply(Sc,function(x) Gb_h / (x/constants[:Pr])^0.67))
   colnames(Gb_x) = paste0("Gb_",c("CO2",Sc_name))
   
   return(DataFrame(Gb_h,Rb_h,kB_h,Gb_x))
@@ -202,10 +202,10 @@ end
   
   Gb_h = LAI*((0.02/alpha)*sqrt(wind_zh/leafwidth)*(1-exp(-alpha/2)))
   Rb_h = 1/Gb_h
-  kB_h = Rb_h*constants$k*ustar
+  kB_h = Rb_h*constants[:k]*ustar
   
-  Sc   = c(constants$Sc_CO2,Sc)
-  Gb_x = DataFrame(lapply(Sc,function(x) Gb_h / (x/constants$Pr)^0.67))
+  Sc   = c(constants[:Sc_CO2],Sc)
+  Gb_x = DataFrame(lapply(Sc,function(x) Gb_h / (x/constants[:Pr])^0.67))
   colnames(Gb_x) = paste0("Gb_",c("CO2",Sc_name))
   
   
@@ -357,10 +357,10 @@ end
   Re  = Reynolds_Number(Tair,pressure,ustar,hs,constants)
   kBs = 2.46 * (Re)^0.25 - log(7.4)
   Reh = Dl * wind_zh / v
-  Ct  = 1*constants$Pr^-0.6667*Reh^-0.5*N
+  Ct  = 1*constants[:Pr]^-0.6667*Reh^-0.5*N
   
-  kB_h = (constants$k*Cd)/(4*Ct*ustar/wind_zh)*fc^2 + kBs*(1 - fc)^2
-  Rb_h = kB_h/(constants$k*ustar)
+  kB_h = (constants[:k]*Cd)/(4*Ct*ustar/wind_zh)*fc^2 + kBs*(1 - fc)^2
+  Rb_h = kB_h/(constants[:k]*ustar)
   Gb_h = 1/Rb_h
   
   if (!is_null(Sc) | !is_null(Sc_name))
@@ -372,8 +372,8 @@ end
 end
 end
   
-  Sc   = c(constants$Sc_CO2,Sc)
-  Gb_x = DataFrame(lapply(Sc,function(x) Gb_h / (x/constants$Pr)^0.67))
+  Sc   = c(constants[:Sc_CO2],Sc)
+  Gb_x = DataFrame(lapply(Sc,function(x) Gb_h / (x/constants[:Pr])^0.67))
   colnames(Gb_x) = paste0("Gb_",c("CO2",Sc_name))
   
   return(DataFrame(Gb_h,Rb_h,kB_h,Gb_x))

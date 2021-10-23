@@ -27,7 +27,7 @@ function extraterrestrial_radiation(doy,constants = bigleaf_constants())
   FracYearRad = 2 * pi * (doy - 1) / 365.24
   
   #Eccentricity correction
-  ExtRadiation = constants$solar_constant * (
+  ExtRadiation = constants[:solar_constant] * (
     1.00011 + 0.034221 * cos(FracYearRad) + 0.00128 * sin(FracYearRad)
      + 0.000719 * cos(2 * FracYearRad) + 0.000077 * sin(2 * FracYearRad)
      )

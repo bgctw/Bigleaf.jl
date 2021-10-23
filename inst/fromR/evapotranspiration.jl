@@ -133,7 +133,7 @@ else if (approach == "Penman-Monteith")
     Gs_pot = mol_to_ms(Gs_pot,Tair=Tair,pressure=pressure,constants=constants)
     rho    = air_density(Tair,pressure,constants)
     
-    LE_pot = (Delta * (Rn - G - S) + rho * constants$cp * VPD * Ga) / 
+    LE_pot = (Delta * (Rn - G - S) + rho * constants[:cp] * VPD * Ga) / 
       (Delta + gamma * (1 + Ga / Gs_pot))
     ET_pot = LE_to_ET(LE_pot,Tair)
 end
@@ -280,7 +280,7 @@ end
   Delta  = Esat_slope(Tair,Esat_formula,constants)[,"Delta"]
   
   LE_eq  = (Delta * (Rn - G - S)) / (gamma + Delta)
-  LE_imp = (rho * constants$cp * Gs * VPD) / gamma
+  LE_imp = (rho * constants[:cp] * Gs * VPD) / gamma
   
   ET_imp = LE_to_ET(LE_imp,Tair)
   ET_eq  = LE_to_ET(LE_eq,Tair)

@@ -129,7 +129,7 @@ function surface_conductance(data,Tair="Tair",pressure="pressure",Rn="Rn",G=NULL
   
     check_input(data,list(Tair,pressure,VPD,LE))
     
-    Gs_mol = (LE_to_ET(LE,Tair)/constants$Mw) * pressure / VPD
+    Gs_mol = (LE_to_ET(LE,Tair)/constants[:Mw]) * pressure / VPD
     Gs_ms  = mol_to_ms(Gs_mol,Tair,pressure)
     
 else if (formulation == "Penman-Monteith")
@@ -154,7 +154,7 @@ end
     gamma = psychrometric_constant(Tair,pressure,constants)
     rho   = air_density(Tair,pressure,constants)
     
-    Gs_ms  = ( LE * Ga * gamma ) / ( Delta * (Rn-G-S) + rho * constants$cp * Ga * VPD - LE * ( Delta + gamma ) )
+    Gs_ms  = ( LE * Ga * gamma ) / ( Delta * (Rn-G-S) + rho * constants[:cp] * Ga * VPD - LE * ( Delta + gamma ) )
     Gs_mol = ms_to_mol(Gs_ms,Tair,pressure)
     
 end

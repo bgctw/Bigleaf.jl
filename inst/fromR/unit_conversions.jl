@@ -89,10 +89,10 @@ end
 """
 function ms_to_mol(G_ms,Tair,pressure,constants=bigleaf_constants())
 
-  Tair     = Tair + constants$Kelvin
-  pressure = pressure * constants$kPa2Pa
+  Tair     = Tair + constants[:Kelvin]
+  pressure = pressure * constants[:kPa2Pa]
 
-  G_mol  = G_ms * pressure / (constants$Rgas * Tair)
+  G_mol  = G_ms * pressure / (constants[:Rgas] * Tair)
 
   return(G_mol)
 end
@@ -103,10 +103,10 @@ end
 """
 function mol_to_ms(G_mol,Tair,pressure,constants=bigleaf_constants())
 
-  Tair     = Tair + constants$Kelvin
-  pressure = pressure * constants$kPa2Pa
+  Tair     = Tair + constants[:Kelvin]
+  pressure = pressure * constants[:kPa2Pa]
 
-  G_ms  = G_mol * (constants$Rgas * Tair) / (pressure)
+  G_ms  = G_mol * (constants[:Rgas] * Tair) / (pressure)
 
   return(G_ms)
 end
@@ -211,7 +211,7 @@ end
 """
 """
 function e_to_q(e,pressure,constants=bigleaf_constants())
-  q = constants$eps * e / (pressure - (1-constants$eps) * e)
+  q = constants[:eps] * e / (pressure - (1-constants[:eps]) * e)
   return(q)
 end
 
@@ -221,7 +221,7 @@ end
 """
 """
 function q_to_e(q,pressure,constants=bigleaf_constants())
-  e = q * pressure / ((1-constants$eps) * q + constants$eps)
+  e = q * pressure / ((1-constants[:eps]) * q + constants[:eps])
   return(e)
 end
 
@@ -347,7 +347,7 @@ end
 """
 function umolCO2_to_gC(CO2_flux,constants=bigleaf_constants())
 
-  C_flux = CO2_flux * constants$umol2mol * constants$Cmol * constants$kg2g * constants$days2seconds
+  C_flux = CO2_flux * constants[:umol2mol] * constants[:Cmol] * constants[:kg2g] * constants[:days2seconds]
 
   return(C_flux)
 end
@@ -360,7 +360,7 @@ end
 """
 function gC_to_umolCO2(C_flux,constants=bigleaf_constants())
 
-  CO2_flux = (C_flux * constants$g2kg / constants$days2seconds) / constants$Cmol * constants$mol2umol
+  CO2_flux = (C_flux * constants[:g2kg] / constants[:days2seconds]) / constants[:Cmol] * constants[:mol2umol]
 
   return(CO2_flux)
 end

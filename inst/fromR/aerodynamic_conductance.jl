@@ -236,7 +236,7 @@ else if (Rb_model == "constant_kB-1")
     if(is_null(kB_h))
       stop("value of kB-1 has to be specified if Rb_model is set to 'constant_kB-1'!")
 else 
-      Rb_h = kB_h/(constants$k * ustar)
+      Rb_h = kB_h/(constants[:k] * ustar)
       Gb_h = 1/Rb_h
       
       if (!is_null(Sc) | !is_null(Sc_name))
@@ -248,8 +248,8 @@ end
 end
 end
       
-      Sc   = c(constants$Sc_CO2,Sc)
-      Gb_x = DataFrame(lapply(Sc,function(x) Gb_h / (x/constants$Pr)^0.67))
+      Sc   = c(constants[:Sc_CO2],Sc)
+      Gb_x = DataFrame(lapply(Sc,function(x) Gb_h / (x/constants[:Pr])^0.67))
       colnames(Gb_x) = paste0("Gb_",c("CO2",Sc_name))
       
 end
@@ -283,11 +283,11 @@ else
              Choose 'stab_correction = FALSE' if no stability correction should be applied.")
 end
       
-      Ra_m  = pmax((log((zr - d)/z0m) - psi_h),0) / (constants$k*ustar)
+      Ra_m  = pmax((log((zr - d)/z0m) - psi_h),0) / (constants[:k]*ustar)
       
 else 
         
-        Ra_m  = pmax((log((zr - d)/z0m)),0) / (constants$k*ustar)
+        Ra_m  = pmax((log((zr - d)/z0m)),0) / (constants[:k]*ustar)
         zeta = psi_h = rep(NA_integer_,length=length(Ra_m))
         
 end

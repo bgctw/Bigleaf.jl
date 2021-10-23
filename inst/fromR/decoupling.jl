@@ -136,9 +136,9 @@ end
 #' @export             
 function longwave_conductance(Tair,LAI,constants=bigleaf_constants())
   
-  Tair = Tair + constants$Kelvin
+  Tair = Tair + constants[:Kelvin]
   
-  Gr = 4 * constants$sigma * Tair^3 * LAI / constants$cp
+  Gr = 4 * constants[:sigma] * Tair^3 * LAI / constants[:cp]
   
   return(Gr)
 end

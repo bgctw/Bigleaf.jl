@@ -103,13 +103,13 @@ function surface_conditions(data,Tair="Tair",pressure="pressure",LE="LE",H="H",
   gamma = psychrometric_constant(Tair,pressure,constants)
   
   # 1) Temperature
-  Tsurf = Tair + H / (rho * constants$cp * Ga)
+  Tsurf = Tair + H / (rho * constants[:cp] * Ga)
   
   # 2) Humidity
   esat      = Esat_slope(Tair,Esat_formula,constants)[,"Esat"]
   e         = esat - VPD
   esat_surf = Esat_slope(Tsurf,Esat_formula,constants)[,"Esat"]
-  esurf     = e + (LE * gamma)/(Ga * rho * constants$cp)
+  esurf     = e + (LE * gamma)/(Ga * rho * constants[:cp])
   VPD_surf  = pmax(esat_surf - esurf,0)
   qsurf     = VPD_to_q(VPD_surf,Tsurf,pressure,Esat_formula,constants)
   rH_surf   = VPD_to_rH(VPD_surf,Tsurf,Esat_formula)
@@ -213,8 +213,8 @@ function radiometric_surface_temp(data,LW_up="LW_up",LW_down="LW_down",
   
   check_input(data,list(LW_up,LW_down))
   
-  Trad_K    = ((LW_up - (1 - emissivity)*LW_down) / (constants$sigma * emissivity))^(1/4)
-  Trad_degC = Trad_K - constants$Kelvin
+  Trad_K    = ((LW_up - (1 - emissivity)*LW_down) / (constants[:sigma] * emissivity))^(1/4)
+  Trad_degC = Trad_K - constants[:Kelvin]
   
   return(DataFrame(Trad_K,Trad_degC))
 end

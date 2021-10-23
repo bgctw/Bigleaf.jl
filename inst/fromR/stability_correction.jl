@@ -46,8 +46,8 @@ function Monin_Obukhov_length(data,Tair="Tair",pressure="pressure",ustar="ustar"
   check_input(data,list(Tair,pressure,ustar,H))
   
   rho  = air_density(Tair,pressure,constants)
-  Tair = Tair + constants$Kelvin
-  MOL  = (-rho*constants$cp*ustar^3*Tair) / (constants$k*constants$g*H)
+  Tair = Tair + constants[:Kelvin]
+  MOL  = (-rho*constants[:cp]*ustar^3*Tair) / (constants[:k]*constants[:g]*H)
   
   return(MOL)
 end
