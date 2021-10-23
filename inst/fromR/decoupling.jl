@@ -16,11 +16,11 @@
 #' - LAI         Leaf area index (m2 m-2), only used if `approach = "Martin_1989"`.
 #' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
 #'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
-#'                      See `\link{Esat_slope`}. 
-#' - constants   Kelvin - conversion degree Celsius to Kelvin \cr
-#'                    cp - specific heat of air for constant pressure (J K-1 kg-1) \cr
-#'                    eps - ratio of the molecular weight of water vapor to dry air (-) \cr
-#'                    sigma - Stefan-Boltzmann constant (W m-2 K-4) \cr
+#'                      See [`Esat_slope`](@ref). 
+#' - constants   Kelvin - conversion degree Celsius to Kelvin 
+#'                    cp - specific heat of air for constant pressure (J K-1 kg-1) 
+#'                    eps - ratio of the molecular weight of water vapor to dry air (-) 
+#'                    sigma - Stefan-Boltzmann constant (W m-2 K-4) 
 #'                    Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
 #' 
 #' # Details
@@ -30,35 +30,37 @@
 #'          characterized by high physiological (i.e. stomatal) control on transpiration
 #'          and similar conditions at the canopy surface compared to the atmosphere above
 #'          the canopy. Values close to 1 indicate the opposite, i.e. decoupled conditions and 
-#'          a low stomatal control on transpiration (Jarvis & McNaughton 1986). \cr
+#'          a low stomatal control on transpiration (Jarvis & McNaughton 1986). 
 #'          The `"Jarvis&McNaughton_1986"` approach (default option) is the original
 #'          formulation for the decoupling coefficient, given by (for an amphistomatous 
 #'          canopy):
 #'          
-#'          \deqn{\Omega = \frac{\epsilon + 1}{\epsilon + 1 + \frac{Ga}{Gc}}}{%
-#'          \Omega = (\epsilon + 1) / ( \epsilon + 1 + Ga/Gc)}
+#'          ``\\Omega = \frac{\epsilon + 1``{\epsilon + 1 + \frac{Ga}{Gc}}}{%
+#'          \\Omega = (\epsilon + 1) / ( \epsilon + 1 + Ga/Gc)}
 #'          
-#'          where \eqn{\epsilon = \frac{s}{\gamma}}{\epsilon = s/\gamma} is a dimensionless coefficient
-#'          with s being the slope of the saturation vapor pressure curve (Pa K-1), and \eqn{\gamma} the 
+#'          where ``\epsilon = \frac{s``{\\gamma}}{\epsilon = s/\\gamma} is a dimensionless coefficient
+#'          with s being the slope of the saturation vapor pressure curve (Pa K-1), and ``\\gamma`` the 
 #'          psychrometric constant (Pa K-1).
 #'          
 #'          The approach `"Martin_1989"` by Martin 1989 additionally takes radiative coupling
 #'          into account:
 #'          
-#'          \deqn{\Omega = \frac{\epsilon + 1 + \frac{Gr}{Ga}}{\epsilon + (1 + \frac{Ga}{Gs}) (1 + \frac{Gr}{Ga})}}{%
-#'          \Omega = (\epsilon + 1 + Gr/Ga) / (\epsilon + (1 + Ga/Gs) (1 + Gr/Ga))}
+#'          ``\\Omega = \frac{\epsilon + 1 + \frac{Gr``{Ga}}{\epsilon + (1 + \frac{Ga}{Gs}) (1 + \frac{Gr}{Ga})}}{%
+#'          \\Omega = (\epsilon + 1 + Gr/Ga) / (\epsilon + (1 + Ga/Gs) (1 + Gr/Ga))}
 #' 
 #' # Value
- \item{\eqn{\Omega} -}{the decoupling coefficient Omega (-)}
+ - ``\\Omega`` -: the decoupling coefficient Omega (-)
 #' 
-#' @references Jarvis P_G., McNaughton K_G., 1986: Stomatal control of transpiration:
+#' #References
+#' Jarvis P_G., McNaughton K_G., 1986: Stomatal control of transpiration:
 #'             scaling up from leaf to region. Advances in Ecological Research 15, 1-49. 
 #'             
 #'             Martin P., 1989: The significance of radiative coupling between
 #'             vegetation and the atmosphere. Agricultural and Forest Meteorology 49, 45-53.
 #' 
-#' @seealso `\link{aerodynamic_conductance`}, `\link{surface_conductance`},
-#'          `\link{equilibrium_imposed_ET`}
+#' #See also
+#' [`aerodynamic_conductance`](@ref), [`surface_conductance`](@ref),
+#'          [`equilibrium_imposed_ET`](@ref)
 #' 
 #' ```@example; output = false
 #' ``` 
@@ -114,19 +116,20 @@ end
 #' 
 #' - Tair      Air temperature (deg C)
 #' - LAI       Leaf area index (m2 m-2)
-#' - constants Kelvin - conversion degree Celsius to Kelvin \cr
-#'                  sigma - Stefan-Boltzmann constant (W m-2 K-4) \cr
+#' - constants Kelvin - conversion degree Celsius to Kelvin 
+#'                  sigma - Stefan-Boltzmann constant (W m-2 K-4) 
 #'                  cp - specific heat of air for constant pressure (J K-1 kg-1)
 #'                  
 #' # Details
  the following formula is used (Martin, 1989):
 #' 
-#'          \deqn{Gr = 4 \sigma Tair^3 LAI / cp}                             
+#'          ``Gr = 4 \sigma Tair^3 LAI / cp``                             
 #'                                       
 #' # Value
- \item{Gr -}{longwave radiative transfer conductance of the canopy (m s-1)}
+ - Gr -: longwave radiative transfer conductance of the canopy (m s-1)
 #'                  
-#' @references Martin P., 1989: The significance of radiative coupling between
+#' #References
+#' Martin P., 1989: The significance of radiative coupling between
 #'             vegetation and the atmosphere. Agricultural and Forest Meteorology 49, 45-53.
 #'          
 #' ```@example; output = false

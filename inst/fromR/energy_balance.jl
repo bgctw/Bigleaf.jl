@@ -18,9 +18,10 @@
 #'          have been used (e.g. Blanken et al., 1997)
 #' 
 #' # Value
- \item{Sp -}{biochemical energy (W m-2)}
+ - Sp -: biochemical energy (W m-2)
 #' 
-#' @references Meyers, T_P., Hollinger, S_E. 2004: An assessment of storage terms in the surface energy
+#' #References
+#' Meyers, T_P., Hollinger, S_E. 2004: An assessment of storage terms in the surface energy
 #'             balance of maize and soybean. Agricultural and Forest Meteorology 125, 105-115.
 #'             
 #'             Nobel, P_S., 1974: Introduction to Biophysical Plant Physiology.
@@ -56,15 +57,16 @@ end
 #' # Details
  Energy use efficiency is calculated as:
 #' 
-#'            \deqn{EUE = sum(GPP)/sum(Rn)}
+#'            ``EUE = sum(GPP)/sum(Rn)``
 #'          
 #'          where the sums are calculated for complete cases of GPP and Rn over
 #'          the entire time period.
 #' 
 #' # Value
- \item{EUE -}{Energy use efficiency (-)}
+ - EUE -: Energy use efficiency (-)
 #' 
-#' @seealso `\link{light_use_efficiency`}
+#' #See also
+#' [`light_use_efficiency`](@ref)
 #' 
 #' ```@example; output = false
 #' ```
@@ -102,7 +104,7 @@ end
 #' - H     Sensible heat flux (W m-2)
 #' - instantaneous    should the energy balance be calculated at the time step 
 #'                         of the observations (`TRUE`), or over the entire time period
-#'                         provided as input (`FALSE`)
+#'                         provided as input (`false`)
 #' - missing_G_as_NA  if `TRUE`, missing G are treated as `NA`s ,otherwise set to 0. 
 #' - missing_S_as_NA  if `TRUE`, missing S are treated as `NA`s, otherwise set to 0.
 #' 
@@ -110,28 +112,29 @@ end
 #' # Details
  The energy balance ratio (EBR) is calculated as:
 #'          
-#'            \deqn{EBR = sum(LE + H)/sum(Rn - G - S)}
+#'            ``EBR = sum(LE + H)/sum(Rn - G - S)``
 #'          
 #'          the sum is taken for all time steps with complete observations (i.e. where
 #'          all energy balance terms are available).
 #' 
 #' # Value
  a named vector containing:
-#'         \item{n}{number of complete (all energy balance terms available) observations}
-#'         \item{intercept}{intercept of the OLS regression}
-#'         \item{slope}{slope of the OLS regression}
-#'         \item{r_squared}{r^2 of the OLS regression}
-#'         \item{EBR}{energy balance ratio}
+#'         - n: number of complete (all energy balance terms available) observations
+#'         - intercept: intercept of the OLS regression
+#'         - slope: slope of the OLS regression
+#'         - r_squared: r^2 of the OLS regression
+#'         - EBR: energy balance ratio
 #'         
 #'         if `instantaneous = TRUE`, only `EBR` is returned.
 #' 
-#' @references Wilson K., et al. 2002: Energy balance closure at FLUXNET sites.
+#' #References
+#' Wilson K., et al. 2002: Energy balance closure at FLUXNET sites.
 #'             Agricultural and Forest Meteorology 113, 223-243.
 #'
 #' ```@example; output = false
 #' ``` 
 #' ## characterize energy balance closure for DE-Tha in June 2014
-#' energy_closure(DE_Tha_Jun_2014,instantaneous=FALSE)
+#' energy_closure(DE_Tha_Jun_2014,instantaneous=false)
 #' 
 #' ## look at half-hourly closure 
 #' EBR_inst = energy_closure(DE_Tha_Jun_2014,instantaneous=TRUE)
@@ -140,8 +143,8 @@ end
 #' @importFrom stats complete_cases lm
 """
 """
-function energy_closure(data,Rn="Rn",G=NULL,S=NULL,LE="LE",H="H",instantaneous=FALSE,
-                           missing_G_as_NA=FALSE,missing_S_as_NA=FALSE)
+function energy_closure(data,Rn="Rn",G=NULL,S=NULL,LE="LE",H="H",instantaneous=false,
+                           missing_G_as_NA=false,missing_S_as_NA=false)
   
   check_input(data,list(Rn,LE,H,G,S))
   
@@ -193,21 +196,22 @@ end
 #' - Tair       Air temperature (degC)
 #' - Tsurf      Surface temperature (degC)
 #' - emissivity Emissivity of the surface (-)
-#' - constants  sigma - Stefan-Boltzmann constant (W m-2 K-4) \cr
+#' - constants  sigma - Stefan-Boltzmann constant (W m-2 K-4) 
 #'                   Kelvin - conversion degree Celsius to Kelvin 
 #'
 #' # Details
  The isothermal net radiation (Rni) is given by:
 #'          
-#'            \deqn{Rni = Rn + \epsilon * \sigma * (Tsurf^4 - Tair^4)}
+#'            ``Rni = Rn + \epsilon * \sigma * (Tsurf^4 - Tair^4)``
 #'          
-#'          where \eqn{\epsilon} is the emissivity of the surface. Tsurf and Tair
+#'          where ``\epsilon`` is the emissivity of the surface. Tsurf and Tair
 #'          are in Kelvin.
 #'          
 #' # Value
- \item{Rni -}{isothermal net radiation (W m-2)}
+ - Rni -: isothermal net radiation (W m-2)
 #' 
-#' @references Jones, H. 2014: Plants and Microclimate. 3rd edition, Cambridge
+#' #References
+#' Jones, H. 2014: Plants and Microclimate. 3rd edition, Cambridge
 #'             University Press.
 #' 
 #' ```@example; output = false

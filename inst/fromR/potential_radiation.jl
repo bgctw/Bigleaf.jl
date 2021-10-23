@@ -49,7 +49,7 @@ end
 #' - timezone     Time zone (hours)
 #' - useSolartime by default corrects hour (given in local winter time)
 #'                     for latitude to solar time (where noon is exactly at 12:00).
-#'                     Set this to `FALSE` to directly use local winter time.
+#'                     Set this to `false` to directly use local winter time.
 #'
 #' # Value
  vector of potential radiation (W m-2)
@@ -60,7 +60,7 @@ end
 #' potRadApparentLocal = potential_radiation(
 #'   160, hour, 39.94, -5.77, timezone = +1)
 #' potRadTimezone = potential_radiation(
-#'   160, hour, 39.94, -5.77, timezone = +1, useSolartime = FALSE)
+#'   160, hour, 39.94, -5.77, timezone = +1, useSolartime = false)
 #' plot(potRadApparentLocal ~ hour, type = 'l'
 #'   , ylab = 'potential radiation (W m-2)')
 #' lines(potRadTimezone ~  hour, col = "blue")

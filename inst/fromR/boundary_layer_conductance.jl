@@ -11,39 +11,41 @@
 #' - Sc        Optional: Schmidt number of additional quantities to be calculated
 #' - Sc_name   Optional: Name of the additional quantities, has to be of same length than 
 #'                  `Sc_name`
-#' - constants k - von-Karman constant \cr
-#'                  Sc_CO2 - Schmidt number for CO2 \cr 
+#' - constants k - von-Karman constant 
+#'                  Sc_CO2 - Schmidt number for CO2  
 #'                  Pr - Prandtl number (if `Sc` is provided)
 #'
 #'  
 #' # Details
  The empirical equation for Rb suggested by Thom 1972 is:
 #'  
-#'      \deqn{Rb = 6.2ustar^-0.67}
+#'      ``Rb = 6.2ustar^-0.67``
 #'  
 #'    Gb (=1/Rb) for water vapor and heat are assumed to be equal in this package.
 #'    Gb for other quantities x is calculated as (Hicks et al. 1987):
 #'  
-#'      \deqn{Gb_x = Gb / (Sc_x / Pr)^0.67}
+#'      ``Gb_x = Gb / (Sc_x / Pr)^0.67``
 #'  
 #'  where Sc_x is the Schmidt number of quantity x, and Pr is the Prandtl number (0.71).
 #'  
 #' # Value
  a DataFrame with the following columns:
-#'  \item{Gb_h}{Boundary layer conductance for heat transfer (m s-1)}
-#'  \item{Rb_h}{Boundary layer resistance for heat transfer (s m-1)}
-#'  \item{kB_h}{kB-1 parameter for heat transfer}
+#'  - Gb_h: Boundary layer conductance for heat transfer (m s-1)
+#'  - Rb_h: Boundary layer resistance for heat transfer (s m-1)
+#'  - kB_h: kB-1 parameter for heat transfer
 #'  \item{Gb_Sc_name}{Boundary layer conductance for `Sc_name` (m s-1). Only added if `Sc_name` and 
 #'                    `Sc_name` are provided}
 #'  
-#' @references Thom, A., 1972: Momentum, mass and heat exchange of vegetation.
+#' #References
+#' Thom, A., 1972: Momentum, mass and heat exchange of vegetation.
 #'             Quarterly Journal of the Royal Meteorological Society 98, 124-134.
 #'             
 #'             Hicks, B_B., Baldocchi, D_D., Meyers, T_P., Hosker, J_R., Matt, D_R., 1987:
 #'             A preliminary multiple resistance routine for deriving dry deposition velocities
 #'             from measured quantities. Water, Air, and Soil Pollution 36, 311-330.
 #' 
-#' @seealso `\link{Gb_Choudhury`}, `\link{Gb_Su`}, `\link{aerodynamic_conductance`}
+#' #See also
+#' [`Gb_Choudhury`](@ref), [`Gb_Su`](@ref), [`aerodynamic_conductance`](@ref)
 #' 
 #' ```@example; output = false
 #' ``` 
@@ -104,15 +106,15 @@ end
 #' - Sc               Optional: Schmidt number of additional quantities to be calculated
 #' - Sc_name          Optional: Name of the additonal quantities, has to be of same length than 
 #'                         `Sc_name`
-#' - constants        k - von-Karman constant \cr
-#'                         Sc_CO2 - Schmidt number for CO2 \cr 
+#' - constants        k - von-Karman constant 
+#'                         Sc_CO2 - Schmidt number for CO2  
 #'                         Pr - Prandtl number (if `Sc` is provided)
 #'                         
 #' # Value
  A data frame with the following columns:
-#'  \item{Gb_h}{Boundary layer conductance for heat transfer (m s-1)}
-#'  \item{Rb_h}{Boundary layer resistance for heat transfer (s m-1)}
-#'  \item{kB_h}{kB-1 parameter for heat transfer}
+#'  - Gb_h: Boundary layer conductance for heat transfer (m s-1)
+#'  - Rb_h: Boundary layer resistance for heat transfer (s m-1)
+#'  - kB_h: kB-1 parameter for heat transfer
 #'  \item{Gb_Sc_name}{Boundary layer conductance for `Sc_name` (m s-1). Only added if `Sc_name` and 
 #'                    `Sc_name` are provided}
 #' 
@@ -120,30 +122,32 @@ end
  Boundary layer conductance according to Choudhury & Monteith 1988 is
 #'          given by:
 #'          
-#'            \deqn{Gb_h = LAI((2a/\alpha)*sqrt(u(h)/w)*(1-exp(-\alpha/2)))}
+#'            ``Gb_h = LAI((2a/\\alpha)*sqrt(u(h)/w)*(1-exp(-\\alpha/2)))``
 #'          
 #'          where u(zh) is the wind speed at the canopy surface, approximated from
-#'          measured wind speed at sensor height zr and a wind extinction coefficient \eqn{\alpha}:
+#'          measured wind speed at sensor height zr and a wind extinction coefficient ``\\alpha``:
 #'          
-#'            \deqn{u(zh) = u(zr) / (exp(\alpha(zr/zh -1)))}.
+#'            ``u(zh) = u(zr) / (exp(\\alpha(zr/zh -1)))``.
 #'          
-#'          \eqn{\alpha} is modeled as an empirical relation to LAI (McNaughton & van den Hurk 1995):
+#'          ``\\alpha`` is modeled as an empirical relation to LAI (McNaughton & van den Hurk 1995):
 #'          
-#'            \deqn{\alpha = 4.39 - 3.97*exp(-0.258*LAI)}
+#'            ``\\alpha = 4.39 - 3.97*exp(-0.258*LAI)``
 #'          
 #'          Gb (=1/Rb) for water vapor and heat are assumed to be equal in this package.
 #'          Gb for other quantities x is calculated as (Hicks et al. 1987):
 #'  
-#'            \deqn{Gb_x = Gb / (Sc_x / Pr)^0.67}
+#'            ``Gb_x = Gb / (Sc_x / Pr)^0.67``
 #'  
 #'          where Sc_x is the Schmidt number of quantity x, and Pr is the Prandtl number (0.71).
 #'          
-#' @note If the roughness length for momentum (`z0m`) is not provided as input, it is estimated 
+#' #Note
+#' If the roughness length for momentum (`z0m`) is not provided as input, it is estimated 
 #'       from the function `roughness_parameters` within `wind_profile`. This function
 #'       estimates a single `z0m` value for the entire time period! If a varying `z0m` value 
 #'       (e.g. across seasons or years) is required, `z0m` should be provided as input argument.
 #'          
-#' @references Choudhury, B. J., Monteith J_L., 1988: A four-layer model for the heat
+#' #References
+#' Choudhury, B. J., Monteith J_L., 1988: A four-layer model for the heat
 #'             budget of homogeneous land surfaces. Q. J. R. Meteorol. Soc. 114, 373-398.
 #'             
 #'             McNaughton, K. G., Van den Hurk, B_J_J_M., 1995: A 'Lagrangian' revision of
@@ -154,7 +158,8 @@ end
 #'             A preliminary multiple resistance routine for deriving dry deposition velocities
 #'             from measured quantities. Water, Air, and Soil Pollution 36, 311-330.
 #'             
-#' @seealso `\link{Gb_Thom`}, `\link{Gb_Su`}, `\link{aerodynamic_conductance`}
+#' #See also
+#' [`Gb_Thom`](@ref), [`Gb_Su`](@ref), [`aerodynamic_conductance`](@ref)
 #'    
 #' ```@example; output = false
 #' ``` 
@@ -181,7 +186,7 @@ function Gb_Choudhury(data,Tair="Tair",pressure="pressure",wind="wind",ustar="us
     estimate_z0m = TRUE
     z0m = NULL
 else 
-    estimate_z0m = FALSE
+    estimate_z0m = false
 end
   
   wind_zh = wind_profile(data=data,z=zh,Tair=Tair,pressure=pressure,ustar=ustar,H=H,
@@ -244,17 +249,17 @@ end
 #' - Sc        Optional: Schmidt number of additional quantities to be calculated
 #' - Sc_name   Optional: Name of the additional quantities, has to be of same length than 
 #'                  `Sc_name`
-#' - constants Kelvin - conversion degree Celsius to Kelvin \cr
-#'                  pressure0 - reference atmospheric pressure at sea level (Pa) \cr
-#'                  Tair0 - reference air temperature (K) \cr
-#'                  Sc_CO2 - Schmidt number for CO2 \cr 
+#' - constants Kelvin - conversion degree Celsius to Kelvin 
+#'                  pressure0 - reference atmospheric pressure at sea level (Pa) 
+#'                  Tair0 - reference air temperature (K) 
+#'                  Sc_CO2 - Schmidt number for CO2  
 #'                  Pr - Prandtl number (if `Sc` is provided)
 #' 
 #' # Value
  A DataFrame with the following columns:
-#'  \item{Gb_h}{Boundary layer conductance for heat transfer (m s-1)}
-#'  \item{Rb_h}{Boundary layer resistance for heat transfer (s m-1)}
-#'  \item{kB_h}{kB-1 parameter for heat transfer}
+#'  - Gb_h: Boundary layer conductance for heat transfer (m s-1)
+#'  - Rb_h: Boundary layer resistance for heat transfer (s m-1)
+#'  - kB_h: kB-1 parameter for heat transfer
 #'  \item{Gb_Sc_name}{Boundary layer conductance for `Sc_name` (m s-1). Only added if `Sc_name` and 
 #'                    `Sc_name` are provided}
 #'     
@@ -262,42 +267,44 @@ end
  The formulation is based on the kB-1 model developed by Massman 1999. 
 #'          Su et al. 2001 derived the following approximation:
 #'           
-#'            \deqn{kB-1 = (k Cd fc^2) / (4Ct ustar/u(zh)) + kBs-1(1 - fc)^2}
+#'            ``kB-1 = (k Cd fc^2) / (4Ct ustar/u(zh)) + kBs-1(1 - fc)^2``
 #'          
 #'          If fc (fractional vegetation cover) is missing, it is estimated from LAI:
 #' 
-#'            \deqn{fc = 1 - exp(-LAI/2)}
+#'            ``fc = 1 - exp(-LAI/2)``
 #'          
 #'          The wind speed at the top of the canopy is calculated using function
-#'          `\link{wind_profile`}.
+#'          [`wind_profile`](@ref).
 #'          
 #'          Ct is the heat transfer coefficient of the leaf (Massman 1999):
 #'          
-#'            \deqn{Ct = Pr^-2/3 Reh^-1/2 N}
+#'            ``Ct = Pr^-2/3 Reh^-1/2 N``
 #'          
 #'          where Pr is the Prandtl number (set to 0.71), and Reh is the Reynolds number for leaves:
 #'          
-#'            \deqn{Reh = Dl wind(zh) / v}
+#'            ``Reh = Dl wind(zh) / v``
 #'           
 #'          kBs-1, the kB-1 value for bare soil surface, is calculated according 
 #'          to Su et al. 2001:
 #'          
-#'            \deqn{kBs^-1 = 2.46(Re)^0.25 - ln(7.4)}
+#'            ``kBs^-1 = 2.46(Re)^0.25 - ln(7.4)``
 #'          
 #'          Gb (=1/Rb) for water vapor and heat are assumed to be equal in this package.
 #'          Gb for other quantities x is calculated as (Hicks et al. 1987):
 #'  
-#'            \deqn{Gb_x = Gb / (Sc_x / Pr)^0.67}
+#'            ``Gb_x = Gb / (Sc_x / Pr)^0.67``
 #'  
 #'          where Sc_x is the Schmidt number of quantity x, and Pr is the Prandtl number (0.71).
 #' 
-#' @note If the roughness length for momentum (`z0m`) is not provided as input, it is estimated 
+#' #Note
+#' If the roughness length for momentum (`z0m`) is not provided as input, it is estimated 
 #'       from the function `roughness_parameters` within `wind_profile`. This function
 #'       estimates a single `z0m` value for the entire time period! If a varying `z0m` value 
 #'       (e.g. across seasons or years) is required, `z0m` should be provided as input argument.
 #' 
 #' 
-#' @references Su, Z., Schmugge, T., Kustas, W. & Massman, W., 2001: An evaluation of
+#' #References
+#' Su, Z., Schmugge, T., Kustas, W. & Massman, W., 2001: An evaluation of
 #'             two models for estimation of the roughness height for heat transfer between
 #'             the land surface and the atmosphere. Journal of Applied Meteorology 40, 1933-1951.
 #' 
@@ -308,7 +315,8 @@ end
 #'             A preliminary multiple resistance routine for deriving dry deposition velocities
 #'             from measured quantities. Water, Air, and Soil Pollution 36, 311-330.
 #' 
-#' @seealso `\link{Gb_Thom`}, `\link{Gb_Choudhury`}, `\link{aerodynamic_conductance`}
+#' #See also
+#' [`Gb_Thom`](@ref), [`Gb_Choudhury`](@ref), [`aerodynamic_conductance`](@ref)
 #' 
 #' ```@example; output = false
 #' ``` 
@@ -336,7 +344,7 @@ function Gb_Su(data,Tair="Tair",pressure="pressure",ustar="ustar",wind="wind",
   
   if (is_null(fc))
     if (is_null(LAI))
-      stop("one of 'fc' or 'LAI' must be provided",call.=FALSE)
+      stop("one of 'fc' or 'LAI' must be provided",call.=false)
 else 
       fc = (1-exp(-LAI/2)) 
 end
@@ -346,7 +354,7 @@ end
     estimate_z0m = TRUE
     z0m = NULL
 else 
-    estimate_z0m = FALSE
+    estimate_z0m = false
 end
   
   wind_zh = wind_profile(data=data,z=zh,Tair=Tair,pressure=pressure,ustar=ustar,H=H,

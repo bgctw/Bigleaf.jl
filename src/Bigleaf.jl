@@ -8,7 +8,7 @@ using Dates, TimeZones
 using Pipe
 using AstroLib
 using Suppressor
-
+using Missings
 
 
 export toDataFrame, frac_hour
@@ -23,6 +23,7 @@ export air_density, pressure_from_elevation, psychrometric_constant,
     wetbulb_temp_from_e_Tair_gamma, wetbulb_temp
 export calc_sun_position_MOD, calc_sun_position_hor
 export potential_radiation, extraterrestrial_radiation, get_datetime_for_doy_hour
+export potential_ET
 
 include("util.jl")    
 include("bigleaf_constants.jl")
@@ -30,5 +31,6 @@ include("unit_conversions.jl")
 include("meteorological_variables.jl")
 include("sun_position.jl")
 include("potential_radiation.jl")
+include("evapotranspiration.jl")
 
 end

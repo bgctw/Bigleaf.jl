@@ -14,21 +14,22 @@
 #' - Gs               Surface conductance to water vapor (mol m-2 s-1)
 #' - Rleaf            Ecosystem respiration stemming from leaves (umol CO2 m-2 s-1); defaults to 0          
 #' - missing_Rleaf_as_NA if Rleaf is provided, should missing values be treated as `NA` (`TRUE`)
-#'                            or set to 0 (`FALSE`, the default)?
+#'                            or set to 0 (`false`, the default)?
 #' - constants        DwDc - Ratio of the molecular diffusivities for water vapor and CO2 (-)
 #' 
 #' # Details
  Bulk intercellular CO2 concentration (Ci) is given by:
 #' 
-#'            \deqn{Ci = Ca - (GPP - Rleaf)/(Gs/1.6)}
+#'            ``Ci = Ca - (GPP - Rleaf)/(Gs/1.6)``
 #'          
 #'          where Gs/1.6 (mol m-2 s-1) represents the surface conductance to CO2.
 #'          Note that Gs is required in mol m-2 s-1 for water vapor. Gs is converted to
 #'          its value for CO2 internally.
 #'          Ca can either be atmospheric CO2 concentration (as measured), or surface
-#'          CO2 concentration as calculated from `\link{surface_CO2`}.
+#'          CO2 concentration as calculated from [`surface_CO2`](@ref).
 #'          
-#' @note The equation is based on Fick's law of diffusion and is equivalent to the
+#' #Note
+#' The equation is based on Fick's law of diffusion and is equivalent to the
 #'       often used equation at leaf level (ci = ca - An/gs).
 #'       Note that GPP and Gs have a different interpretation than An and gs.
 #'       Gs comprises non-physiological contributions (i.e. physical evaporation)
@@ -41,9 +42,10 @@
 #'       readily comparable to its leaf-level analogue and/or physiological meaningful.          
 #' 
 #' # Value
- \item{Ci -}{Bulk canopy intercellular CO2 concentration (umol mol-1)}
+ - Ci -: Bulk canopy intercellular CO2 concentration (umol mol-1)
 #' 
-#' @references Kosugi Y. et al., 2013: Determination of the gas exchange phenology in an
+#' #References
+#' Kosugi Y. et al., 2013: Determination of the gas exchange phenology in an
 #'             evergreen coniferous forest from 7 years of eddy covariance flux data using
 #'             an extended big-leaf analysis. Ecol Res 28, 373-385.
 #'             
@@ -61,7 +63,7 @@
 """
 """
 function intercellular_CO2(data,Ca="Ca",GPP="GPP",Gs="Gs_mol",Rleaf=NULL,
-                              missing_Rleaf_as_NA=FALSE,constants=bigleaf_constants())
+                              missing_Rleaf_as_NA=false,constants=bigleaf_constants())
   
   check_input(data,list(Ca,GPP,Gs))
   
@@ -87,7 +89,7 @@ end
 #'              CO2 concentration using the Farquhar et al. 1980 model for C3 photosynthesis.
 #'           
 #' - data      Data_Frame or matrix with all required columns   
-#' - C3        C3 vegetation (`TRUE`, the default) or C4 vegetation (`FALSE`)?              
+#' - C3        C3 vegetation (`TRUE`, the default) or C4 vegetation (`false`)?              
 #' - Temp      Surface (or air) temperature (degC) 
 #' - GPP       Gross primary productivity (umol m-2 s-1)
 #' - Ci        Bulk canopy intercellular CO2 concentration (umol mol-1)
@@ -114,14 +116,14 @@ end
 #' - Theta     Curvature term in the light response function of J (-)
 #' - alpha_canopy Canopy absorptance (-)
 #' - missing_Rleaf_as_NA if Rleaf is provided, should missing values be treated as `NA` (`TRUE`)
-#'                            or set to 0 (`FALSE`, the default)?
+#'                            or set to 0 (`false`, the default)?
 #' - Ci_C4        intercellular CO2 concentration below which photosynthesis
 #'                     is considered to be CO2-limited (umol mol-1), ignored
 #'                     if `C3 = TRUE`. 
-#' - constants    Kelvin - conversion degree Celsius to Kelvin \cr
-#'                     Rgas - universal gas constant (J mol-1 K-1) \cr
-#'                     kJ2J - conversion kilojoule (kJ) to joule (J) \cr
-#'                     J2kJ - conversion joule (J) to kilojoule (kJ) \cr
+#' - constants    Kelvin - conversion degree Celsius to Kelvin 
+#'                     Rgas - universal gas constant (J mol-1 K-1) 
+#'                     kJ2J - conversion kilojoule (kJ) to joule (J) 
+#'                     J2kJ - conversion joule (J) to kilojoule (kJ) 
 #'                     se_median - conversion standard error (SE) of the mean to SE of the median
 #'                  
 #' # Details
@@ -129,7 +131,7 @@ end
 #'          transport rate at 25degC (Jmax25), which characterize photosynthetic capacity,
 #'          are calculated as at leaf level. 
 #'          The required variables Gs and Ci can be calculated from 
-#'          `\link{surface_conductance`} and `\link{intercellular_CO2`}, respectively.
+#'          [`surface_conductance`](@ref) and [`intercellular_CO2`](@ref), respectively.
 #'          
 #'          Gas exchange parameters are taken from Bernacchi et al. 2001 (apparent values, which
 #'          assume an infinite mesophyll conductance). Negative and very low Ci values 
@@ -139,7 +141,7 @@ end
 #'          If net photosynthesis is Rubisco-limited (RuBP-saturated carboxylation
 #'          rate, i.e. light has to be (near-)saturating):
 #'         
-#'            \deqn{Vcmax = (GPP * (Ci + Kc*(1.0 + Oi/Ko))) / (Ci - Gam)}
+#'            ``Vcmax = (GPP * (Ci + Kc*(1.0 + Oi/Ko))) / (Ci - Gam)``
 #'          
 #'          where Kc and Ko are the Michaelis-Menten constants for CO2 and O2 (mmol mol-1),
 #'          respectively, Oi is the O2 concentration, and Gam is the photorespiratory CO2
@@ -147,7 +149,7 @@ end
 #'          Under low-light conditions, the electron transport rate J is calculated from
 #'          the RuBP regeneration-limited photosynthesis rate:
 #'          
-#'            \deqn{J = (GPP * (4.0 * Ci + 8.0 * Gam) / (Ci - Gam)}
+#'            ``J = (GPP * (4.0 * Ci + 8.0 * Gam) / (Ci - Gam)``
 #'          
 #'          In this function, bulk canopy photosynthesis is assumed to be Rubisco/RuBP-regeneration
 #'          limited, if incoming PPFD is above/below a specified threshold or range. These ranges
@@ -165,7 +167,7 @@ end
 #'          where APPFD_PSII is the absorbed PPFD by photosystem II (PS II), 
 #'          and Theta is a curvature parameter. APPFD_PSII is calculated as
 #'          
-#'            \deqn{PPFD * alpha_canopy * 0.85 * beta}
+#'            ``PPFD * alpha_canopy * 0.85 * beta``
 #'          
 #'          where alpha_canopy is canopy-scale absorptance, 0.85 is a correction factor,
 #'          and beta is the fraction of photons absorbed by PS II (assumed 0.5).
@@ -191,7 +193,7 @@ end
 #'          For C4 photosynthesis, the simplified model by von Caemmerer 2000 is used.
 #'          For light-saturated photosynthesis, Vcmax is given by:
 #'          
-#'            \deqn{Vcmax = GPP}
+#'            ``Vcmax = GPP``
 #'          
 #'          Note that in addition to the range `PPFD_c`, the range `Ci_C4`
 #'          discards all periods with low Ci, in which photosynthesis is likely to
@@ -199,12 +201,13 @@ end
 #'          
 #'          In the light-limited case, J is calculated as:
 #'          
-#'            \deqn{J = 3 * GPPj / (1 - 0.5) }
+#'            ``J = 3 * GPPj / (1 - 0.5) ``
 #'          
 #'          The calculation of Jmax25 and Vcmax25 is identical to C3 photosynthesis
 #'          as described above.
 #'          
-#' @note   The critical assumption is that bulk canopy photosynthesis is limited by
+#' #Note
+#'   The critical assumption is that bulk canopy photosynthesis is limited by
 #'         one of the two limitation states. Incoming PPFD is assumed to determine
 #'         the limitation states. Note however that the ranges (`PPFD_j` and `PPFD_c`)
 #'         are likely ecosystem-specific. E_g. dense canopies presumably require higher
@@ -219,10 +222,11 @@ end
 #'          
 #' # Value
  a DataFrame with the following columns:
-#'         \item{Vcmax25}{maximum bulk canopy carboxylation rate at 25degC (umol m-2 (ground) s-1)}
-#'         \item{Jmax25}{maximum bulk canopy electron transport rate at 25degC (umol m-2 (ground) s-1)}
+#'         - Vcmax25: maximum bulk canopy carboxylation rate at 25degC (umol m-2 (ground) s-1)
+#'         - Jmax25: maximum bulk canopy electron transport rate at 25degC (umol m-2 (ground) s-1)
 #'        
-#' @references Lloyd J. et al., 1995: A simple calibrated model of Amazon rainforest productivity
+#' #References
+#' Lloyd J. et al., 1995: A simple calibrated model of Amazon rainforest productivity
 #'             based on leaf biochemical properties. Plant, Cell and Environment 18, 1129-1145.
 #' 
 #'             Rayment M_B., Loustau D., Jarvis P_G., 2002: Photosynthesis and respiration
@@ -248,13 +252,14 @@ end
 #'             von Caemmerer, 2000: Biochemical models of leaf photosynthesis. Techniques
 #'             in plant sciences No. 2. CSIRO Publishing, Collingwood VIC, Australia.
 #'
-#' @seealso `\link{intercellular_CO2`}, `\link{Arrhenius_temp_response`}
+#' #See also
+#' [`intercellular_CO2`](@ref), [`Arrhenius_temp_response`](@ref)
 #'
 #' ```@example; output = false
 #' ``` 
-#' DE_Tha_Jun_2014_2 = filter_data(DE_Tha_Jun_2014,quality_control=FALSE,
+#' DE_Tha_Jun_2014_2 = filter_data(DE_Tha_Jun_2014,quality_control=false,
 #'                                  vars_qc=c("Tair","precip","VPD","H","LE"),
-#'                                  filter_growseas=FALSE,filter_precip=TRUE,
+#'                                  filter_growseas=false,filter_precip=TRUE,
 #'                                  filter_vars=c("Tair","PPFD","ustar","LE"),
 #'                                  filter_vals_min=c(5,200,0.2,0),
 #'                                  filter_vals_max=c(NA,NA,NA,NA),NA_as_invalid=TRUE,
@@ -269,7 +274,7 @@ end
 #' # calculate Gs from the the inverted PM equation
 #' Gs_PM = surface_conductance(DE_Tha_Jun_2014_2,Tair="Tair",pressure="pressure",
 #'                              Rn="Rn",G="G",S=NULL,VPD="VPD",Ga=Ga,
-#'                              formulation="Penman-Monteith")[,"Gs_mol"]
+#'                              formulation=Val(:Penman-Monteith))[,"Gs_mol"]
 #' 
 #' # calculate Ci 
 #' Ci = intercellular_CO2(DE_Tha_Jun_2014_2,Ca="Ca",GPP="GPP",Gs=Gs_PM) 
@@ -284,7 +289,7 @@ function photosynthetic_capacity(data,C3=TRUE,Temp,GPP="GPP",Ci,PPFD="PPFD",PPFD
                                     Rleaf=NULL,Oi=0.21,Kc25=404.9,Ko25=278.4,Gam25=42.75,
                                     Kc_Ha=79.43,Ko_Ha=36.38,Gam_Ha=37.83,Vcmax_Ha=65.33,Vcmax_Hd=200,
                                     Vcmax_dS=0.635,Jmax_Ha=43.9,Jmax_Hd=200,Jmax_dS=0.640,
-                                    Theta=0.7,alpha_canopy=0.8,missing_Rleaf_as_NA=FALSE,Ci_C4=100,
+                                    Theta=0.7,alpha_canopy=0.8,missing_Rleaf_as_NA=false,Ci_C4=100,
                                     constants=bigleaf_constants())
   
   check_input(data,list(Temp,GPP,Ci,PPFD))
@@ -386,8 +391,8 @@ end
 #' - Ha    Activation energy for param (kJ mol-1)
 #' - Hd    Deactivation energy for param (kJ mol-1)
 #' - dS    Entropy term for param (kJ mol-1 K-1)
-#' - constants Kelvin - conversion degree Celsius to Kelvin \cr
-#'                  Rgas - universal gas constant (J mol-1 K-1) \cr
+#' - constants Kelvin - conversion degree Celsius to Kelvin 
+#'                  Rgas - universal gas constant (J mol-1 K-1) 
 #'                  kJ2J - conversion kilojoule (kJ) to joule (J)
 #'                  
 #' # Details
@@ -416,7 +421,8 @@ end
 #' # Value
  param25 - value of the input parameter at the reference temperature of 25degC (umol m-2 s-1)
 #'               
-#' @references Johnson F_H., Eyring H., Williams R_W. 1942: 
+#' #References
+#' Johnson F_H., Eyring H., Williams R_W. 1942: 
 #'             The nature of enzyme inhibitions in bacterial luminescence: sulfanilamide,
 #'             urethane, temperature and pressure. Journal of cellular and comparative
 #'             physiology 20, 247-268.
@@ -483,19 +489,19 @@ end
 #' - Ca         Atmospheric CO2 concentration (air or surface) (umol mol-1)
 #' - Rleaf      Ecosystem respiration stemming from leaves (umol CO2 m-2 s-1); defaults to 0 
 #' - model      Stomatal model used. One of `"USO","Ball&Berry","Leuning"`.
-#' - robust_nls Use robust nonlinear regression (`\link[robustbase]{nlrob`})? Default is `FALSE`.
+#' - robust_nls Use robust nonlinear regression (`\link[robustbase]{nlrob`})? Default is `false`.
 #' - nmin       Minimum number of data required to perform the fit; defaults to 40.
 #' - fitg0      Should g0 and g1 be fitted simultaneously? 
 #' - g0         Minimum stomatal conductance (mol m-2 s-1); ignored if `fitg0 = TRUE`.
 #' - fitD0      Should D0 be fitted along with g1 (and g0 if `fitg0 = TRUE`)?; only used if `model = "Leuning"`.
-#' - D0         Stomatal sensitivity parameter to VPD; only used if `model = "Leuning"` and `fitD0 = FALSE`.
+#' - D0         Stomatal sensitivity parameter to VPD; only used if `model = "Leuning"` and `fitD0 = false`.
 #' - Gamma      Canopy CO2 compensation point (umol mol-1); only used if `model = "Leuning"`. 
 #'                   Can be a constant or a variable. Defaults to 50 umol mol-1.
-#' - constants  Kelvin - conversion degree Celsius to Kelvin \cr
-#'                   Rgas - universal gas constant (J mol-1 K-1) \cr
+#' - constants  Kelvin - conversion degree Celsius to Kelvin 
+#'                   Rgas - universal gas constant (J mol-1 K-1) 
 #'                   DwDc - Ratio of the molecular diffusivities for water vapor and CO2
 #' - missing_Rleaf_as_NA if Rleaf is provided, should missing values be treated as `NA` (`TRUE`)
-#'                            or set to 0 (`FALSE`, the default)?
+#'                            or set to 0 (`false`, the default)?
 #' - ...        Additional arguments to `\link[stats]{nls`} or `\link[robustbase]{nlrob`} if `robust_nls = TRUE`.
 #' 
 #' # Details
@@ -504,33 +510,34 @@ end
 #'          
 #'          The unified stomatal optimization (USO) model is given by (Medlyn et al. 2011):
 #'      
-#'             \deqn{gs = g0 + 1.6*(1.0 + g1/sqrt(VPD)) * An/ca}
+#'             ``gs = g0 + 1.6*(1.0 + g1/sqrt(VPD)) * An/ca``
 #'          
 #'          The semi-empirical model by Ball et al. 1987 is defined as:
 #'          
-#'             \deqn{gs = g0 + g1* ((An * rH) / ca)}
+#'             ``gs = g0 + g1* ((An * rH) / ca)``
 #'          
 #'          Leuning 1995 suggested a revised version of the Ball&Berry model:
 #'          
-#'             \deqn{gs = g0 + g1*An / ((ca - \Gamma) * (1 + VPD/D0))}
+#'             ``gs = g0 + g1*An / ((ca - \\gamma) * (1 + VPD/D0))``
 #'          
-#'          where \eqn{\Gamma} is by default assumed to be constant, but likely varies with temperature and among
+#'          where ``\\gamma`` is by default assumed to be constant, but likely varies with temperature and among
 #'          plant species. 
 #'          The equations above are valid at leaf-level. At ecosystem level, An is replaced by GPP (or GPP - Rleaf,
 #'          where Rleaf is leaf respiration), and gs (stomatal conductance) by Gs (surface conductance). 
 #'          The parameters in the models are estimated using nonlinear regression (`\link[stats]{nls`}) if
-#'          `robust_nls = FALSE` and weighted nonlinear regression if `robust_nls = TRUE`.
+#'          `robust_nls = false` and weighted nonlinear regression if `robust_nls = TRUE`.
 #'          The weights are calculated from `\link[robustbase]{nlrob`}, and `\link[stats]{nls`}
 #'          is used for the actual fitting.
 #'          Alternatively to measured VPD and Ca (i.e. conditions at instrument height), conditions at 
-#'          the big-leaf surface can be provided. Those can be calculated using `\link{surface_conditions`}.
+#'          the big-leaf surface can be provided. Those can be calculated using [`surface_conditions`](@ref).
 #'          
 #' 
 #' # Value
  A `nls` model object, containing information on the fitted parameters, their uncertainty range,
 #'         model fit, etc.
 #' 
-#' @references Medlyn B_E., et al., 2011: Reconciling the optimal and empirical approaches to
+#' #References
+#' Medlyn B_E., et al., 2011: Reconciling the optimal and empirical approaches to
 #'             modelling stomatal conductance. Global Change Biology 17, 2134-2144.
 #'             
 #'             Ball T_J., Woodrow I_E., Berry J_A. 1987: A model predicting stomatal conductance
@@ -544,14 +551,15 @@ end
 #'             Knauer, J. et al., 2018: Towards physiologically meaningful water-use efficiency estimates
 #'             from eddy covariance data. Global Change Biology 24, 694-710.
 #' 
-#' @seealso `\link{surface_conductance`}
+#' #See also
+#' [`surface_conductance`](@ref)
 #' 
 #' ```@example; output = false
 #' ``` 
 #' ## filter data to ensure that Gs is a meaningful proxy to canopy conductance (Gc)
-#' DE_Tha_Jun_2014_2 = filter_data(DE_Tha_Jun_2014,quality_control=FALSE,
+#' DE_Tha_Jun_2014_2 = filter_data(DE_Tha_Jun_2014,quality_control=false,
 #'                                  vars_qc=c("Tair","precip","VPD","H","LE"),
-#'                                  filter_growseas=FALSE,filter_precip=TRUE,
+#'                                  filter_growseas=false,filter_precip=TRUE,
 #'                                  filter_vars=c("Tair","PPFD","ustar","LE"),
 #'                                  filter_vals_min=c(5,200,0.2,0),
 #'                                  filter_vals_max=c(NA,NA,NA,NA),NA_as_invalid=TRUE,
@@ -566,23 +574,23 @@ end
 #' # if G and/or S are available, don't forget to indicate (they are ignored by default).
 #' Gs_PM = surface_conductance(DE_Tha_Jun_2014_2,Tair="Tair",pressure="pressure",
 #'                              Rn="Rn",G="G",S=NULL,VPD="VPD",Ga=Ga,
-#'                              formulation="Penman-Monteith")[,"Gs_mol"]
+#'                              formulation=Val(:Penman-Monteith))[,"Gs_mol"]
 #'                              
 #' ### Estimate the stomatal slope parameter g1 using the USO model
 #' mod_USO = stomatal_slope(DE_Tha_Jun_2014_2,model="USO",GPP="GPP",Gs=Gs_PM,
-#'                           robust_nls=FALSE,nmin=40,fitg0=FALSE)
+#'                           robust_nls=false,nmin=40,fitg0=false)
 #'                           
 #' ### Use robust regression to minimize influence of outliers in Gs                           
 #' mod_USO = stomatal_slope(DE_Tha_Jun_2014_2,model="USO",GPP="GPP",Gs=Gs_PM,
-#'                           robust_nls=TRUE,nmin=40,fitg0=FALSE)
+#'                           robust_nls=TRUE,nmin=40,fitg0=false)
 #' 
 #' ### Estimate the same parameter from the Ball&Berry model and prescribe g0
 #' mod_BB = stomatal_slope(DE_Tha_Jun_2014_2,model="Ball&Berry",GPP="GPP",
-#'                          robust_nls=FALSE,Gs=Gs_PM,g0=0.01,nmin=40,fitg0=FALSE)
+#'                          robust_nls=false,Gs=Gs_PM,g0=0.01,nmin=40,fitg0=false)
 #' 
 #' ## same for the Leuning model, but this time estimate both g1 and g0 (but fix D0)
 #' mod_Leu = stomatal_slope(DE_Tha_Jun_2014_2,model="Leuning",GPP="GPP",Gs=Gs_PM,
-#'                           robust_nls=FALSE,nmin=40,fitg0=FALSE,D0=1.5,fitD0=FALSE)
+#'                           robust_nls=false,nmin=40,fitg0=false,D0=1.5,fitD0=false)
 #' 
 #' @importFrom stats nls na_exclude
 #' @importFrom robustbase nlrob
@@ -590,8 +598,8 @@ end
 #' @export 
 function stomatal_slope(data,Tair="Tair",pressure="pressure",GPP="GPP",Gs="Gs_mol",
                            VPD="VPD",Ca="Ca",Rleaf=NULL,model=c("USO","Ball&Berry","Leuning"),
-                           robust_nls=FALSE,nmin=40,fitg0=FALSE,g0=0,fitD0=FALSE,
-                           D0=1.5,Gamma=50,missing_Rleaf_as_NA=FALSE,
+                           robust_nls=false,nmin=40,fitg0=false,g0=0,fitD0=false,
+                           D0=1.5,Gamma=50,missing_Rleaf_as_NA=false,
                            constants=bigleaf_constants(),...)
   
   model = match_arg(model)
@@ -755,11 +763,11 @@ end
  A rectangular light response curve is fitted to NEE data. The curve
 #'          takes the form as described in Falge et al. 2001:
 #'          
-#'             \deqn{-NEE = \alpha PPFD / (1 - (PPFD / PPFD_ref) + \alpha 
+#'             \deqn{-NEE = \\alpha PPFD / (1 - (PPFD / PPFD_ref) + \\alpha 
 #'                          PPFD / GPP_ref) - Reco}
 #'                       
-#'          where \eqn{\alpha} is the ecosystem quantum yield (umol CO2 m-2 s-1) (umol quanta m-2 s-1)-1, 
-#'          and GPP_ref is the GPP at the reference PPFD (usually at saturating light). \eqn{\alpha} 
+#'          where ``\\alpha`` is the ecosystem quantum yield (umol CO2 m-2 s-1) (umol quanta m-2 s-1)-1, 
+#'          and GPP_ref is the GPP at the reference PPFD (usually at saturating light). ``\\alpha`` 
 #'          represents the slope of the light response curve, and is a measure for the light use
 #'          efficiency of the canopy. 
 #'          
@@ -770,13 +778,15 @@ end
 #'          `PPFD_ref` defaults to 2000 umol m-2 s-1, but other values can be used. For 
 #'          further details refer to Falge et al. 2001.
 #' 
-#' @note   Note the sign convention. Negative NEE indicates that carbon is taken up
+#' #Note
+#'   Note the sign convention. Negative NEE indicates that carbon is taken up
 #'         by the ecosystem. Reco has to be 0 or larger.
 #' 
 #' # Value
  A `nls` model object containing estimates (+/- SE) for alpha and GPP_ref.
 #' 
-#' @references Falge E., et al. 2001: Gap filling strategies for defensible annual
+#' #References
+#' Falge E., et al. 2001: Gap filling strategies for defensible annual
 #'             sums of net ecosystem exchange. Agricultural and Forest Meteorology 107,
 #'             43-69.
 #'             
@@ -818,16 +828,17 @@ end
 #' # Details
  Light use efficiency is calculated as
 #'          
-#'             \deqn{LUE = sum(GPP)/sum(PPFD)}
+#'             ``LUE = sum(GPP)/sum(PPFD)``
 #'          
 #'          where both GPP and PPFD are in umol m-2 s-1. A more meaningful 
 #'          (as directly comparable across ecosystems) approach is to take 
 #'          absorbed PPFD rather than incoming PPFD as used here.
 #' 
 #' # Value
- \item{LUE -}{Light use efficiency (-)}
+ - LUE -: Light use efficiency (-)
 #' 
-#' @seealso `\link{energy_use_efficiency`}
+#' #See also
+#' [`energy_use_efficiency`](@ref)
 #' 
 #' ```@example; output = false
 #' ```
@@ -858,26 +869,28 @@ end
 #' # Details
  The function fits the following equation (Oren et al. 1999):
 #' 
-#'             \deqn{Gs = -m ln(VPD) + b}
+#'             ``Gs = -m ln(VPD) + b``
 #'
 #'          where b is the reference surface conductance (Gs) at VPD=1kPa (in mol m-2 s-1),
 #'          and m is the sensitivity parameter of Gs to VPD (in mol m-2 s-1 log(kPa)-1).
 #'          The two parameters b and m are fitted using `\link[stats]{nls`}.
 #'          VPD can be the one directly measured at instrument height, or the
-#'          one at the surface, as returned by `\link{surface_conditions`}.
+#'          one at the surface, as returned by [`surface_conditions`](@ref).
 #'          
 #' # Value
  A `nls` model object containing (amongst others) estimates for the mean
 #'         and standard errors of the parameters m and b.
 #' 
-#' @references Oren R., et al. 1999: Survey and synthesis of intra- and interspecific
+#' #References
+#' Oren R., et al. 1999: Survey and synthesis of intra- and interspecific
 #'             variation in stomatal sensitivity to vapour pressure deficit. Plant,
 #'             Cell & Environment 22, 1515-1526. 
 #'             
 #'             Novick K_A., et al. 2016: The increasing importance of atmospheric demand
 #'             for ecosystem water and carbon fluxes. Nature Climate Change 6, 1023 - 1027.
 #'          
-#' @seealso `\link{surface_conductance`}          
+#' #See also
+#' [`surface_conductance`](@ref)          
 #' 
 #' ```@example; output = false
 #' ```
@@ -885,7 +898,7 @@ end
 #' ## May 2012. Data are filtered for daytime, sufficiently high ustar, etc.
 #' FR_Pue_May_2012_2 = filter_data(FR_Pue_May_2012,quality_control=TRUE,
 #'                                  vars_qc=c("Tair","precip","H","LE"),
-#'                                  filter_growseas=FALSE,filter_precip=TRUE,
+#'                                  filter_growseas=false,filter_precip=TRUE,
 #'                                  filter_vars=c("Tair","PPFD","ustar","VPD"),
 #'                                  filter_vals_min=c(5,200,0.2,0.3),
 #'                                  filter_vals_max=c(NA,NA,NA,NA),

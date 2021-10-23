@@ -8,24 +8,25 @@
 #' 
 #' - Tair      Air temperature (deg C)
 #' - pressure  Atmospheric pressure (kPa)
-#' - constants Kelvin - conversion degC to Kelvin \cr
-#'                  Rd - gas constant of dry air (J kg-1 K-1) \cr
+#' - constants Kelvin - conversion degC to Kelvin 
+#'                  Rd - gas constant of dry air (J kg-1 K-1) 
 #'                  kPa2Pa - conversion kilopascal (kPa) to pascal (Pa)
 #' 
 #' # Details
- Air density (\eqn{\rho}) is calculated as:
+ Air density (``\\rho``) is calculated as:
 #' 
-#'   \deqn{\rho = pressure / (Rd * Tair)}
+#'   ``\\rho = pressure / (Rd * Tair)``
 #' 
 #' # Value
- \item{\eqn{\rho}}{air density (kg m-3)}
+ - ``\\rho``: air density (kg m-3)
 #' 
 #' ```@example; output = false
 #' ``` 
 #' # air density at 25degC and standard pressure (101.325kPa)
 #' air_density(25,101.325)
 #' 
-#' @references Foken, T, 2008: Micrometeorology. Springer, Berlin, Germany. 
+#' #References
+#' Foken, T, 2008: Micrometeorology. Springer, Berlin, Germany. 
 #' 
 """
 """
@@ -49,27 +50,29 @@ end
 #' - elev      Elevation a_s_l. (m)
 #' - Tair      Air temperature (deg C)
 #' - VPD       Vapor pressure deficit (kPa); optional
-#' - constants Kelvin- conversion degC to Kelvin \cr
-#'                  pressure0 - reference atmospheric pressure at sea level (Pa) \cr
-#'                  Rd - gas constant of dry air (J kg-1 K-1) \cr
-#'                  g -  gravitational acceleration (m s-2) \cr
+#' - constants Kelvin- conversion degC to Kelvin 
+#'                  pressure0 - reference atmospheric pressure at sea level (Pa) 
+#'                  Rd - gas constant of dry air (J kg-1 K-1) 
+#'                  g -  gravitational acceleration (m s-2) 
 #'                  Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
 #' 
 #' # Details
  Atmospheric pressure is approximated by the hypsometric equation:
 #' 
-#'          \deqn{pressure = pressure_0 / (exp(g * elevation / (Rd Temp)))}
+#'          ``pressure = pressure_0 / (exp(g * elevation / (Rd Temp)))``
 #'       
-#' @note The hypsometric equation gives an estimate of the standard pressure
+#' #Note
+#' The hypsometric equation gives an estimate of the standard pressure
 #'       at a given altitude. 
 #'       If VPD is provided, humidity correction is applied and the
 #'       virtual temperature instead of air temperature is used. VPD is 
 #'       internally converted to specific humidity.
 #'
 #' # Value
- \item{pressure -}{Atmospheric pressure (kPa)}
+ - pressure -: Atmospheric pressure (kPa)
 #'                            
-#' @references Stull B., 1988: An Introduction to Boundary Layer Meteorology.
+#' #References
+#' Stull B., 1988: An Introduction to Boundary Layer Meteorology.
 #'             Kluwer Academic Publishers, Dordrecht, Netherlands.
 #' 
 #' ```@example; output = false
@@ -115,25 +118,26 @@ end
 #' # Details
  Esat (kPa) is calculated using the Magnus equation:
 #' 
-#'    \deqn{Esat = a * exp((b * Tair) / (c + Tair)) / 1000}
+#'    ``Esat = a * exp((b * Tair) / (c + Tair)) / 1000``
 #'  
 #'  where the coefficients a, b, c take different values depending on the formula used.
 #'  The default values are from Sonntag 1990 (a=611.2, b=17.62, c=243.12). This version
 #'  of the Magnus equation is recommended by the WMO (WMO 2008; p1.4-29). Alternatively,
 #'  parameter values determined by Alduchov & Eskridge 1996 or Allen et al. 1998 can be 
 #'  used (see references).
-#'  The slope of the Esat curve (\eqn{\Delta}) is calculated as the first derivative of the function:
+#'  The slope of the Esat curve (``\\Delta``) is calculated as the first derivative of the function:
 #'  
-#'    \deqn{\Delta = dEsat / dTair}
+#'    ``\\Delta = dEsat / dTair``
 #'  
 #'  which is solved using `\link[stats]{D`}.
 #' 
 #' # Value
  A dataframe with the following columns: 
-#'  \item{Esat}{Saturation vapor pressure (kPa)}
-#'  \item{Delta}{Slope of the saturation vapor pressure curve (kPa K-1)}
+#'  - Esat: Saturation vapor pressure (kPa)
+#'  - Delta: Slope of the saturation vapor pressure curve (kPa K-1)
 #'    
-#' @references Sonntag D. 1990: Important new values of the physical constants of 1986, vapor 
+#' #References
+#' Sonntag D. 1990: Important new values of the physical constants of 1986, vapor 
 #'             pressure formulations based on the ITS-90 and psychrometric formulae. 
 #'             Zeitschrift fuer Meteorologie 70, 340-344.
 #'             
@@ -194,21 +198,22 @@ end
 #' 
 #' - Tair      Air temperature (deg C)
 #' - pressure  Atmospheric pressure (kPa)
-#' - constants cp - specific heat of air for constant pressure (J K-1 kg-1) \cr
+#' - constants cp - specific heat of air for constant pressure (J K-1 kg-1) 
 #'                  eps - ratio of the molecular weight of water vapor to dry air (-)
 #'                  
 #' # Details
- The psychrometric constant (\eqn{\gamma}) is given as:
+ The psychrometric constant (``\\gamma``) is given as:
 #' 
-#'    \deqn{\gamma = cp * pressure / (eps * \lambda)}
+#'    ``\\gamma = cp * pressure / (eps * \\lambda)``
 #'  
-#'  where \eqn{\lambda} is the latent heat of vaporization (J kg-1), 
-#'  as calculated from `\link{latent_heat_vaporization`}.
+#'  where ``\\lambda`` is the latent heat of vaporization (J kg-1), 
+#'  as calculated from [`latent_heat_vaporization`](@ref).
 #'  
 #' # Value
- \item{\eqn{\gamma} -}{the psychrometric constant (kPa K-1)}
+ - ``\\gamma`` -: the psychrometric constant (kPa K-1)
 #'  
-#' @references Monteith J_L., Unsworth M_H., 2008: Principles of Environmental Physics.
+#' #References
+#' Monteith J_L., Unsworth M_H., 2008: Principles of Environmental Physics.
 #'             3rd Edition. Academic Press, London. 
 #' 
 #' ```@example; output = false
@@ -236,12 +241,13 @@ end
 #' # Details
  The following formula is used:
 #' 
-#'   \deqn{\lambda = (2.501 - 0.00237*Tair)10^6}
+#'   ``\\lambda = (2.501 - 0.00237*Tair)10^6``
 #' 
 #' # Value
- \item{\eqn{\lambda} -}{Latent heat of vaporization (J kg-1)} 
+ - ``\\lambda`` -: Latent heat of vaporization (J kg-1) 
 #' 
-#' @references Stull, B., 1988: An Introduction to Boundary Layer Meteorology (p.641)
+#' #References
+#' Stull, B., 1988: An Introduction to Boundary Layer Meteorology (p.641)
 #'             Kluwer Academic Publishers, Dordrecht, Netherlands
 #'             
 #'             Foken, T, 2008: Micrometeorology. Springer, Berlin, Germany. 
@@ -276,10 +282,11 @@ end
 #' - accuracy     Accuracy of the result (degC)
 #' - Esat_formula Optional: formula to be used for the calculation of esat and the slope of esat.
 #'                     One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
-#'                     See `\link{Esat_slope`}. 
+#'                     See [`Esat_slope`](@ref). 
 #' - constants    Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
 #' 
-#' @note Arguments `accuracy` and `Esat_formula` are passed to this function by wetbulb_temp().
+#' #Note
+#' Arguments `accuracy` and `Esat_formula` are passed to this function by wetbulb_temp().
 #' 
 #' @importFrom stats optimize 
 #' 
@@ -303,24 +310,25 @@ end
 #' - accuracy  Accuracy of the result (deg C)
 #' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
 #'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
-#'                      See `\link{Esat_slope`}. 
-#' - constants cp - specific heat of air for constant pressure (J K-1 kg-1) \cr
-#'                  eps - ratio of the molecular weight of water vapor to dry air (-) \cr
+#'                      See [`Esat_slope`](@ref). 
+#' - constants cp - specific heat of air for constant pressure (J K-1 kg-1) 
+#'                  eps - ratio of the molecular weight of water vapor to dry air (-) 
 #'                  Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
 #' 
 #' # Details
  Wet-bulb temperature (Tw) is calculated from the following expression:
 #'          
-#'            \deqn{e = Esat(Tw) - gamma* (Tair - Tw)}
+#'            ``e = Esat(Tw) - gamma* (Tair - Tw)``
 #'          
 #'          The equation is solved for Tw using `\link[stats]{optimize`}.
-#'          Actual vapor pressure e (kPa) is calculated from VPD using the function `\link{VPD_to_e`}.
-#'          The psychrometric constant gamma (kPa K-1) is calculated from `\link{psychrometric_constant`}.
+#'          Actual vapor pressure e (kPa) is calculated from VPD using the function [`VPD_to_e`](@ref).
+#'          The psychrometric constant gamma (kPa K-1) is calculated from [`psychrometric_constant`](@ref).
 #'          
 #' # Value
- \item{Tw -}{wet-bulb temperature (degC)}      
+ - Tw -: wet-bulb temperature (degC)      
 #'              
-#' @references Monteith J_L., Unsworth M_H., 2008: Principles of Environmental Physics.
+#' #References
+#' Monteith J_L., Unsworth M_H., 2008: Principles of Environmental Physics.
 #'             3rd edition. Academic Press, London.
 #'             
 #' ```@example; output = false
@@ -375,10 +383,11 @@ end
 #' - accuracy     Accuracy of the result (degC)
 #' - Esat_formula Optional: formula to be used for the calculation of esat and the slope of esat.
 #'                     One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
-#'                     See `\link{Esat_slope`}. 
+#'                     See [`Esat_slope`](@ref). 
 #' - constants    Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
 #' 
-#' @note Arguments `accuracy` and `Esat_formula` are passed to this function by dew_point().
+#' #Note
+#' Arguments `accuracy` and `Esat_formula` are passed to this function by dew_point().
 #' 
 #' @importFrom stats optimize 
 #' 
@@ -402,21 +411,22 @@ end
 #' - accuracy Accuracy of the result (deg C)
 #' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
 #'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
-#'                      See `\link{Esat_slope`}. 
+#'                      See [`Esat_slope`](@ref). 
 #' - constants Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
 #' 
 #' # Details
  Dew point temperature (Td) is defined by:
 #' 
-#'           \deqn{e = Esat(Td)}
+#'           ``e = Esat(Td)``
 #'    
 #'          where e is vapor pressure of the air and Esat is the vapor pressure deficit.
 #'          This equation is solved for Td using `\link[stats]{optimize`}.
 #'          
 #' # Value
- \item{Td -}{dew point temperature (degC)}
+ - Td -: dew point temperature (degC)
 #' 
-#' @references Monteith J_L., Unsworth M_H., 2008: Principles of Environmental Physics.
+#' #References
+#' Monteith J_L., Unsworth M_H., 2008: Principles of Environmental Physics.
 #'             3rd edition. Academic Press, London.
 #'             
 #' ```@example; output = false
@@ -464,22 +474,23 @@ end
 #' - VPD       Vapor pressure deficit (kPa)
 #' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat. 
 #'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
-#'                      See `\link{Esat_slope`}. 
-#' - constants Kelvin - conversion degree Celsius to Kelvin \cr
+#'                      See [`Esat_slope`](@ref). 
+#' - constants Kelvin - conversion degree Celsius to Kelvin 
 #'                  eps - ratio of the molecular weight of water vapor to dry air (-) 
 #' 
 #' # Details
  the virtual temperature is given by:
 #'  
-#'    \deqn{Tv = Tair / (1 - (1 - eps) e/pressure)}
+#'    ``Tv = Tair / (1 - (1 - eps) e/pressure)``
 #' 
 #'  where Tair is in Kelvin (converted internally). Likewise, VPD is converted 
-#'  to actual vapor pressure (e in kPa) with `\link{VPD_to_e`} internally.
+#'  to actual vapor pressure (e in kPa) with [`VPD_to_e`](@ref) internally.
 #' 
 #' # Value
- \item{Tv -}{virtual temperature (deg C)}
+ - Tv -: virtual temperature (deg C)
 #' 
-#' @references Monteith J_L., Unsworth M_H., 2008: Principles of Environmental Physics.
+#' #References
+#' Monteith J_L., Unsworth M_H., 2008: Principles of Environmental Physics.
 #'             3rd edition. Academic Press, London.
 #'  
 #' ```@example; output = false
@@ -508,21 +519,22 @@ end
 #' 
 #' - Tair      Air temperature (deg C)
 #' - pressure  Atmospheric pressure (kPa)
-#' - constants Kelvin - conversion degree Celsius to Kelvin \cr
-#'                  pressure0 - reference atmospheric pressure at sea level (Pa) \cr
-#'                  Tair0 - reference air temperature (K) \cr
+#' - constants Kelvin - conversion degree Celsius to Kelvin 
+#'                  pressure0 - reference atmospheric pressure at sea level (Pa) 
+#'                  Tair0 - reference air temperature (K) 
 #'                  kPa2Pa - conversion kilopascal (kPa) to pascal (Pa)
 #' 
 #' # Details
  where v is the kinematic viscosity of the air (m2 s-1), 
 #'          given by (Massman 1999b):
 #'          
-#'            \deqn{v = 1.327 * 10^-5(pressure0/pressure)(Tair/Tair0)^1.81}
+#'            ``v = 1.327 * 10^-5(pressure0/pressure)(Tair/Tair0)^1.81``
 #'          
 #' # Value
- \item{v -}{kinematic viscosity of air (m2 s-1)}
+ - v -: kinematic viscosity of air (m2 s-1)
 #' 
-#' @references Massman, W_J., 1999b: Molecular diffusivities of Hg vapor in air, 
+#' #References
+#' Massman, W_J., 1999b: Molecular diffusivities of Hg vapor in air, 
 #'             O2 and N2 near STP and the kinematic viscosity and thermal diffusivity
 #'             of air near STP. Atmospheric Environment 33, 453-457.      
 #'             

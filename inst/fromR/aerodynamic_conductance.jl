@@ -28,22 +28,22 @@
 #' - Cd                Foliage drag coefficient (-); only used if `Rb_model = "Su_2001"`. 
 #' - hs                Roughness length of bare soil (m); only used if `Rb_model = "Su_2001"`.
 #' - wind_profile      Should Ga for momentum be calculated based on the logarithmic wind profile equation? 
-#'                          Defaults to `FALSE`.
-#' - stab_correction   Should stability correction be applied? Defaults to `TRUE`. Ignored if `wind_profile = FALSE`.                         
+#'                          Defaults to `false`.
+#' - stab_correction   Should stability correction be applied? Defaults to `TRUE`. Ignored if `wind_profile = false`.                         
 #' - stab_formulation  Stability correction function. Either `"Dyer_1970"` (default) or
-#'                          `"Businger_1971"`. Ignored if `wind_profile = FALSE` or if `stab_correction = FALSE`.
+#'                          `"Businger_1971"`. Ignored if `wind_profile = false` or if `stab_correction = false`.
 #' - Rb_model          Boundary layer resistance formulation. One of `"Thom_1972","Choudhury_1988","Su_2001","constant_kB-1"`.
 #' - kB_h              kB-1 value for heat transfer; only used if `Rb_model = "constant_kB-1"`
 #' - Sc                Optional: Schmidt number of additional quantities to be calculated
 #' - Sc_name           Optional: Name of the additonal quantities, has to be of same length than 
 #'                          `Sc_name`
-#' - constants         k - von Karman constant \cr
-#'                          cp - specific heat of air for constant pressure (J K-1 kg-1) \cr
-#'                          Kelvin - conversion degree Celsius to Kelvin \cr
-#'                          g - gravitational acceleration (m s-2) \cr
-#'                          pressure0 - reference atmospheric pressure at sea level (Pa) \cr
-#'                          Tair0 - reference air temperature (K) \cr
-#'                          Sc_CO2 - Schmidt number for CO2 \cr 
+#' - constants         k - von Karman constant 
+#'                          cp - specific heat of air for constant pressure (J K-1 kg-1) 
+#'                          Kelvin - conversion degree Celsius to Kelvin 
+#'                          g - gravitational acceleration (m s-2) 
+#'                          pressure0 - reference atmospheric pressure at sea level (Pa) 
+#'                          Tair0 - reference air temperature (K) 
+#'                          Sc_CO2 - Schmidt number for CO2  
 #'                          Pr - Prandtl number (if `Sc` is provided)
 #'
 #' # Details
@@ -51,14 +51,14 @@
 #' 
 #' Aerodynamic conductance for heat (Ga_h) is calculated as:
 #' 
-#'     \deqn{Ga_h = 1 / (Ra_m + Rb_h)}
+#'     ``Ga_h = 1 / (Ra_m + Rb_h)``
 #'  
 #'  where Ra_m is the aerodynamic resistance for momentum and Rb the (quasi-laminar) canopy boundary
 #'  layer resistance ('excess resistance').
 #'  
 #'  The aerodynamic resistance for momentum Ra_m is given by:
 #'  
-#'     \deqn{Ra_m = u/ustar^2}
+#'     ``Ra_m = u/ustar^2``
 #'  
 #'  Note that this formulation accounts for changes in atmospheric stability, and does not require an
 #'  additional stability correction function. 
@@ -66,14 +66,14 @@
 #'  An alternative method to calculate Ra_m is provided
 #'  (calculated if `wind_profile = TRUE`):
 #'  
-#'     \deqn{Ra_m = (ln((zr - d)/z0m) - psi_h) / (k ustar)}
+#'     ``Ra_m = (ln((zr - d)/z0m) - psi_h) / (k ustar)``
 #'  
 #'  If the roughness parameters z0m and d are unknown, they can be estimated using
-#'  `\link{roughness_parameters`}. The argument `stab_formulation` determines the stability correction function used 
+#'  [`roughness_parameters`](@ref). The argument `stab_formulation` determines the stability correction function used 
 #'  to account for the effect of atmospheric stability on Ra_m (Ra_m is lower for unstable
 #'  and higher for stable stratification). Stratification is based on a stability parameter zeta (z-d/L),
 #'  where z = reference height, d the zero-plane displacement height, and L the Monin-Obukhov length, 
-#'  calculated with `\link{Monin_Obukhov_length`}
+#'  calculated with [`Monin_Obukhov_length`](@ref)
 #'  The stability correction function is chosen by the argument `stab_formulation`. Options are 
 #'  `"Dyer_1970"` and `"Businger_1971"`.
 #'  
@@ -81,68 +81,69 @@
 #'  the argument `Rb_model`. The following options are implemented:
 #'  `"Thom_1972"` is an empirical formulation based on the friction velocity (ustar) (Thom 1972):
 #'  
-#'    \deqn{Rb_h = 6.2ustar^-0.667}
+#'    ``Rb_h = 6.2ustar^-0.667``
 #'    
 #'  The model by Choudhury & Monteith 1988 (`Rb_model = "Choudhury_1988"`),
 #'  calculates Rb_h based on leaf width, LAI and ustar (Note that function argument `Dl`
 #'  represents leaf width (w) and not characteristic leaf dimension (Dl)
 #'  if `Rb_model` = `"Choudhury_1988"`):
 #'   
-#'     \deqn{Gb_h = LAI((0.02/\alpha)*sqrt(u(zh)/w)*(1-exp(-\alpha/2)))}
+#'     ``Gb_h = LAI((0.02/\\alpha)*sqrt(u(zh)/w)*(1-exp(-\\alpha/2)))``
 #'     
-#'  where \eqn{\alpha} is a canopy attenuation coefficient modeled in dependence on LAI,
-#'  u(zh) is wind speed at canopy height (calculated from `\link{wind_profile`}),
-#'  and w is leaf width (m). See `\link{Gb_Choudhury`} for further details.
+#'  where ``\\alpha`` is a canopy attenuation coefficient modeled in dependence on LAI,
+#'  u(zh) is wind speed at canopy height (calculated from [`wind_profile`](@ref)),
+#'  and w is leaf width (m). See [`Gb_Choudhury`](@ref) for further details.
 #'     
 #'  The option `Rb_model = "Su_2001"` calculates Rb_h based on the physically-based Rb model by Su et al. 2001,
 #'  a simplification of the model developed by Massman 1999:
 #'  
-#'     \deqn{kB-1 = (k Cd fc^2) / (4Ct ustar/u(zh)) + kBs-1(1 - fc)^2}
+#'     ``kB-1 = (k Cd fc^2) / (4Ct ustar/u(zh)) + kBs-1(1 - fc)^2``
 #'     
 #'  where Cd is a foliage drag coefficient (defaults to 0.2), fc is fractional
 #'  vegetation cover, Bs-1 is the inverse Stanton number for bare soil surface,
-#'  and Ct is a heat transfer coefficient. See `\link{Gb_Su`} for 
+#'  and Ct is a heat transfer coefficient. See [`Gb_Su`](@ref) for 
 #'  details on the model.
 #'     
 #'  
 #'  The models calculate the parameter kB-1, which is related to Rb_h:
 #'  
-#'     \deqn{kB-1 = Rb_h * (k * ustar)}
+#'     ``kB-1 = Rb_h * (k * ustar)``
 #'  
 #'  Rb (and Gb) for water vapor and heat are assumed to be equal in this package.
 #'  Gb for other quantities x is calculated as (Hicks et al. 1987):
 #'  
-#'     \deqn{Gb_x = Gb / (Sc_x / Pr)^0.67}
+#'     ``Gb_x = Gb / (Sc_x / Pr)^0.67``
 #'  
 #'  where Sc_x is the Schmidt number of quantity x, and Pr is the Prandtl number (0.71).
 #'  
 #' # Value
  a dataframe with the following columns:
-#'         \item{Ga_m}{Aerodynamic conductance for momentum transfer (m s-1)}
-#'         \item{Ra_m}{Aerodynamic resistance for momentum transfer (s m-1)}
-#'         \item{Ga_h}{Aerodynamic conductance for heat transfer (m s-1)}
-#'         \item{Ra_h}{Aerodynamic resistance for heat transfer (s m-1)}
-#'         \item{Gb_h}{Canopy boundary layer conductance for heat transfer (m s-1)}
-#'         \item{Rb_h}{Canopy boundary layer resistance for heat transfer (s m-1)}
-#'         \item{kB_h}{kB-1 parameter for heat transfer}
-#'         \item{zeta}{Stability parameter 'zeta' (NA if `wind_profile = FALSE`)}
-#'         \item{psi_h}{Integrated stability correction function (NA if `wind_profile = FALSE`)}
-#'         \item{Ra_CO2}{Aerodynamic resistance for CO2 transfer (s m-1)}
-#'         \item{Ga_CO2}{Aerodynamic conductance for CO2 transfer (m s-1)}
-#'         \item{Gb_CO2}{Canopy boundary layer conductance for CO2 transfer (m s-1)}
+#'         - Ga_m: Aerodynamic conductance for momentum transfer (m s-1)
+#'         - Ra_m: Aerodynamic resistance for momentum transfer (s m-1)
+#'         - Ga_h: Aerodynamic conductance for heat transfer (m s-1)
+#'         - Ra_h: Aerodynamic resistance for heat transfer (s m-1)
+#'         - Gb_h: Canopy boundary layer conductance for heat transfer (m s-1)
+#'         - Rb_h: Canopy boundary layer resistance for heat transfer (s m-1)
+#'         - kB_h: kB-1 parameter for heat transfer
+#'         - zeta: Stability parameter 'zeta' (NA if `wind_profile = false`)
+#'         - psi_h: Integrated stability correction function (NA if `wind_profile = false`)
+#'         - Ra_CO2: Aerodynamic resistance for CO2 transfer (s m-1)
+#'         - Ga_CO2: Aerodynamic conductance for CO2 transfer (m s-1)
+#'         - Gb_CO2: Canopy boundary layer conductance for CO2 transfer (m s-1)
 #'         \item{Ga_Sc_name}{Aerodynamic conductance for `Sc_name` (m s-1). Only added if `Sc_name` and 
 #'                           the respective `Sc` are provided}
 #'         \item{Gb_Sc_name}{Boundary layer conductance for `Sc_name` (m s-1). Only added if `Sc_name` and 
 #'                           the respective `Sc` are provided}
 #'        
-#' @note The roughness length for water and heat (z0h) is not returned by this function, but 
+#' #Note
+#' The roughness length for water and heat (z0h) is not returned by this function, but 
 #'       it can be calculated from the following relationship (e.g. Verma 1989):
 #'       
-#'       \deqn{kB-1 = ln(z0m/z0h)} 
+#'       ``kB-1 = ln(z0m/z0h)`` 
 #'       
 #'       it follows:
 #'       
-#'       \deqn{z0h = z0m / exp(kB-1)}
+#'       ``z0h = z0m / exp(kB-1)``
 #'       
 #'       `kB-1` is an output of this function.
 #'       
@@ -151,7 +152,7 @@
 #'       
 #'       Note that boundary layer conductance to water vapor transfer (Gb_w) is often 
 #'       assumed to equal Gb_h. This assumption is also made in this R package, for 
-#'       example in the function `\link{surface_conductance`}.
+#'       example in the function [`surface_conductance`](@ref).
 #'       
 #'       If the roughness length for momentum (`z0m`) is not provided as input, it is estimated 
 #'       from the function `roughness_parameters` within `wind_profile` if `wind_profile = TRUE` 
@@ -160,7 +161,8 @@
 #'       (e.g. across seasons or years) is required, `z0m` should be provided as input argument.
 #'       
 #'         
-#' @references Verma, S., 1989: Aerodynamic resistances to transfers of heat, mass and momentum.
+#' #References
+#' Verma, S., 1989: Aerodynamic resistances to transfers of heat, mass and momentum.
 #'             In: Estimation of areal evapotranspiration, IAHS Pub, 177, 13-20.
 #'             
 #'             Verhoef, A., De Bruin, H., Van Den Hurk, B., 1997: Some practical notes on the parameter kB-1
@@ -173,7 +175,8 @@
 #'             Monteith, J_L., Unsworth, M_H., 2008: Principles of environmental physics.
 #'             Third Edition. Elsevier Academic Press, Burlington, USA. 
 #' 
-#' @seealso `\link{Gb_Thom`}, `\link{Gb_Choudhury`}, `\link{Gb_Su`} for calculations of Rb / Gb only
+#' #See also
+#' [`Gb_Thom`](@ref), [`Gb_Choudhury`](@ref), [`Gb_Su`](@ref) for calculations of Rb / Gb only
 #' 
 #' ```@example; output = false
 #' ``` 
@@ -191,7 +194,7 @@
 """
 """
 function aerodynamic_conductance(data,Tair="Tair",pressure="pressure",wind="wind",ustar="ustar",H="H",
-                                    zr,zh,d,z0m=NULL,Dl,N=2,fc=NULL,LAI,Cd=0.2,hs=0.01,wind_profile=FALSE,
+                                    zr,zh,d,z0m=NULL,Dl,N=2,fc=NULL,LAI,Cd=0.2,hs=0.01,wind_profile=false,
                                     stab_correction=TRUE,stab_formulation=c("Dyer_1970","Businger_1971"),
                                     Rb_model=c("Thom_1972","Choudhury_1988","Su_2001","constant_kB-1"),
                                     kB_h=NULL,Sc=NULL,Sc_name=NULL,constants=bigleaf_constants())
@@ -280,7 +283,7 @@ end
         
 else 
         stop("'stab_formulation' has to be one of 'Dyer_1970' or 'Businger_1971'.
-             Choose 'stab_correction = FALSE' if no stability correction should be applied.")
+             Choose 'stab_correction = false' if no stability correction should be applied.")
 end
       
       Ra_m  = pmax((log((zr - d)/z0m) - psi_h),0) / (constants[:k]*ustar)
@@ -295,7 +298,7 @@ end
 else 
     
     if ((!missing(zr) | !missing(d) | !missing(z0m)) & Rb_model %in% c("constant_kB-1","Thom_1972"))
-      warning("Provided roughness length parameters (zr,d,z0m) are not used if 'wind_profile = FALSE' (the default). Ra_m is calculated as wind / ustar^2")
+      warning("Provided roughness length parameters (zr,d,z0m) are not used if 'wind_profile = false' (the default). Ra_m is calculated as wind / ustar^2")
 end
     
     Ra_m = wind / ustar^2

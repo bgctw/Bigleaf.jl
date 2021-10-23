@@ -17,12 +17,12 @@
 
 #' The conversions are given by:
 #'
-#' \deqn{ET = LE/\lambda}
+#' ``ET = LE/\\lambda``
 #'
-#' \deqn{LE = \lambda ET}
+#' ``LE = \\lambda ET``
 #'
-#' where \eqn{\lambda} is the latent heat of vaporization (J kg-1) as calculated by
-#' `\link{latent_heat_vaporization`}.
+#' where ``\\lambda`` is the latent heat of vaporization (J kg-1) as calculated by
+#' [`latent_heat_vaporization`](@ref).
 #'
 #' ```@example; output = false
 #' ```
@@ -64,21 +64,22 @@ end
 #' - G_mol      Conductance (mol m-2 s-1)
 #' - Tair       Air temperature (deg C)
 #' - pressure   Atmospheric pressure (kPa)
-#' - constants  Kelvin - conversion degree Celsius to Kelvin \cr
-#'                   Rgas - universal gas constant (J mol-1 K-1) \cr
+#' - constants  Kelvin - conversion degree Celsius to Kelvin 
+#'                   Rgas - universal gas constant (J mol-1 K-1) 
 #'                   kPa2Pa - conversion kilopascal (kPa) to pascal (Pa)
 #'
 #' # Details
 
 #' The conversions are given by:
 #'
-#' \deqn{G_mol = G_ms * pressure / (Rgas * Tair)}
+#' ``G_mol = G_ms * pressure / (Rgas * Tair)``
 #'
-#' \deqn{G_ms = G_mol * (Rgas * Tair) / pressure}
+#' ``G_ms = G_mol * (Rgas * Tair) / pressure``
 #'
 #' where Tair is in Kelvin and pressure in Pa (converted from kPa internally)
 #'
-#' @references Jones, H_G. 1992. Plants and microclimate: a quantitative approach to environmental plant physiology.
+#' #References
+#' Jones, H_G. 1992. Plants and microclimate: a quantitative approach to environmental plant physiology.
 #'             2nd Edition., Cambridge University Press, Cambridge. 428 p
 #'
 #' ```@example; output = false
@@ -126,13 +127,14 @@ end
 #' - rH        Relative humidity (-)
 #' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
 #'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
-#'                      See `\link{Esat_slope`}.
-#' - constants eps - ratio of the molecular weight of water vapor to dry air (-) \cr
+#'                      See [`Esat_slope`](@ref).
+#' - constants eps - ratio of the molecular weight of water vapor to dry air (-) 
 #'                  Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
 #'
 #' @family humidity conversion
 #'
-#' @references Foken, T, 2008: Micrometeorology. Springer, Berlin, Germany.
+#' #References
+#' Foken, T, 2008: Micrometeorology. Springer, Berlin, Germany.
 #'
 """
 """
@@ -271,7 +273,7 @@ end
 
 #' The conversion is given by:
 #'
-#'  \deqn{PPFD = Rg * frac_PAR * J_to_mol}
+#'  ``PPFD = Rg * frac_PAR * J_to_mol``
 #'
 #' by default, the combined conversion factor (`frac_PAR * J_to_mol`) is 2.3
 #'
@@ -308,7 +310,7 @@ end
 #'
 #' - mass      Numeric vector of mass in kg
 #' - molarMass Numeric vector of molar mass of the substance (kg mol-1)
-#'                  e.g. as provided by `\link{bigleaf_constants`}()$H2Omol
+#'                  e.g. as provided by [`bigleaf_constants`](@ref)()$H2Omol
 #'                  Default is molar mass of Water.
 #'
 #' # Value
@@ -332,11 +334,11 @@ end
 #'
 #' - CO2_flux  CO2 flux (umol CO2 m-2 s-1)
 #' - C_flux    Carbon (C) flux (gC m-2 d-1)
-#' - constants Cmol - molar mass of carbon (kg mol-1) \cr
-#'                  umol2mol - conversion micromole (umol) to mol (mol) \cr
-#'                  mol2umol - conversion mole (mol) to micromole (umol)  \cr
-#'                  kg2g - conversion kilogram (kg) to gram (g) \cr
-#'                  g2kg - conversion gram (g) to kilogram (kg) \cr
+#' - constants Cmol - molar mass of carbon (kg mol-1) 
+#'                  umol2mol - conversion micromole (umol) to mol (mol) 
+#'                  mol2umol - conversion mole (mol) to micromole (umol)  
+#'                  kg2g - conversion kilogram (kg) to gram (g) 
+#'                  g2kg - conversion gram (g) to kilogram (kg) 
 #'                  days2seconds - seconds per day
 #'
 #' ```@example; output = false

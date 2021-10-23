@@ -11,28 +11,31 @@
 #' - pressure  Atmospheric pressure (kPa)
 #' - ustar     Friction velocity (m s-1)
 #' - H         Sensible heat flux (W m-2)
-#' - constants Kelvin - conversion degree Celsius to Kelvin \cr
-#'                  cp - specific heat of air for constant pressure (J K-1 kg-1) \cr
-#'                  k - von Karman constant (-) \cr
+#' - constants Kelvin - conversion degree Celsius to Kelvin 
+#'                  cp - specific heat of air for constant pressure (J K-1 kg-1) 
+#'                  k - von Karman constant (-) 
 #'                  g - gravitational acceleration (m s-2)
 #' 
 #' # Details
  The Monin-Obukhov length (L) is given by:
 #' 
-#'              \deqn{L = - (\rho * cp * ustar^3 * Tair) / (k * g * H)}
+#'              ``L = - (\\rho * cp * ustar^3 * Tair) / (k * g * H)``
 #'              
-#'              where \eqn{rho} is air density (kg m-3).
+#'              where ``rho`` is air density (kg m-3).
 #' 
 #' # Value
- \item{L -}{Monin-Obukhov length (m)}
+ - L -: Monin-Obukhov length (m)
 #' 
-#' @note Note that L gets very small for very low ustar values with implications
+#' #Note
+#' Note that L gets very small for very low ustar values with implications
 #'       for subsequent functions using L as input. It is recommended to filter
 #'       data and exclude low ustar values (ustar < ~0.2) beforehand. 
 #' 
-#' @references Foken, T, 2008: Micrometeorology. Springer, Berlin, Germany. 
+#' #References
+#' Foken, T, 2008: Micrometeorology. Springer, Berlin, Germany. 
 #' 
-#' @seealso `\link{stability_parameter`}
+#' #See also
+#' [`stability_parameter`](@ref)
 #' 
 #' ```@example; output = false
 #' ``` 
@@ -66,22 +69,22 @@ end
 #' - H         Sensible heat flux (W m-2)
 #' - zr        Instrument (reference) height (m)
 #' - d         Zero-plane displacement height (m)
-#' - constants Kelvin - conversion degree Celsius to Kelvin \cr
-#'                  cp - specific heat of air for constant pressure (J K-1 kg-1) \cr
-#'                  k - von Karman constant (-) \cr
+#' - constants Kelvin - conversion degree Celsius to Kelvin 
+#'                  cp - specific heat of air for constant pressure (J K-1 kg-1) 
+#'                  k - von Karman constant (-) 
 #'                  g - gravitational acceleration (m s-2)
 #' 
 #' # Details
- The stability parameter \eqn{\zeta} is given by:
+ The stability parameter ``\zeta`` is given by:
 #' 
-#'            \deqn{\zeta = (zr - d) / L}
+#'            ``\zeta = (zr - d) / L``
 #'          
 #'          where L is the Monin-Obukhov length (m), calculated from the function
-#'          `\link{Monin_Obukhov_length`}. The displacement height d can 
-#'          be estimated from the function `\link{roughness_parameters`}.
+#'          [`Monin_Obukhov_length`](@ref). The displacement height d can 
+#'          be estimated from the function [`roughness_parameters`](@ref).
 #'          
 #' # Value
- \item{\eqn{\zeta} - }{stability parameter (-)}
+ - ``\zeta`` - : stability parameter (-)
 #' 
 #' ```@example; output = false
 #' ``` 
@@ -114,26 +117,27 @@ end
 #'
 #' # Details
  The functions give the integrated form of the universal functions. They
-#'          depend on the value of the stability parameter \eqn{\zeta},
-#'          which can be calculated from the function `\link{stability_parameter`}.
+#'          depend on the value of the stability parameter ``\zeta``,
+#'          which can be calculated from the function [`stability_parameter`](@ref).
 #'          The integration of the universal functions is:
 #'          
-#'            \deqn{\psi = -x * zeta} 
+#'            ``\psi = -x * zeta`` 
 #'          
-#'          for stable atmospheric conditions (\eqn{\zeta} >= 0), and
+#'          for stable atmospheric conditions (``\zeta`` >= 0), and
 #'          
-#'            \deqn{\psi = 2 * log( (1 + y) / 2) }
+#'            ``\psi = 2 * log( (1 + y) / 2) ``
 #'          
-#'          for unstable atmospheric conditions (\eqn{\zeta} < 0).
+#'          for unstable atmospheric conditions (``\zeta`` < 0).
 #'          
 #'          The different formulations differ in their value of x and y.
 #'   
 #' # Value
  a DataFrame with the following columns:
-#'          \item{psi_h}{the value of the stability function for heat and water vapor (-)}
-#'          \item{psi_m}{the value of the stability function for momentum (-)}
+#'          - psi_h: the value of the stability function for heat and water vapor (-)
+#'          - psi_m: the value of the stability function for momentum (-)
 #' 
-#' @references Dyer, A_J., 1974: A review of flux-profile relationships. 
+#' #References
+#' Dyer, A_J., 1974: A review of flux-profile relationships. 
 #'             Boundary-Layer Meteorology 7, 363-372.
 #'             
 #'             Dyer, A. J., Hicks, B_B., 1970: Flux-Gradient relationships in the
