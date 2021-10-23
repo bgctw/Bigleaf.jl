@@ -152,6 +152,9 @@ doy = 160
 datetimes = DateTime(2021) .+Day(doy-1) .+ Hour.(hours) #.- Second(round(long*deg2second))
 res3 = @suppress_err @pipe calc_sun_position_hor.(datetimes, lat, long) |> toDataFrame(_)
 @df res3 scatter(datetimes, cols([:altitude,:azimuth]), legend = :topleft, xlab="Date and Time", ylab = "rad")
+```
+
+```@setup doc
 savefig("fig/globrad.svg")
 ```
 
