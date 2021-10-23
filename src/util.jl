@@ -18,3 +18,26 @@ end
 #     DataFrame(collect(map(idx -> getindex.(data, idx), eachindex(collect(first(data))))), collect(names))
 # end
 
+"""
+    frac_hour(float::AbstractFloat)
+    frac_hour(period::Type{<:Period}, float::AbstractFloat)
+
+Create a period in given type (defaults to `Nanosecond`) from
+fractional hours.
+
+```jldoctest; output = false
+using Dates
+frac_hour(1+1/60) == Hour(1) + Minute(1)
+# output
+true
+```
+"""
+function frac_hour(period::Type{<:Period}, float::AbstractFloat)
+    #adapted from https://stackoverflow.com/a/51448499
+    full_hour, Δ = divrem(float, 1)
+    partial = period(round(Dates.value(period(Hour(1))) * Δ))
+    Hour(full_hour) + partial
+end
+frac_hour(float::AbstractFloat) = frac_hour(Nanosecond, float)
+  
+  

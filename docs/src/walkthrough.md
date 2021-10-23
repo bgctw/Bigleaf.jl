@@ -142,7 +142,14 @@ The following figure compares them at absole scale and as difference to the
 
 ## Global radiation
 
-Computing solar position in horizontal coordinates
+Potential radiation for given time and latitude:
+```@example doc
+doy, hour = 160, 10.5
+lat, long = 51.0, 11.5
+potrad = potential_radiation(doy, hour, lat, long)
+```
+
+Calculation is based on sun's altitude, one of the horizontal coordinates of its position.
 ```@example doc
 using Plots, StatsPlots, DataFrames, Dates, Pipe, Suppressor
 hours = 0:24
@@ -153,12 +160,6 @@ datetimes = DateTime(2021) .+Day(doy-1) .+ Hour.(hours) #.- Second(round(long*de
 res3 = @suppress_err @pipe calc_sun_position_hor.(datetimes, lat, long) |> toDataFrame(_)
 @df res3 scatter(datetimes, cols([:altitude,:azimuth]), legend = :topleft, xlab="Date and Time", ylab = "rad")
 ```
-
-```@setup doc
-savefig("fig/globrad.svg")
-```
-
-![](fig/globrad.svg)
 
 The hour-angle at noon represents the difference to
 local time. In the following example solar time is

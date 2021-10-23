@@ -54,5 +54,6 @@ end
     # azimuth increasing (aside edge cases)
     @test all(diff(res3.azimuth[2:(end-1)]) .> 0)
 end
-  
+
+
 

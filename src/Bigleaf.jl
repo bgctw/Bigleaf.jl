@@ -4,10 +4,14 @@ module Bigleaf
 using Optim
 using StaticArrays, LabelledArrays, RecursiveArrayTools
 using DataFrames
-using Dates
+using Dates, TimeZones
+using Pipe
 using AstroLib
+using Suppressor
 
-export toDataFrame
+
+
+export toDataFrame, frac_hour
 export bigleaf_constants
 export Esat_slope, Esat_from_Tair, Esat_from_Tair_deriv,
      LE_to_ET, ET_to_LE, ms_to_mol, mol_to_ms, VPD_to_rH, rH_to_VPD,
@@ -18,11 +22,13 @@ export air_density, pressure_from_elevation, psychrometric_constant,
     dew_point_from_e, dew_point,
     wetbulb_temp_from_e_Tair_gamma, wetbulb_temp
 export calc_sun_position_MOD, calc_sun_position_hor
+export potential_radiation, extraterrestrial_radiation, get_datetime_for_doy_hour
 
 include("util.jl")    
 include("bigleaf_constants.jl")
 include("unit_conversions.jl")
 include("meteorological_variables.jl")
 include("sun_position.jl")
+include("potential_radiation.jl")
 
 end
