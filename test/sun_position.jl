@@ -3,7 +3,7 @@
     lat,long = 0.0,0.0
     deg2second = 24*3600/360
     datetimes = DateTime(2021,3,20) .+ Hour.(hours) .- Second(round(long*deg2second))
-    res2 = @pipe calc_sun_position_MOD.(datetime2julian.(datetimes)) |> toDataFrame(_)
+    res2 = @pipe calc_sun_position_MOD.(datetime2julian.(datetimes)) |> DataFrame(_)
     # latitude over ecliptic of sun is zero
     @test all(res2.β .≈ 0.0) 
     au2m = 149597870700.0
@@ -21,14 +21,14 @@
     #     @df res3 scatter(hours, cols(1:2), legend = :topleft, xlab="hours")
     # end
     #
-    res3 = @pipe calc_sun_position_hor.(datetimes, lat, long) |> toDataFrame(_)
+    res3 = @pipe calc_sun_position_hor.(datetimes, lat, long) |> DataFrame(_)
     # altitude (-pi, +pi)
     @test minimum(res3.altitude) ≈ -π/2 atol = 0.1
     @test maximum(res3.altitude) ≈ +π/2 atol = 0.1
     #
     lat,long = 45.0,0.0
     datetimes = DateTime(2021,3,20) .+ Hour.(hours) .- Second(round(long*deg2second))
-    res3 = @pipe calc_sun_position_hor.(datetimes, lat, long) |> toDataFrame(_)
+    res3 = @pipe calc_sun_position_hor.(datetimes, lat, long) |> DataFrame(_)
     # altitude (-pi, +pi)
     @test minimum(res3.altitude) ≈ -π/4 atol = 0.1
     @test maximum(res3.altitude) ≈ +π/4 atol = 0.1
@@ -48,7 +48,7 @@ end
     #     @df res3 scatter(hours, cols(1:2), legend = :topleft, xlab="hours")
     # end
     #
-    res3 = @pipe calc_sun_position_hor.(datetimes, lat, long) |> toDataFrame(_)
+    res3 = @pipe calc_sun_position_hor.(datetimes, lat, long) |> DataFrame(_)
     # maximum altitude at noon
     @test argmax(res3.altitude) == 1 + (length(hours)-1) ÷ 2
     # azimuth increasing (aside edge cases)

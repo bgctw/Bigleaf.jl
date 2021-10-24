@@ -112,7 +112,7 @@ function potential_ET(Tair,pressure,Rn, VPD,Ga;
       (Delta + gamma * (1 + Ga / Gs_pot))
     ET_pot = LE_to_ET(LE_pot,Tair)
   end
-  @suppress_err SLVector(ET_pot = ET_pot, LE_pot = LE_pot)
+  (ET_pot = ET_pot, LE_pot = LE_pot)
 end
 
 
@@ -203,7 +203,7 @@ function equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn,
   #
   ET_imp = LE_to_ET(LE_imp,Tair)
   ET_eq  = LE_to_ET(LE_eq,Tair)
-  @suppress_err SLVector(ET_pot = ET_pot, LE_pot = LE_pot, LE_imp = LE_imp)
+  (ET_pot = ET_pot, LE_pot = LE_pot, LE_imp = LE_imp)
 end
 
 function deal_GS_missings(G,S,missing_G_as_NA, missing_S_as_NA)

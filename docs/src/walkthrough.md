@@ -157,7 +157,7 @@ lat,long = 51.0, 13.6 # Dresden Germany
 #deg2second = 24*3600/360
 doy = 160
 datetimes = DateTime(2021) .+Day(doy-1) .+ Hour.(hours) #.- Second(round(long*deg2second))
-res3 = @suppress_err @pipe calc_sun_position_hor.(datetimes, lat, long) |> toDataFrame(_)
+res3 = @suppress_err @pipe calc_sun_position_hor.(datetimes, lat, long) |> DataFrame(_)
 @df res3 scatter(datetimes, cols([:altitude,:azimuth]), legend = :topleft, xlab="Date and Time", ylab = "rad")
 ```
 

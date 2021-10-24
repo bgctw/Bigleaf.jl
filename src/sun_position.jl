@@ -25,7 +25,7 @@ function calc_sun_position_hor(datetime::DateTime, lat, long)
     pos_eq = calc_sun_position_MOD(jd)
     # precession is already account for in MOD
     pos_hor = eq2hor(pos_eq.α/deg2rad, pos_eq.δ/deg2rad, jd, lat, long; precession = false) .* deg2rad
-    @suppress_err SLVector(altitude = pos_hor[1], azimuth = pos_hor[2], hourangle = pos_hor[3])
+    (altitude = pos_hor[1], azimuth = pos_hor[2], hourangle = pos_hor[3])
 end
 
 
@@ -132,7 +132,7 @@ function calc_sun_position_MOD(JD::Number)
     # declination
     δ = asin(sinϵ * sinλ_e)
 
-    @suppress_err S_MOD_rad = SLVector(
+    S_MOD_rad = (
         λ = λ_e, β = 0.0, r = r, 
         α = α, δ = δ, 
         ϵ = ϵ
