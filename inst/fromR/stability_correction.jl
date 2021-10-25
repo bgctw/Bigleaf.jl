@@ -26,7 +26,7 @@
 #' # Value
  - L -: Monin-Obukhov length (m)
 #' 
-#' #Note
+#' # Note
 #' Note that L gets very small for very low ustar values with implications
 #'       for subsequent functions using L as input. It is recommended to filter
 #'       data and exclude low ustar values (ustar < ~0.2) beforehand. 

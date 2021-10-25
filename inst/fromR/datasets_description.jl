@@ -40,7 +40,7 @@
 #'    - Reco: Ecosystem respiration from nighttime partitioning (umol m-2 s-1) [RECO_NT_VUT_USTAR50]
 #'  }
 #'  
-#' #Note
+#' # Note
 #' The original variable names as provided by the FLUXNET2015 dataset are 
 #'       given in squared brackets. Note that variable units have been converted
 #'       in some cases (e.g. VPD from hPa to kPa).      
@@ -94,7 +94,7 @@
 #'    - Reco: Ecosystem respiration from nighttime partitioning (umol m-2 s-1) [RECO_NT_VUT_USTAR50]
 #'  }
 #'  
-#' #Note
+#' # Note
 #' The original variable names as provided by the FLUXNET2015 dataset are 
 #'       given in squared brackets. Note that variable units have been converted
 #'       in some cases (e.g. VPD from hPa to kPa).    
@@ -145,7 +145,7 @@
 #'    - Reco: Ecosystem respiration from nighttime partitioning (umol m-2 s-1) [RECO_NT_VUT_USTAR50]
 #'  }
 #'  
-#' #Note
+#' # Note
 #' The original variable names as provided by the FLUXNET2015 dataset are 
 #'       given in squared brackets. Note that variable units have been converted
 #'       in some cases (e.g. VPD from hPa to kPa).       

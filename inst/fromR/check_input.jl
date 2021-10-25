@@ -9,7 +9,7 @@
 #' - data   Input DataFrame or matrix
 #' - ...    Input variables. Either a list or individual vectors
 #' 
-#' #Note
+#' # Note
 #' This function can be run for named variables (in which case the return
 #'       value will be named according to the given name), or for placeholder
 #'       variables that are assigned and named according to e.g. entries of a character 
@@ -101,7 +101,7 @@ end
 #' 
 #' - varlist List of variables for which the length has to be compared
 #' 
-#' #Note
+#' # Note
 #' This function only plays a role if no input DataFrame or matrix are 
 #'       provided. In this case it ensures that provided vectors have the same
 #'       length to avoid trouble later up the function call.

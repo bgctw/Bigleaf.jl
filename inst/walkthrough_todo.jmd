@@ -11,7 +11,7 @@ that accept a DataFrame with columnnames corresponding to required arguments.
 We can demonstrate the usage with a simple example:
 
 ```julia
-potential_ET(tha,Tair="Tair",pressure="pressure",Rn="Rn",VPD="VPD",approach=Val(:Priestley-Taylor))
+potential_ET(tha,Tair="Tair",pressure="pressure",Rn="Rn",VPD="VPD",approach=Val(:PriestleyTaylor))
 potential_ET(tha)
 potential_ET(tha,Tair=tha$Tair)
 potential_ET(tha,Tair=25)
@@ -267,8 +267,8 @@ Here, the points denote the mean wind speed and the bars denote the standard dev
 For many hydrological applications, it is relevant to get an estimate on the potential evapotranspiration (PET). At the moment, the `Bigleaf.jl` package contains two formulations for the estimate of PET: the Priestley-Taylor equation, and the Penman-Monteith equation:
 
 ```julia
-summary(potential_ET(tha_filtered,G="G",approach=Val(:Priestley-Taylor)))
-summary(potential_ET(tha_filtered,G="G",approach=Val(:Penman-Monteith)),
+summary(potential_ET(tha_filtered,G="G",approach=Val(:PriestleyTaylor)))
+summary(potential_ET(tha_filtered,G="G",approach=Val(:PenmanMonteith)),
         Gs_pot=quantile(tha_filtered$Gs_mol,0.95,na_rm=TRUE))
 ```
 

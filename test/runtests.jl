@@ -12,4 +12,7 @@ using Pipe, DataFrames, Dates
     @testset "sun_position" begin
         include("sun_position.jl")
     end
+    @testset "evapotranspiration" begin
+        include("evapotranspiration.jl")
+    end
 end

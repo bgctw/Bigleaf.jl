@@ -57,7 +57,7 @@
 #'          the results of the functions represent conditions outside the canopy
 #'          boundary layer, i.e. in the canopy airspace.
 #' 
-#' #Note
+#' # Note
 #' The following sign convention for NEE is employed (relevant if 
 #'       `calc_surface_CO2 = TRUE`): 
 #'       negative values of NEE denote net CO2 uptake by the ecosystem.
@@ -149,7 +149,7 @@ end
 #'        replaced by the net exchange of the respective gas and Ga_CO2 by the Ga of 
 #'        that gas).
 #' 
-#' #Note
+#' # Note
 #' the following sign convention is employed: negative values of NEE denote
 #'       net CO2 uptake by the ecosystem.
 #' 

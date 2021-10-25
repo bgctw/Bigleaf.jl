@@ -45,7 +45,7 @@
 #'         - IWUE: Inherent water-use efficiency (gC kPa (kg H20)-1)
 #'         - uWUE: Underlying water-use efficiency (gC kPa^0.5 (kg H20)-1)
 #' 
-#' #Note
+#' # Note
 #' Units for VPD can also be hPa. Units change accordingly.
 #'       WUE_NEE is calculated based on the absolute value of NEE (the sign convention does not matter here).
 #' 

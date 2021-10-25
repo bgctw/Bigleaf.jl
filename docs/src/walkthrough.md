@@ -70,9 +70,44 @@ There are a few general guidelines that are important to consider when using the
 
 ## Units
 
-It is imperative that variables are provided in the right units, as the plausibility of the input units is not checked in most cases. The required units of the input arguments can be found in the respective help file of the function. The good news is that units do not change across functions. For example, pressure is always required in kPa, and temperature always in °c.
+It is imperative that variables are provided in the right units, as the plausibility of 
+the input units is not checked in most cases. The required units of the input arguments 
+can be found in the respective help file of the function. The good news is that units 
+do not change across functions. For example, pressure is always required in kPa, 
+and temperature always in °c.
 
-## TODO ##
+## Function arguments
+
+Most functions of `Bigleaf.jl` require a DataFrame, from which the required
+variables are extracted. This is usually the first argument of a function. 
+Most functions further provide default values for their arguments, 
+such that in many cases it is not necessary to provide them explicitly.
+
+The column names in the DataFrame should correspond to the argument names
+of the corresponding method that accespts each input individually.
+
+We can demonstrate the usage with a simple example:
+
+```@example doc
+# explicit inputs
+Tair, pressure, Rn, =  14.81, 97.71, 778.17 
+potential_ET(Tair, pressure, Rn, Val(:PriestleyTaylor))
+# DataFrame
+potential_ET(tha, Val(:PriestleyTaylor))
+# DataFrame with a few columns overwritten by user values
+potential_ET(transform(tha, :Tair => x -> 25.0; renamecols=false), Val(:PriestleyTaylor))
+# varying one input only
+Tair_vec =  10.0:1.0:20.0
+DataFrame(potential_ET.(Tair_vec, pressure, Rn, Val(:PriestleyTaylor); infoGS=false))
+nothing # hide
+```
+
+## Ground heat flux and storage fluxes
+
+Many functions require the available energy ($A$), which is defined as ($A = R_n - G - S$, all in $\text{W m}^{-2}$), where $R_n$ is the net radiation, $G$ is the ground heat flux, and $S$ is the sum of all storage fluxes of the ecosystem (see e.g. Leuning et al. 2012 for an overview). For some sites, $G$ is not available, and for most sites, only a few components of $S$ are measured. In `Bigleaf.jl` it is not a problem if $G$ and/or $S$ are missing (other than the results might be (slightly) biased), but special options exist for the treatment of missing $S$ and $G$ values. If the options `missing_G_as_NA = TRUE` or `missing_S_as_NA = TRUE`, then the output variable is not calculated for that time period. Otherwise missing $S$ and $G$ values are set to O automatically. Please note that the default is to ignore $S$ and $G$ values. If $G$ and/or $S$ are available, they usually have to be added explicitly to the function call by explicitly using the optional arguments. The positional forms do not check for missing 
+values. 
+
+# Function walkthrough #
 
 ## Meteorological variables
 

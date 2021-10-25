@@ -13,6 +13,11 @@ Pages = ["index.md",]
 Pages = ["metorological_variables.md",]
 ```
 
+## Evapotranspiration
+```@index
+Pages = ["evapotranspiration.md",]
+```
+
 ## Global radiation
 ```@index
 Pages = ["global_radiation.md",]

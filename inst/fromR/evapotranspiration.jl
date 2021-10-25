@@ -13,12 +13,12 @@
 #' - Rn        Net radiation (W m-2)
 #' - G         Ground heat flux (W m-2); optional
 #' - S         Sum of all storage fluxes (W m-2); optional
-#' - VPD       Vapor pressure deficit (kPa); only used if `approach = Val(:Penman-Monteith)`.
-#' - Ga        Aerodynamic conductance to heat/water vapor (m s-1); only used if `approach = Val(:Penman-Monteith)`.
-#' - approach  Approach used. Either `Val(:Priestley-Taylor)` (default), or `Val(:Penman-Monteith)`.
-#' - alpha     Priestley-Taylor coefficient; only used if `approach = Val(:Priestley-Taylor)`.
+#' - VPD       Vapor pressure deficit (kPa); only used if `approach = Val(:PenmanMonteith)`.
+#' - Ga        Aerodynamic conductance to heat/water vapor (m s-1); only used if `approach = Val(:PenmanMonteith)`.
+#' - approach  Approach used. Either `Val(:PriestleyTaylor)` (default), or `Val(:PenmanMonteith)`.
+#' - alpha     Priestley-Taylor coefficient; only used if `approach = Val(:PriestleyTaylor)`.
 #' - Gs_pot    Potential/maximum surface conductance (mol m-2 s-1); defaults to 0.6 mol m-2 s-1;
-#'                  only used if `approach = Val(:Penman-Monteith)`.
+#'                  only used if `approach = Val(:PenmanMonteith)`.
 #' - missing_G_as_NA  if `TRUE`, missing G are treated as `NA`s, otherwise set to 0. 
 #' - missing_S_as_NA  if `TRUE`, missing S are treated as `NA`s, otherwise set to 0. 
 #' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
@@ -27,20 +27,20 @@
 #' - constants cp - specific heat of air for constant pressure (J K-1 kg-1) 
 #'                  eps - ratio of the molecular weight of water vapor to dry air 
 #'                  Pa2kPa - conversion pascal (Pa) to kilopascal (kPa) 
-#'                  Rd - gas constant of dry air (J kg-1 K-1) (only used if `approach = Val(:Penman-Monteith)`) 
-#'                  Rgas - universal gas constant (J mol-1 K-1) (only used if `approach = Val(:Penman-Monteith)`) 
-#'                  Kelvin - conversion degree Celsius to Kelvin (only used if `approach = Val(:Penman-Monteith)`) 
+#'                  Rd - gas constant of dry air (J kg-1 K-1) (only used if `approach = Val(:PenmanMonteith)`) 
+#'                  Rgas - universal gas constant (J mol-1 K-1) (only used if `approach = Val(:PenmanMonteith)`) 
+#'                  Kelvin - conversion degree Celsius to Kelvin (only used if `approach = Val(:PenmanMonteith)`) 
 #' 
 #' # Details
 #'  Potential evapotranspiration is calculated according to Priestley & Taylor, 1972
-#'          if `approach = Val(:Priestley-Taylor)` (the default):
+#'          if `approach = Val(:PriestleyTaylor)` (the default):
 #' 
 #'            ``LE_pot,PT = (\\alpha * \\Delta * (Rn - G - S)) / (\\Delta + \\gamma)``
 #'
 #'          ``\\alpha`` is the Priestley-Taylor coefficient, ``\\Delta`` is the slope 
 #'          of the saturation vapor pressure curve (kPa K-1), and ``\\gamma`` is the 
 #'          psychrometric constant (kPa K-1).
-#'          if `approach = Val(:Penman-Monteith)`, potential evapotranspiration is calculated according
+#'          if `approach = Val(:PenmanMonteith)`, potential evapotranspiration is calculated according
 #'          to the Penman-Monteith equation:
 #' 
 #'          ``LE_pot,PM = (\\Delta * (Rn - G - S) + \\rho * cp * VPD * Ga) / (\\Delta + \\gamma * (1 + Ga/Gs_pot)``
@@ -55,7 +55,7 @@
 #'         - ET_pot: Potential evapotranspiration (kg m-2 s-1)
 #'         - LE_pot: Potential latent heat flux (W m-2)
 #'         
-#' #Note
+#' # Note
 #' If the first argument `data` is provided (either a matrix or a DataFrame),
 #'       the following variables can be provided as character (in which case they are interpreted as
 #'       the column name of `data`) or as numeric vectors, in which case they are taken
@@ -80,12 +80,12 @@
 #' ``` 
 #' # Calculate potential ET of a surface that receives a net radiation of 500 Wm-2
 #' # using Priestley-Taylor:
-#' potential_ET(Tair=30,pressure=100,Rn=500,alpha=1.26,approach=Val(:Priestley-Taylor))    
+#' potential_ET(Tair=30,pressure=100,Rn=500,alpha=1.26,approach=Val(:PriestleyTaylor))    
 #' 
 #' # Calculate potential ET for a surface with known Gs (0.5 mol m-2 s-1) and Ga (0.1 m s-1)
 #' # using Penman-Monteith:
 #' LE_pot_PM = potential_ET(Gs_pot=0.5,Tair=20,pressure=100,VPD=2,Ga=0.1,Rn=400,
-#'                           approach=Val(:Penman-Monteith))[,"LE_pot"]
+#'                           approach=Val(:PenmanMonteith))[,"LE_pot"]
 #' LE_pot_PM
 #' 
 #' # now cross-check with the inverted equation
@@ -93,7 +93,7 @@
 """
 """
 function potential_ET(data,Tair="Tair",pressure="pressure",Rn="Rn",G=NULL,S=NULL,
-                         VPD="VPD",Ga="Ga_h",approach=c(Val(:Priestley-Taylor),Val(:Penman-Monteith)),
+                         VPD="VPD",Ga="Ga_h",approach=c(Val(:PriestleyTaylor),Val(:PenmanMonteith)),
                          alpha=1.26,Gs_pot=0.6,missing_G_as_NA=false,missing_S_as_NA=false,
                          Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
                          constants=bigleaf_constants())
@@ -124,12 +124,12 @@ end
   Delta  = Esat_slope(Tair,Esat_formula,constants)[,"Delta"]
   
   
-  if (approach == Val(:Priestley-Taylor))
+  if (approach == Val(:PriestleyTaylor))
     
     LE_pot = (alpha * Delta * (Rn - G - S)) / (Delta + gamma)
     ET_pot = LE_to_ET(LE_pot,Tair)
     
-else if (approach == Val(:Penman-Monteith))
+else if (approach == Val(:PenmanMonteith))
     
     check_input(data,list(Gs_pot,VPD,Ga))
     
@@ -152,7 +152,7 @@ end
 #' 
 #' Reference evapotranspiration calculated from the Penman-Monteith
 #'              equation with a prescribed surface conductance.
-#'              This function is deprecated. Use potential_ET(...,approach=Val(:Penman-Monteith)) instead.
+#'              This function is deprecated. Use potential_ET(...,approach=Val(:PenmanMonteith)) instead.
 #' 
 #' - data      Data_frame or matrix containing all required variables; optional
 #' - Gs_ref    Reference surface conductance (m s-1); defaults to 0.0143 m s-1.
@@ -170,9 +170,9 @@ end
 #'                      See [`Esat_slope`](@ref). 
 #' - constants cp - specific heat of air for constant pressure (J K-1 kg-1) 
 #'                  eps - ratio of the molecular weight of water vapor to dry air 
-#'                  Rd - gas constant of dry air (J kg-1 K-1) (only if `approach = Val(:Penman-Monteith)`) 
-#'                  Rgas - universal gas constant (J mol-1 K-1) (only if `approach = Val(:Penman-Monteith)`) 
-#'                  Kelvin - conversion degree Celsius to Kelvin (only if `approach = Val(:Penman-Monteith)`) 
+#'                  Rd - gas constant of dry air (J kg-1 K-1) (only if `approach = Val(:PenmanMonteith)`) 
+#'                  Rgas - universal gas constant (J mol-1 K-1) (only if `approach = Val(:PenmanMonteith)`) 
+#'                  Kelvin - conversion degree Celsius to Kelvin (only if `approach = Val(:PenmanMonteith)`) 
 #' 
 #' @export                            
 function reference_ET(data,Gs_ref=0.0143,Tair="Tair",pressure="pressure",VPD="VPD",Rn="Rn",Ga="Ga_h",
@@ -231,7 +231,7 @@ end
 #'          
 #'          where ``\\rho`` is the air density (kg m-3).
 #' 
-#' #Note
+#' # Note
 #' Surface conductance (Gs) can be calculated with [`surface_conductance`](@ref).
 #'       Aerodynamic conductance (Ga) can be calculated using [`aerodynamic_conductance`](@ref).
 #'       

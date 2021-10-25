@@ -28,7 +28,7 @@
 #'          Ca can either be atmospheric CO2 concentration (as measured), or surface
 #'          CO2 concentration as calculated from [`surface_CO2`](@ref).
 #'          
-#' #Note
+#' # Note
 #' The equation is based on Fick's law of diffusion and is equivalent to the
 #'       often used equation at leaf level (ci = ca - An/gs).
 #'       Note that GPP and Gs have a different interpretation than An and gs.
@@ -206,7 +206,7 @@ end
 #'          The calculation of Jmax25 and Vcmax25 is identical to C3 photosynthesis
 #'          as described above.
 #'          
-#' #Note
+#' # Note
 #'   The critical assumption is that bulk canopy photosynthesis is limited by
 #'         one of the two limitation states. Incoming PPFD is assumed to determine
 #'         the limitation states. Note however that the ranges (`PPFD_j` and `PPFD_c`)
@@ -274,7 +274,7 @@ end
 #' # calculate Gs from the the inverted PM equation
 #' Gs_PM = surface_conductance(DE_Tha_Jun_2014_2,Tair="Tair",pressure="pressure",
 #'                              Rn="Rn",G="G",S=NULL,VPD="VPD",Ga=Ga,
-#'                              formulation=Val(:Penman-Monteith))[,"Gs_mol"]
+#'                              formulation=Val(:PenmanMonteith))[,"Gs_mol"]
 #' 
 #' # calculate Ci 
 #' Ci = intercellular_CO2(DE_Tha_Jun_2014_2,Ca="Ca",GPP="GPP",Gs=Gs_PM) 
@@ -574,7 +574,7 @@ end
 #' # if G and/or S are available, don't forget to indicate (they are ignored by default).
 #' Gs_PM = surface_conductance(DE_Tha_Jun_2014_2,Tair="Tair",pressure="pressure",
 #'                              Rn="Rn",G="G",S=NULL,VPD="VPD",Ga=Ga,
-#'                              formulation=Val(:Penman-Monteith))[,"Gs_mol"]
+#'                              formulation=Val(:PenmanMonteith))[,"Gs_mol"]
 #'                              
 #' ### Estimate the stomatal slope parameter g1 using the USO model
 #' mod_USO = stomatal_slope(DE_Tha_Jun_2014_2,model="USO",GPP="GPP",Gs=Gs_PM,
@@ -778,7 +778,7 @@ end
 #'          `PPFD_ref` defaults to 2000 umol m-2 s-1, but other values can be used. For 
 #'          further details refer to Falge et al. 2001.
 #' 
-#' #Note
+#' # Note
 #'   Note the sign convention. Negative NEE indicates that carbon is taken up
 #'         by the ecosystem. Reco has to be 0 or larger.
 #' 

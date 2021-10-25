@@ -17,15 +17,15 @@
 #' - VPD       Vapor pressure deficit (kPa)
 #' - Ga        Aerodynamic conductance to heat/water vapor (m s-1)
 #' - missing_G_as_NA  if `TRUE`, missing G are treated as `NA`s, otherwise they are set to 0.
-#'                         Only used if `formulation = Val(:Penman-Monteith)`.
+#'                         Only used if `formulation = Val(:PenmanMonteith)`.
 #' - missing_S_as_NA  if `TRUE`, missing S are treated as `NA`s, otherwise they are set to 0. 
-#'                          Only used if `formulation = Val(:Penman-Monteith)`.
-#' - formulation Formulation used. Either `Val(:Penman-Monteith)` (the default) 
+#'                          Only used if `formulation = Val(:PenmanMonteith)`.
+#' - formulation Formulation used. Either `Val(:PenmanMonteith)` (the default) 
 #'                    using the inverted Penman-Monteith equation, or `"Flux-Gradient"`,
 #'                    for a simple flux-gradient approach requiring ET, pressure, and VPD only.
 #' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
 #'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`. 
-#'                      Only used if `formulation = Val(:Penman-Monteith)`. See [`Esat_slope`](@ref).
+#'                      Only used if `formulation = Val(:PenmanMonteith)`. See [`Esat_slope`](@ref).
 #' - constants   cp - specific heat of air for constant pressure (J K-1 kg-1) 
 #'                    eps - ratio of the molecular weight of water vapor to dry air (-) 
 #'                    Rd - gas constant of dry air (J kg-1 K-1) 
@@ -36,7 +36,7 @@
 #' 
 #' 
 #' # Details
- If `formulation = Val(:Penman-Monteith)` (the default), surface conductance (Gs) in m s-1 
+ If `formulation = Val(:PenmanMonteith)` (the default), surface conductance (Gs) in m s-1 
 #'          is calculated from the inverted Penman-Monteith equation:
 #' 
 #'     ``Gs = ( LE * Ga * \\gamma ) / ( \\Delta * A + \\rho * cp * Ga * VPD - LE * ( \\Delta + \\gamma ) )``
@@ -95,7 +95,7 @@
 #' # Note that Ga is not added to the DataFrame 'DE_Tha_Jun_2014'
 #' Gs_PM = surface_conductance(DE_Tha_Jun_2014_2,Tair="Tair",pressure="pressure",
 #'                              Rn="Rn",G="G",S=NULL,VPD="VPD",Ga=Ga,
-#'                              formulation=Val(:Penman-Monteith))
+#'                              formulation=Val(:PenmanMonteith))
 #' summary(Gs_PM)
 #' 
 #'                               
@@ -103,7 +103,7 @@
 #' DE_Tha_Jun_2014_2$Ga = Ga
 #' Gs_PM2 = surface_conductance(DE_Tha_Jun_2014_2,Tair="Tair",pressure="pressure",
 #'                               Rn="Rn",G="G",S=NULL,VPD="VPD",Ga="Ga",
-#'                               formulation=Val(:Penman-Monteith))
+#'                               formulation=Val(:PenmanMonteith))
 #' # note the difference to the previous version (Ga="Ga")
 #' summary(Gs_PM2)
 #' 
@@ -120,7 +120,7 @@
 """
 function surface_conductance(data,Tair="Tair",pressure="pressure",Rn="Rn",G=NULL,S=NULL,
                                 VPD="VPD",LE="LE",Ga="Ga_h",missing_G_as_NA=false,missing_S_as_NA=false,
-                                formulation=c(Val(:Penman-Monteith),"Flux-Gradient"),
+                                formulation=c(Val(:PenmanMonteith),"Flux-Gradient"),
                                 Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
                                 constants=bigleaf_constants())
   
@@ -133,7 +133,7 @@ function surface_conductance(data,Tair="Tair",pressure="pressure",Rn="Rn",G=NULL
     Gs_mol = (LE_to_ET(LE,Tair)/constants[:Mw]) * pressure / VPD
     Gs_ms  = mol_to_ms(Gs_mol,Tair,pressure)
     
-else if (formulation == Val(:Penman-Monteith))
+else if (formulation == Val(:PenmanMonteith))
     
     check_input(data,list(Tair,pressure,VPD,LE,Rn,Ga,G,S))
     

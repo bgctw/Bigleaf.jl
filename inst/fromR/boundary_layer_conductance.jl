@@ -140,7 +140,7 @@ end
 #'  
 #'          where Sc_x is the Schmidt number of quantity x, and Pr is the Prandtl number (0.71).
 #'          
-#' #Note
+#' # Note
 #' If the roughness length for momentum (`z0m`) is not provided as input, it is estimated 
 #'       from the function `roughness_parameters` within `wind_profile`. This function
 #'       estimates a single `z0m` value for the entire time period! If a varying `z0m` value 
@@ -296,7 +296,7 @@ end
 #'  
 #'          where Sc_x is the Schmidt number of quantity x, and Pr is the Prandtl number (0.71).
 #' 
-#' #Note
+#' # Note
 #' If the roughness length for momentum (`z0m`) is not provided as input, it is estimated 
 #'       from the function `roughness_parameters` within `wind_profile`. This function
 #'       estimates a single `z0m` value for the entire time period! If a varying `z0m` value 

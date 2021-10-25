@@ -252,7 +252,7 @@ end
 #'          z0m is first estimated from the wind profile equation and then used in the equation
 #'          above for the calculation of `u(z)` (see e.g. Newman & Klein 2014).        
 #'                                                             
-#' #Note
+#' # Note
 #' Note that this equation is only valid for z >= d + z0m, and it is not 
 #'       meaningful to calculate values closely above d + z0m. All values in `heights`
 #'       smaller than d + z0m will return 0.                                 

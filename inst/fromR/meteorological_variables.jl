@@ -61,7 +61,7 @@ end
 #' 
 #'          ``pressure = pressure_0 / (exp(g * elevation / (Rd Temp)))``
 #'       
-#' #Note
+#' # Note
 #' The hypsometric equation gives an estimate of the standard pressure
 #'       at a given altitude. 
 #'       If VPD is provided, humidity correction is applied and the
@@ -285,7 +285,7 @@ end
 #'                     See [`Esat_slope`](@ref). 
 #' - constants    Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
 #' 
-#' #Note
+#' # Note
 #' Arguments `accuracy` and `Esat_formula` are passed to this function by wetbulb_temp().
 #' 
 #' @importFrom stats optimize 
@@ -386,7 +386,7 @@ end
 #'                     See [`Esat_slope`](@ref). 
 #' - constants    Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
 #' 
-#' #Note
+#' # Note
 #' Arguments `accuracy` and `Esat_formula` are passed to this function by dew_point().
 #' 
 #' @importFrom stats optimize 

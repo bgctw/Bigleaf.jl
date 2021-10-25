@@ -75,7 +75,7 @@
 #'         column "valid", which indicates whether all the data of a time step fulfill the 
 #'         filtering criteria (1) or not (0).
 #'         
-#' #Note
+#' # Note
 #' The thresholds set with `filter_vals_min` and `filter_vals_max` filter all data
 #'       that are smaller than ("<"), or greater than (">") the specified thresholds. That means
 #'       if a variable has exactly the same value as the threshold, it will not be filtered. Likewise,

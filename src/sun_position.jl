@@ -8,7 +8,7 @@ Compute the Sun position at given time and observer coordinates in horizontal co
 - `lat`, `long`: latitude and longitude in degree
 
 # Value
-`SLVector`: sun position with entries
+`NamedTuple`: sun position with entries
 - `altitude`: angle above the horizon [rad].
 - `azimuth`: angle ange the horizon plane eastwards of north [rad]
 - `hourangle`: [rad] as output by AstroLib.eq2hor
@@ -69,7 +69,7 @@ The algorithm was adapted from [Vallado 2013, p. 277-279].
 - `JD`: time given as Julian Day . 
 
 # Value
-`SLVector`: sun position where
+`NamedTuple`: sun position where
 - Ecliptic coordinates (1:3)
   - λ: Ecliptic longitude of the Sun [rad].
   - β: Ecliptic latitude of the Sun [rad] is assumed 0.

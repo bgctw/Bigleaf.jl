@@ -135,7 +135,7 @@
 #'         \item{Gb_Sc_name}{Boundary layer conductance for `Sc_name` (m s-1). Only added if `Sc_name` and 
 #'                           the respective `Sc` are provided}
 #'        
-#' #Note
+#' # Note
 #' The roughness length for water and heat (z0h) is not returned by this function, but 
 #'       it can be calculated from the following relationship (e.g. Verma 1989):
 #'       
