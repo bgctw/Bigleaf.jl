@@ -21,8 +21,10 @@ end
     @test ≈(last(df_ET).LE_pot, 494.7202; rtol = 1e-5)
     #
     df2 = copy(df)
-    df2.VPD .= 2.0
-    df2.Ga .= 0.1
+    # df2.VPD .= 2.0 # fail in older versions
+    # df2.Ga .= 0.1
+    df2[!, :VPD] .= 2.0
+    df2[!, :Ga] .= 0.1
     # df2 = transform(df,  
     #     [] => ByRow(() -> 2.0) => :VPD,
     #     [] => ByRow(() -> 0.1) => :Ga,
@@ -55,8 +57,8 @@ end
     @test ismissing(first(df_ET).LE_pot)
     #
     df2 = copy(df)
-    df2.VPD .= 2.0
-    df2.Ga .= 0.1
+    df2[!, :VPD] .= 2.0
+    df2[!, :Ga] .= 0.1
     df_ET2 = @test_logs (:info,r"G is not provided") potential_ET(df2, Val(:PenmanMonteith), S = df.G)    
     @test ncol(df2) == 6
     @test nrow(df_ET2) == nrow(df2)

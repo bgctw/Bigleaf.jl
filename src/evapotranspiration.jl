@@ -192,8 +192,8 @@ function potential_ET!(df, approach::Val{:PriestleyTaylor};
   G=missing,S=missing, infoGS=true, kwargs...) 
   dfGS = get_df_GS(df, G,S; infoGS) 
   # temporarily add G and S to the DataFrame to mutate
-  df._tmp_G .= dfGS.G
-  df._tmp_S .= dfGS.S
+  df[!, :_tmp_G] .= dfGS.G
+  df[!, :_tmp_S] .= dfGS.S
   f(args...) = potential_ET(args..., approach; kwargs...)
   transform!(df,
     [:Tair, :pressure, :Rn, :_tmp_G, :_tmp_S] => ByRow(f) => AsTable
@@ -203,8 +203,8 @@ end,
 function potential_ET!(df, approach::Val{:PenmanMonteith}; 
   G=missing,S=missing, infoGS=true, kwargs...) 
   dfGS = get_df_GS(df, G,S; infoGS) 
-  df._tmp_G .= dfGS.G
-  df._tmp_S .= dfGS.S
+  df[!, :_tmp_G] .= dfGS.G
+  df[!, :_tmp_S] .= dfGS.S
   f(args...) = potential_ET(args..., approach; kwargs...)
   transform!(df, 
     [:Tair, :pressure, :Rn, :VPD, :Ga, :_tmp_G, :_tmp_S] => ByRow(f) => AsTable
@@ -351,8 +351,8 @@ function equilibrium_imposed_ET!(df;
   #
   dfGS = get_df_GS(df, G,S; infoGS) 
   # temporarily add G and S to the DataFrame to mutate
-  df._tmp_G .= dfGS.G
-  df._tmp_S .= dfGS.S
+  df[!, :_tmp_G] .= dfGS.G
+  df[!, :_tmp_S] .= dfGS.S
   f(args...) = equilibrium_imposed_ET(args...; kwargs...)
   transform!(df,
     [:Tair, :pressure, :VPD, :Gs, :Rn, :_tmp_G, :_tmp_S] => ByRow(f) => AsTable
