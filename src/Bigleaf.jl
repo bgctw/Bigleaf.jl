@@ -23,8 +23,8 @@ export air_density, pressure_from_elevation, psychrometric_constant,
     wetbulb_temp_from_e_Tair_gamma, wetbulb_temp
 export calc_sun_position_MOD, calc_sun_position_hor
 export potential_radiation, extraterrestrial_radiation, get_datetime_for_doy_hour
-export potential_ET, potential_ET!, fill_GS_missings!, equilibrium_imposed_ET,
-    surface_conductance
+export potential_ET, potential_ET!, equilibrium_imposed_ET, equilibrium_imposed_ET!
+#export surface_conductance
 
 include("util.jl")    
 include("bigleaf_constants.jl")

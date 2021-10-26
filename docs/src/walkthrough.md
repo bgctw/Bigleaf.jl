@@ -98,14 +98,30 @@ potential_ET(tha, Val(:PriestleyTaylor))
 potential_ET(transform(tha, :Tair => x -> 25.0; renamecols=false), Val(:PriestleyTaylor))
 # varying one input only
 Tair_vec =  10.0:1.0:20.0
-DataFrame(potential_ET.(Tair_vec, pressure, Rn, Val(:PriestleyTaylor); infoGS=false))
+DataFrame(potential_ET.(Tair_vec, pressure, Rn, Val(:PriestleyTaylor)))
 nothing # hide
 ```
 
 ## Ground heat flux and storage fluxes
 
-Many functions require the available energy ($A$), which is defined as ($A = R_n - G - S$, all in $\text{W m}^{-2}$), where $R_n$ is the net radiation, $G$ is the ground heat flux, and $S$ is the sum of all storage fluxes of the ecosystem (see e.g. Leuning et al. 2012 for an overview). For some sites, $G$ is not available, and for most sites, only a few components of $S$ are measured. In `Bigleaf.jl` it is not a problem if $G$ and/or $S$ are missing (other than the results might be (slightly) biased), but special options exist for the treatment of missing $S$ and $G$ values. If the options `missing_G_as_NA = TRUE` or `missing_S_as_NA = TRUE`, then the output variable is not calculated for that time period. Otherwise missing $S$ and $G$ values are set to O automatically. Please note that the default is to ignore $S$ and $G$ values. If $G$ and/or $S$ are available, they usually have to be added explicitly to the function call by explicitly using the optional arguments. The positional forms do not check for missing 
-values. 
+Many functions require the available energy ($A$), which is defined as ($A = R_n - G - S$, 
+all in $\text{W m}^{-2}$), where $R_n$ is the net radiation, $G$ is the ground heat flux, 
+and $S$ is the sum of all storage fluxes of the ecosystem 
+(see e.g. Leuning et al. 2012 for an overview). For some sites, $G$ is not available, 
+and for most sites, only a few components of $S$ are measured. 
+
+In `Bigleaf.jl` it is not a problem if $G$ and/or $S$ are missing (other than the results might be (slightly) biased), but special options exist for the treatment of missing $S$ and $G$ values. 
+
+Note that the default for G and S in the dataframe variant is missing (and assumed zero), 
+even if those columns are
+present in the DataFrame. You need to explictly pass those columns with the optional
+arguments: e.g. `potential_ET(df, Val(:PriestleyTaylor); G = df.G)`
+
+Note that in difference to the bigleaf R package missing entries in a provide
+vector are not relaced by zero by default. 
+You need to explitly use coalesce when specifying a ground heat flux
+for which missings should be replaced by zero: `;G = coalesce(df.G, zero(df.G))`
+ 
 
 # Function walkthrough #
 

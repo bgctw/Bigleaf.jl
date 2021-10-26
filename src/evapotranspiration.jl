@@ -29,13 +29,9 @@ optional:
     - Rd - gas constant of dry air (J kg-1 K-1)
     - Rgas - universal gas constant (J mol-1 K-1)
     - Kelvin - conversion degree Celsius to Kelvin
-additional optional arguments if G and S are not specified by postition
-and in the non-mutating DataFrame variant.
-- G and S: as in the positional forms, but checked for missing or containing missings
-- missing_G_as_NA:  if `true`, missing optional G are treated as `NA`s, 
-  otherwise set to 0. 
-- missing_S_as_NA:  if `true`, missing optional S are treated as `NA`s, 
-  otherwise set to 0. 
+additional optional arguments with data.frame variants
+- infoGS=ture: sete to false to avoid infor log-message if G or S is not 
+  specified
 additional optional for PriestleyTaylor:
 - alpha:     Priestley-Taylor coefficient
 additional optional for PenmanMonteith:
@@ -62,24 +58,26 @@ and ``\\gamma`` is the psychrometric constant (kPa K-1).
 The value of `Gs_pot` is typically a maximum value of Gs observed at the site, e.g. the 90th
 percentile of Gs within the growing season.
 
-If keyword arguments `G` or `S` in the are set to `missing`, ground heat flux and storage flux
-are assumed zero respectively. Note, that these keyword argument are not available in the
-mutating form, where the caller has to add tree these columns before 
-(see [fill_GS_missings](@ref)).
-         
+Ground heat flux and storage heat flux `G` or `S` are provided as optional 
+arguments. In the input-explicit variants, they default to zero.
+In the data-frame arguments, they default to missing, which results
+in assuming them to be zero which is displayed in a log-message.
+Note that in difference ot the bigleaf R package, you explitly need to
+care for missing values (see examples).
+      
 Both methods are provided with several forms:
 - all required inputs as positional arguments
-- provideing G and S as positional arguments with handing of missing values
 - providing a DataFrame with columns corresponding to required inputs
-
+  returning a DataFrame with only the result columns.
+- a mutating DataFrame version that returns the original DataFrame with
+  result columns added or modified.
 
 # Value
 NamedTuple or DataFrame with the following entries:
 - `ET_pot`: Potential evapotranspiration (kg m-2 s-1)
 - `LE_pot`: Potential latent heat flux (W m-2)
-For the mutating form, the original df with columns `ET_pot`, `LE_pot`, `G`, and `S` 
+For the mutating form, the original df with columns `ET_pot`, `LE_pot` 
 updated or added.
-
 
 # References 
 - Priestley, C_H_B., Taylor, R_J., 1972: On the assessment of surface heat flux
@@ -94,27 +92,43 @@ for ecosystem water and carbon fluxes. Nature Climate Change 6, 1023 - 1027.
 [`surface_conductance`](@ref)
 
 # Examples
-
+Calculate potential ET of a surface that receives a net radiation of 500 Wm-2
+using Priestley-Taylor:
 ```jldoctest; output=false
-# Calculate potential ET of a surface that receives a net radiation of 500 Wm-2
-# using Priestley-Taylor:
 Tair,pressure,Rn = 30.0,100.0,500.0
 ET_pot, LE_pot = potential_ET(Tair,pressure,Rn, Val(:PriestleyTaylor))    
 ≈(ET_pot, 0.0002035969; rtol = 1e-5)
 # output
 true
 ``` 
-```@jldoctest; output=false
-# Calculate potential ET for a surface with known Gs (0.5 mol m-2 s-1) and Ga (0.1 m s-1)
-# using Penman-Monteith:
+
+Calculate potential ET for a surface with known Gs (0.5 mol m-2 s-1) and Ga (0.1 m s-1)
+using Penman-Monteith:
+```jldoctest; output=false
 Tair,pressure,Rn = 30.0,100.0,500.0
-VPD,Ga = 2.0, 0.1
-ET_pot,LE_pot = potential_ET(Tair,pressure,Rn,VPD, Ga, Val(:PenmanMonteith); 
-  Gs_pot=0.5, infoGS=false)    
+VPD, Ga = 2.0, 0.1
+ET_pot, LE_pot = potential_ET(Tair,pressure,Rn,VPD, Ga, Val(:PenmanMonteith); Gs_pot=0.5,)    
 # now cross-check with the inverted equation
 #Ga2 = surface_conductance(Tair=20,pressure=100,VPD=2,Ga=0.1,Rn=400,LE=LE_pot_PM)
 #Ga2 ≈ GA
 true
+# output
+true
+``` 
+
+DataFrame variant with explicitly replacing missings:
+```jldoctest; output=false
+using DataFrames
+df = DataFrame(Tair = 20.0:1.0:30.0,pressure = 100.0, Rn = 500.0, G = 105.0, VPD = 2.0, Ga = 0.1) 
+allowmissing!(df, Cols(:G)); df.G[1] = missing
+#
+# need to provide G explicitly
+df_ET = potential_ET(df, Val(:PriestleyTaylor); G = df.G, infoGS = false)    
+ismissing(df_ET.ET_pot[1])
+#
+# use coalesce to replace missing values
+df_ET = potential_ET(df, Val(:PriestleyTaylor); G = coalesce.(df.G, zero(df.G)), infoGS = false)    
+!ismissing(df_ET.ET_pot[1])
 # output
 true
 ``` 
@@ -164,11 +178,12 @@ function potential_ET(df, approach::Val{:PriestleyTaylor};
   )
 end,
 function potential_ET(df, approach::Val{:PenmanMonteith}; 
-  G=missing,S=missing, missing_G_as_NA=false, missing_S_as_NA=false, infoGS=true,
-  kwargs...)
+  G=missing,S=missing, infoGS=true, kwargs...) 
   #
   dfGS = get_df_GS(df, G,S; infoGS) 
-  f(args...) = potential_ET(args..., approach; kwargs...)
+  function f(args...) 
+    potential_ET(args..., approach; kwargs...)
+  end
   select(hcat(select(df,:Tair, :pressure, :Rn, :VPD, :Ga), dfGS; copycols = false),
     All() => ByRow(f) => AsTable
   )
@@ -229,32 +244,28 @@ end
 #   DataFrame(G  = G_, S = S_)
 # end
 
-function fill_vec(G; is_replace_missing = true, fillvalue = zero(G))
-  @. ifelse(is_replace_missing, coalesce(G, fillvalue), G)
-end
-
-
+# function fill_vec(G; is_replace_missing = true, fillvalue = zero(G))
+#   @. ifelse(is_replace_missing, coalesce(G, fillvalue), G)
+# end
 
 """
-    TODO
+    equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn; ...)
+    equilibrium_imposed_ET(df; ...)
+    equilibrium_imposed_ET!(df; ...)
 
 Evapotranspiration (ET) split up into imposed ET and equilibrium ET.
 
+# Argumens
 - Tair:      Air temperature (deg C)
 - pressure:  Atmospheric pressure (kPa)
 - VPD:       Air vapor pressure deficit (kPa)
 - Gs:        surface conductance to water vapor (m s-1)
 - Rn:        Net radiation (W m-2)
+optional 
 - G:         Ground heat flux (W m-2); optional
 - S:         Sum of all storage fluxes (W m-2); optional
-- missing_G_as_NA:  if `TRUE`, missing G are treated as `NA`s, otherwise set 0. 
-- missing_S_as_NA:  if `TRUE`, missing S are treated as `NA`s, otherwise set 0.
-- Esat_formula:  Optional: formula to be used for the calculation of esat and  slope of esat.
-                     One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, `"Allen_1998"`.
-                     See [`Esat_slope`](@ref). 
+- `Esat_formula`: formula used in [`Esat_from_Tair`](@ref)
 - `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with entries 
-
-- constants 
   - cp - specific heat of air for constant pressure (J K-1 kg-1) 
   - eps - ratio of the molecular weight of water vapor to dry  (-) 
   - Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
@@ -265,105 +276,101 @@ Total evapotranspiration can be written in the form (Jarvis & McNaughton 6):
 ``ET = \\Omega ET_{eq} + (1 - \\Omega)ET_{imp}``
 
 where ``\\Omega`` is the decoupling coefficient as calculated from
-[`decoupling`](@ref). `ET_eq` is the equilibrium evapotranspiration e,
-the ET rate that would occur under uncoupled conditions, where tbudget
+[`decoupling`](@ref). `ET_eq` is the equilibrium evapotranspiration i.e.,
+the ET rate that would occur under uncoupled conditions, where the budget
 is dominated by radiation (when Ga -> 0):
 
-  ``ET_eq = (\\Delta * (Rn - G - S) * \\lambda) / (\\Del\\gamma)         
+``ET_{eq} = (\\Delta * (Rn - G - S) * \\lambda) / ( \\Delta \\gamma)``
 
 where ``\\Delta`` is the slope of the saturation vapor pressur(kPa K-1),
-``\\lambda`` is the latent heat of vaporization (J kg-1), and \\gamma``
+``\\lambda`` is the latent heat of vaporization (J kg-1), and ``\\gamma``
 is the psychrometric constant (kPa K-1).
 `ET_imp` is the imposed evapotranspiration rate, the ET rate
 that would occur under fully coupled conditions (when Ga -> inf):
 
-  ``ET_imp = (\\rho * cp * VPD * Gs * \\lambda) / \\gamma``
+``ET_{imp} = (\\rho * cp * VPD * Gs * \\lambda) / \\gamma``
 
 where ``\\rho`` is the air density (kg m-3).
 
 # Note
 Surface conductance (Gs) can be calculated with [`surface_conductance`](@ref)      
-Aerodynamic conductance (Ga) can be calculated using erodynamic_conductance`](@ref).
+Aerodynamic conductance (Ga) can be calculated using [`aerodynamic_conductance`](@ref).
       
 # Value
-A DataFrame with the following columns:
-- ET_eq: Equilibrium ET (kg m-2 s-1)
-- ET_imp: Imposed ET (kg m-2 s-1)
-- LE_eq: Equilibrium LE (W m-2)
-- LE_imp: Imposed LE (W m-2)      
+A `NamedTuple` or `DataFrame` with the following columns:
+- `ET_eq`: Equilibrium ET (kg m-2 s-1)
+- `ET_imp`: Imposed ET (kg m-2 s-1)
+- `LE_eq`: Equilibrium LE (W m-2)
+- `LE_imp`: Imposed LE (W m-2)      
 
-#References
+# References
 - Jarvis, P_G., McNaughton, K_G., 1986: Stomatal control of transpiration:
-scaling up from leaf to region. Advances in Ecological Rese1-49.
+  scaling up from leaf to region. Advances in Ecological Rese1-49.
 - Monteith, J_L., Unsworth, M_H., 2008: Principles of ironmPhysics.
-3rd edition. Academic Press, London. 
+  3rd edition. Academic Press, London. 
             
-#See also
-[`decoupling`](@ref)            
-            
-```@example; output = false
-df = DataFrame(Tair=20,pressure=100,VPD=seq(0.5,4,0.5),
-                 Gs_ms=seq(0.01,0.002,length_out=8),Rn=seq(50,400,50)          
-equilibrium_imposed_ET(df)            
+# Examples
+```jldoctest; output = false
+Tair,pressure,Rn, VPD, Gs = 20.0,100.0,50.0, 0.5, 0.01
+ET_eq, ET_imp, LE_eq, LE_imp = equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn)    
+≈(ET_eq, 1.399424e-05; rtol = 1e-5)
+# output
+true
 ``` 
 """
-function equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn,
-  G=NULL,S=NULL,missing_G_as_NA=false,missing_S_as_NA=false,
+function equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn;
+  G=zero(Tair),S=zero(Tair), kwargs...)
+  equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn, G, S; kwargs...)
+end,
+function equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn, G, S;
   Esat_formula=Val(:Sonntag_1990),
   constants=bigleaf_constants())
   # 
-  #check_input(data,list(Tair,pressure,VPD,Rn,Gs,G,S))
-  G,S = fill_GS_missings(G,S,missing_G_as_NA, missing_S_as_NA)
-  rho    = air_density(Tair,pressure,constants)
-  gamma  = psychrometric_constant(Tair,pressure,constants)
-  Delta  = Esat_from_Tair_deriv(Tair,Esat_formula,constants)
+  rho    = air_density(Tair, pressure; constants)
+  gamma  = psychrometric_constant(Tair, pressure; constants)
+  Delta  = Esat_from_Tair_deriv(Tair; formula = Esat_formula, constants)
   LE_eq  = (Delta * (Rn - G - S)) / (gamma + Delta)
   LE_imp = (rho * constants[:cp] * Gs * VPD) / gamma
   #
   ET_imp = LE_to_ET(LE_imp,Tair)
   ET_eq  = LE_to_ET(LE_eq,Tair)
-  (ET_pot = ET_pot, LE_pot = LE_pot, LE_imp = LE_imp)
+  (;ET_eq, ET_imp, LE_eq, LE_imp)
+end,
+function equilibrium_imposed_ET(df; 
+  G=missing,S=missing, infoGS=true, kwargs...) 
+  #
+  dfGS = get_df_GS(df, G,S; infoGS) 
+  function f(args...) 
+    equilibrium_imposed_ET(args...; kwargs...)
+  end
+  dfb = hcat(select(df,:Tair, :pressure, :VPD, :Gs, :Rn), dfGS; copycols = false)
+  select(dfb, All() => ByRow(f) => AsTable )
+end,
+function equilibrium_imposed_ET!(df; 
+  G=missing,S=missing, infoGS=true, kwargs...) 
+  #
+  dfGS = get_df_GS(df, G,S; infoGS) 
+  # temporarily add G and S to the DataFrame to mutate
+  df._tmp_G .= dfGS.G
+  df._tmp_S .= dfGS.S
+  f(args...) = equilibrium_imposed_ET(args...; kwargs...)
+  transform!(df,
+    [:Tair, :pressure, :VPD, :Gs, :Rn, :_tmp_G, :_tmp_S] => ByRow(f) => AsTable
+   )
+   select!(df, Not([:_tmp_G, :_tmp_S]))
 end
 
 
+
 """
-    fill_GS_missings!(df::DataFrame, G=df.G, S=df.S, 
-      missing_G_as_NA=false, missing_S_as_NA=false; infoGS=true)
+    TODO; implement decoupling.
 
-Fill missing values in ground heat flux and storage flux.
-
-# Arguments
-- df: DataFrame where columns G and S should be updated
-- G: Ground heat flux
-- S: Storage heat flux
-- missing_G_as_NA: set to true to not fill NAs in G to propagate to computations
-- missing_S_as_NA: set to true to not fill NAs in S to propagate to computations
-- infoGS: set to false to avoid log info message 
-
-```@example
-true
-# using DataFrames
-# df = DataFrame(Tair = 20.0:1.0:30.0,pressure = 100.0, Rn = 500.0)
-# fill_GS_missings!(df, missing, missing)
-# all( df.S .== df.G .== 0.0)
-```
+This stub is there to satisfy links im Help-pages.
 """
-function fill_GS_missings!(df::DataFrame, G=df.G, S=df.S, 
-  missing_G_as_NA=false, missing_S_as_NA=false; infoGS=true
-  )
-  nout = nrow(df)
-  df.G .= ifelse(
-      ismissing(G),
-      (infoGS && @info("Ground heat flux G is not provided and set to 0."); Zeros(nout)),
-      @. ifelse(missing_G_as_NA, G, coalesce(G, 0.0))
-      )
-  df.S .= ifelse(
-      ismissing(S),
-      (infoGS && @info("Storage heat flux S is not provided and set to 0."); Zeros(nout)),
-      @. ifelse(missing_S_as_NA, G, coalesce(S, 0.0))
-    )
-  df
+function decoupling()
+  error("not yet implemented.")
 end
+
 
 """
     TODO; implement surface_conductance.
@@ -374,5 +381,12 @@ function surface_conductance()
   error("not yet implemented.")
 end
 
+"""
+    TODO; implement aerodynamic_conductance.
 
+This stub is there to satisfy links im Help-pages.
+"""
+function aerodynamic_conductance()
+  error("not yet implemented.")
+end
 

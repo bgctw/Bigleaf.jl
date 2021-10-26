@@ -74,3 +74,28 @@ end
     @test ncol(dfm) == ncol(df2)+2 
 end
 
+@testset "equilibrium_imposed_ET scalars" begin
+    # regression from R package example
+    Tair,pressure,Rn, VPD, Gs = 20.0,100.0,50.0, 0.5, 0.01
+    ET_eq, ET_imp, LE_eq, LE_imp = equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn)    
+    @test ≈(ET_eq, 1.399424e-05; rtol = 1e-5)
+    @test ≈(ET_imp, 3.695727e-05; rtol = 1e-5)
+    @test ≈(LE_eq, 34.33628; rtol = 1e-5)
+    @test ≈(LE_imp, 90.67837; rtol = 1e-5)
+    #
+    df = DataFrame(Tair = 20.0:1.0:22.0, pressure = 100.0, Rn = 50.0,  VPD = 0.5,  Gs = 0.01)
+    ncoldf0 = ncol(df)
+    df_ET = @test_logs (:info,r"G is not provided") (:info,r"S is not provided") equilibrium_imposed_ET(df)
+    @test ncol(df) == ncoldf0
+    @test nrow(df_ET) == nrow(df)
+    @test ≈(first(df_ET).ET_eq, ET_eq)
+    @test ≈(first(df_ET).ET_imp, ET_imp)
+    #
+    dfm = copy(df)
+    dfm_ET = equilibrium_imposed_ET!(dfm; infoGS = false)
+    @test ncol(dfm) == ncoldf0 + 4
+    @test nrow(dfm) == nrow(df)
+    @test ≈(first(dfm_ET).ET_eq, ET_eq)
+    @test ≈(first(dfm_ET).ET_imp, ET_imp)
+    #TODO surface_conductance(Tair=20,pressure=100,VPD=2,Ga=0.1,Rn=400,LE=LE_pot_PM)
+end
