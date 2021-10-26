@@ -44,17 +44,17 @@
 #'          easily altered. E_g. the following command will change the value of
 #'          the von Karman constant from 0.41 to 0.4:
 #'
-#'          \code{bigleaf_constants(k=0.4)}
+#'          `bigleaf_constants(k=0.4)`
 #'
 #'          the value of a constant can be returned by calling:
 #'
-#'          \code{bigleaf_constants()$*name_of_constant*}
+#'          `bigleaf_constants()$*name_of_constant*`
 #'
 #'          To permanently change the constants contained within this function (which
 #'          makes sense for some of them, e.g. for the von Karman constant),
-#'          the command \code{\link[utils]{fixInNamespace}} can be used. E_g.
+#'          the command `\link[utils]{fixInNamespace`} can be used. E_g.
 #'
-#'          \code{fixInNamespace(bigleaf_constants,ns="bigleaf")}
+#'          `fixInNamespace(bigleaf_constants,ns="bigleaf")`
 #'
 #'          Note that this has to be repeated every time the package is newly installed/loaded.
 #'

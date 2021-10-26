@@ -9,43 +9,43 @@
 #' 
 #' - data            Data_frame or matrix containing all required input variables in 
 #'                        half-hourly or hourly resolution. Including year, month, day information
-#' - quality_control Should quality control be applied? Defaults to \code{TRUE}.
-#' - filter_growseas Should data be filtered for growing season? Defaults to \code{FALSE}.
-#' - filter_precip   Should precipitation filtering be applied? Defaults to \code{FALSE}.
+#' - quality_control Should quality control be applied? Defaults to `TRUE`.
+#' - filter_growseas Should data be filtered for growing season? Defaults to `false`.
+#' - filter_precip   Should precipitation filtering be applied? Defaults to `false`.
 #' - filter_vars     Additional variables to be filtered. Vector of type character.
 #' - filter_vals_min Minimum values of the variables to be filtered. Numeric vector of 
-#'                        the same length than \code{filter_vars}. Set to \code{NA} to be ignored.
+#'                        the same length than `filter_vars`. Set to `NA` to be ignored.
 #' - filter_vals_max Maximum values of the variables to be filtered. Numeric vector of 
-#'                        the same length than \code{filter_vars}. Set to \code{NA} to be ignored.
-#' - NA_as_invalid   If \code{TRUE} (the default) missing data are filtered out (applies to all variables).
+#'                        the same length than `filter_vars`. Set to `NA` to be ignored.
+#' - NA_as_invalid   If `TRUE` (the default) missing data are filtered out (applies to all variables).
 #' - vars_qc         Character vector indicating the variables for which quality filter should 
-#'                        be applied. Ignored if \code{quality_control = FALSE}.
+#'                        be applied. Ignored if `quality_control = false`.
 #' - quality_ext     The extension to the variables' names that marks them as 
-#'                        quality control variables. Ignored if \code{quality_control = FALSE}.                       
+#'                        quality control variables. Ignored if `quality_control = false`.                       
 #' - good_quality    Which values indicate good quality (i.e. not to be filtered) 
-#'                        in the quality control (qc) variables? Ignored if \code{quality_control = FALSE}.
-#' - missing_qc_as_bad If quality control variable is \code{NA}, should the corresponding data point be
-#'                          treated as bad quality? Defaults to \code{TRUE}. Ignored if \code{quality_control = FALSE}.                        
+#'                        in the quality control (qc) variables? Ignored if `quality_control = false`.
+#' - missing_qc_as_bad If quality control variable is `NA`, should the corresponding data point be
+#'                          treated as bad quality? Defaults to `TRUE`. Ignored if `quality_control = false`.                        
 #' - precip          Precipitation (mm time-1)
-#' - GPP             Gross primary productivity (umol m-2 s-1); Ignored if \code{filter_growseas = FALSE}.
-#' - doy             Day of year; Ignored if \code{filter_growseas = FALSE}.
-#' - year            Year; Ignored if \code{filter_growseas = FALSE}.
+#' - GPP             Gross primary productivity (umol m-2 s-1); Ignored if `filter_growseas = false`.
+#' - doy             Day of year; Ignored if `filter_growseas = false`.
+#' - year            Year; Ignored if `filter_growseas = false`.
 #' - tGPP            GPP threshold (fraction of 95th percentile of the GPP time series).
-#'                        Must be between 0 and 1. Ignored if \code{filter_growseas} is \code{FALSE}.
+#'                        Must be between 0 and 1. Ignored if `filter_growseas` is `false`.
 #' - ws              Window size used for GPP time series smoothing. 
-#'                        Ignored if \code{filter_growseas = FALSE}.
+#'                        Ignored if `filter_growseas = false`.
 #' - min_int         Minimum time interval in days for a given state of growing season.
-#'                        Ignored if \code{filter_growseas = FALSE}.
+#'                        Ignored if `filter_growseas = false`.
 #' - tprecip         Precipitation threshold used to identify a precipitation event (mm). 
-#'                        Ignored if \code{filter_precip = FALSE}.
+#'                        Ignored if `filter_precip = false`.
 #' - precip_hours    Number of hours removed following a precipitation event (h).
-#'                        Ignored if \code{filter_precip = FALSE}.
+#'                        Ignored if `filter_precip = false`.
 #' - records_per_hour Number of observations per hour. I_e. 2 for half-hourly data.
-#' - filtered_data_to_NA Logical. If \code{TRUE} (the default), all variables in the input
-#'                              DataFrame/matrix are set to \code{NA} for the time step where ANY of the
-#'                              \code{filter_vars} were beyond their acceptable range (as
-#'                              determined by \code{filter_vals_min} and \code{filter_vals_max}).
-#'                              If \code{FALSE}, values are not filtered, and an additional column 'valid'
+#' - filtered_data_to_NA Logical. If `TRUE` (the default), all variables in the input
+#'                              DataFrame/matrix are set to `NA` for the time step where ANY of the
+#'                              `filter_vars` were beyond their acceptable range (as
+#'                              determined by `filter_vals_min` and `filter_vals_max`).
+#'                              If `false`, values are not filtered, and an additional column 'valid'
 #'                              is added to the DataFrame/matrix, indicating if any value of a row
 #'                              did (1) or did not fulfill the filter criteria (0).
 #' - constants frac2percent - conversion between fraction and percent
@@ -53,37 +53,38 @@
 #' # Details
  This routine consists of two parts:
 #' 
-#'          1) Quality control: All variables included in \code{vars_qc} are filtered for 
+#'          1) Quality control: All variables included in `vars_qc` are filtered for 
 #'             good quality data. For these variables a corresponding quality variable with 
-#'             the same name as the variable plus the extension as specified in \code{quality_ext}
+#'             the same name as the variable plus the extension as specified in `quality_ext`
 #'             must be provided. For time steps where the value of the quality indicator is not included
-#'             in the argument \code{good_quality}, i.e. the quality is not considered as 'good', 
-#'             its value is set to \code{NA}.
+#'             in the argument `good_quality`, i.e. the quality is not considered as 'good', 
+#'             its value is set to `NA`.
 #'             
 #'          2) Meteorological filtering. Under certain conditions (e.g. low ustar), the assumptions
 #'             of the EC method are not fulfilled. Further, some data analysis require certain meteorological
 #'             conditions, such as periods without rainfall, or active vegetation (growing season, daytime).
 #'             The filter applied in this second step serves to exclude time periods that do not fulfill the criteria
 #'             specified in the arguments. More specifically, time periods where one of the variables is higher
-#'             or lower than the specified thresholds (\code{filter_vals_min} and \code{filter_vals_max})
-#'             are set to \code{NA} for all variables. If a threshold is set to \code{NA}, it will be ignored.
+#'             or lower than the specified thresholds (`filter_vals_min` and `filter_vals_max`)
+#'             are set to `NA` for all variables. If a threshold is set to `NA`, it will be ignored.
 #'          
 #' # Value
- If \code{filtered_data_to_NA = TRUE} (default), the input DataFrame/matrix with 
-#'         observations which did not fulfill the filter criteria set to \code{NA}. 
-#'         If \code{filtered_data_to_NA = FALSE}, the input DataFrame/matrix with an additional 
+ If `filtered_data_to_NA = TRUE` (default), the input DataFrame/matrix with 
+#'         observations which did not fulfill the filter criteria set to `NA`. 
+#'         If `filtered_data_to_NA = false`, the input DataFrame/matrix with an additional 
 #'         column "valid", which indicates whether all the data of a time step fulfill the 
 #'         filtering criteria (1) or not (0).
 #'         
-#' @note The thresholds set with \code{filter_vals_min} and \code{filter_vals_max} filter all data
+#' # Note
+#' The thresholds set with `filter_vals_min` and `filter_vals_max` filter all data
 #'       that are smaller than ("<"), or greater than (">") the specified thresholds. That means
 #'       if a variable has exactly the same value as the threshold, it will not be filtered. Likewise,
-#'       \code{tprecip} filters all data that are greater than \code{tprecip}. 
+#'       `tprecip` filters all data that are greater than `tprecip`. 
 #' 
 #'       Variables considered of bad quality (as specified by the corresponding quality control variables)      
-#'       will be set to \code{NA} by this routine. Data that do not fulfill the filtering criteria are set to
-#'       \code{NA} if \code{filtered_data_to_NA = TRUE}. Note that with this option *all* variables of the same
-#'       time step are set to \code{NA}. Alternatively, if \code{filtered_data_to_NA = FALSE} data are not set to \code{NA},
+#'       will be set to `NA` by this routine. Data that do not fulfill the filtering criteria are set to
+#'       `NA` if `filtered_data_to_NA = TRUE`. Note that with this option *all* variables of the same
+#'       time step are set to `NA`. Alternatively, if `filtered_data_to_NA = false` data are not set to `NA`,
 #'       and a new column "valid" is added to the DataFrame/matrix, indicating if any value of a row
 #'       did (1) or did not fulfill the filter criteria (0).
 #'       
@@ -94,9 +95,9 @@
 #' # hence growing season is not filtered.
 #' # If filtered_data_to_NA=TRUE, all values of a row are set to NA if one filter
 #' # variable is beyond its bounds. 
-#' DE_Tha_Jun_2014_2 = filter_data(DE_Tha_Jun_2014,quality_control=FALSE,
+#' DE_Tha_Jun_2014_2 = filter_data(DE_Tha_Jun_2014,quality_control=false,
 #'                                  vars_qc=c("Tair","precip","H","LE"),
-#'                                  filter_growseas=FALSE,filter_precip=TRUE,
+#'                                  filter_growseas=false,filter_precip=TRUE,
 #'                                  filter_vars=c("Tair","PPFD","ustar"),
 #'                                  filter_vals_min=c(5,200,0.2),
 #'                                  filter_vals_max=c(NA,NA,NA),NA_as_invalid=TRUE,
@@ -106,10 +107,10 @@
 #'                                  tprecip=0.1,precip_hours=24,records_per_hour=2,
 #'                                  filtered_data_to_NA=TRUE)
 #'
-#'  ## same, but with filtered_data_to_NA=FALSE
-#'  DE_Tha_Jun_2014_3 = filter_data(DE_Tha_Jun_2014,quality_control=FALSE,
+#'  ## same, but with filtered_data_to_NA=false
+#'  DE_Tha_Jun_2014_3 = filter_data(DE_Tha_Jun_2014,quality_control=false,
 #'                                  vars_qc=c("Tair","precip","H","LE"),
-#'                                  filter_growseas=FALSE,filter_precip=TRUE,
+#'                                  filter_growseas=false,filter_precip=TRUE,
 #'                                  filter_vars=c("Tair","PPFD","ustar"),
 #'                                  filter_vals_min=c(5,200,0.2),
 #'                                  filter_vals_max=c(NA,NA,NA),NA_as_invalid=TRUE,
@@ -117,7 +118,7 @@
 #'                                  missing_qc_as_bad=TRUE,GPP="GPP",doy="doy",
 #'                                  year="year",tGPP=0.5,ws=15,min_int=5,precip="precip",
 #'                                  tprecip=0.1,precip_hours=24,records_per_hour=2,
-#'                                  filtered_data_to_NA=FALSE)
+#'                                  filtered_data_to_NA=false)
 #'                                  
 #'  # note the additional column 'valid' in DE_Tha_Jun_2014_3.
 #'  # To remove time steps marked as filtered out (i.e. 0 values in column 'valid'):
@@ -126,8 +127,8 @@
 #'   
 #' @importFrom stats aggregate
 #' @export                     
-function filter_data(data,quality_control=TRUE,filter_growseas=FALSE,
-                        filter_precip=FALSE,filter_vars=NULL,
+function filter_data(data,quality_control=TRUE,filter_growseas=false,
+                        filter_precip=false,filter_vars=NULL,
                         filter_vals_min,filter_vals_max,NA_as_invalid=TRUE,
                         vars_qc=NULL,quality_ext="_qc",good_quality=c(0,1),
                         missing_qc_as_bad=TRUE,GPP="GPP",doy="doy",
@@ -173,7 +174,7 @@ else { # same, but consider missing quality flag variables as good
         qc_invalid      = sum(get(paste0(var,quality_ext)) > max(good_quality) & !is_na(get(paste0(var,quality_ext))))
 end
       
-      qc_invalid_perc = round((qc_invalid/nrow(data))*constants$frac2percent,2)
+      qc_invalid_perc = round((qc_invalid/nrow(data))*constants[:frac2percent],2)
       
       cat(var,": ",qc_invalid," data points (",qc_invalid_perc,"%) set to NA",fill=TRUE,sep="")
 end
@@ -222,12 +223,12 @@ end
 end
   
   # 4) calculate number and percentage of filtered values
-  invalids_perc = sapply(invalids, function(x) round((length(x)/nrow(data))*constants$frac2percent,2))
+  invalids_perc = sapply(invalids, function(x) round((length(x)/nrow(data))*constants[:frac2percent],2))
   
   additional_invalids = sapply(2:length(invalids), function(x) 
     length(setdiff(invalids[[x]],unique(unlist(invalids[1:(x-1)])))))
   
-  additional_invalids_perc = round(additional_invalids/nrow(data)*constants$frac2percent,2)
+  additional_invalids_perc = round(additional_invalids/nrow(data)*constants[:frac2percent],2)
   
   
   # 5) write to output
@@ -252,10 +253,10 @@ end
     invalid        = unique(unlist(invalids))
     valid[invalid] = 0
   
-    excl_perc = round((length(invalid)/nrow(data))*constants$frac2percent,2)
+    excl_perc = round((length(invalid)/nrow(data))*constants[:frac2percent],2)
   
     cat(length(invalid)," data points (",excl_perc,"%) excluded in total",fill=TRUE,sep="")
-    cat(nrow(data) - length(invalid)," valid data points (",constants$frac2percent-excl_perc,"%) remaining.",fill=TRUE,sep="")
+    cat(nrow(data) - length(invalid)," valid data points (",constants[:frac2percent]-excl_perc,"%) remaining.",fill=TRUE,sep="")
   
   
     # 6) return input data frame with filtered time steps set to NA or an additional 'valid' column
@@ -296,15 +297,15 @@ end
 #'          observed in the year. 
 #'          The GPP-threshold is calculated as:
 #'          
-#'          \deqn{GPP_threshold = quantile(GPPd,0.95)*tGPP}
+#'          ``GPP_threshold = quantile(GPPd,0.95)*tGPP``
 #'          
 #'          GPPd time series are smoothed with a moving average to avoid fluctuations 
 #'          in the delineation of the growing season. The window size defaults to 15 
 #'          days, but depending on the ecosystem, other values can be appropriate. 
 #'          
-#'          The argument \code{min_int} serves to avoid short fluctuations in the 
+#'          The argument `min_int` serves to avoid short fluctuations in the 
 #'          status growing season vs. no growing season by defining a minimum length
-#'          of the status. If a time interval shorter than \code{min_int} is labeled
+#'          of the status. If a time interval shorter than `min_int` is labeled
 #'          as growing season or non-growing season, it is changed to the status of 
 #'          the neighboring values.
 #'          

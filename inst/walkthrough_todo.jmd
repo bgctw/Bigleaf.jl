@@ -11,7 +11,7 @@ that accept a DataFrame with columnnames corresponding to required arguments.
 We can demonstrate the usage with a simple example:
 
 ```julia
-potential_ET(tha,Tair="Tair",pressure="pressure",Rn="Rn",VPD="VPD",approach="Priestley-Taylor")
+potential_ET(tha,Tair="Tair",pressure="pressure",Rn="Rn",VPD="VPD",approach=Val(:PriestleyTaylor))
 potential_ET(tha)
 potential_ET(tha,Tair=tha$Tair)
 potential_ET(tha,Tair=25)
@@ -61,7 +61,7 @@ In the function call above, `vars_qc` lists the variables that should be filtere
 In the next example, we filter for meteorological conditions only, including growing season (`filter_growseas=TRUE`):
 
 ```julia
-tha_filtered2 = filter_data(tha,quality_control=FALSE,filter_growseas=TRUE,
+tha_filtered2 = filter_data(tha,quality_control=false,filter_growseas=TRUE,
                              filter_vars=c("PPFD","ustar","LE","VPD"),
                              filter_vals_min=c(200,0.2,0,0.01), filter_vals_max=c(NA,NA,NA,NA),
                              NA_as_invalid = TRUE,
@@ -78,7 +78,7 @@ In this case, it does not really make sense to filter for growing season, since 
 As a last step we will filter for precipitation events. This is often meaningful for ecophysiological studies because data during and shortly after rainfall events do not contain much information on the physiological activity of the vegetation (i.e. they comprise significant fractions of evaporation from the soil and plant surfaces). The purpose of such a filter is mostly to minimize the fraction of soil and interception evaporation on the total water flux. This filter simply excludes periods following a precipitation event. A precipitation event is here defined as any time step with a recorded precipitation higher than `tprecip` (in mm per timestep). The function then filters all time periods following a precipitation event. The number of subsequent time periods excluded is controlled by the argument `precip_hours`. Here, we exclude rainfall events and the following 24 hours.
 
 ```julia
-tha_filtered3 = filter_data(tha,quality_control=FALSE,filter_growseas=FALSE,
+tha_filtered3 = filter_data(tha,quality_control=false,filter_growseas=false,
                              filter_precip=TRUE,precip="precip",tprecip=0.02,
                              records_per_hour=2,precip_hours=24)
 ```
@@ -267,8 +267,8 @@ Here, the points denote the mean wind speed and the bars denote the standard dev
 For many hydrological applications, it is relevant to get an estimate on the potential evapotranspiration (PET). At the moment, the `Bigleaf.jl` package contains two formulations for the estimate of PET: the Priestley-Taylor equation, and the Penman-Monteith equation:
 
 ```julia
-summary(potential_ET(tha_filtered,G="G",approach="Priestley-Taylor"))
-summary(potential_ET(tha_filtered,G="G",approach="Penman-Monteith"),
+summary(potential_ET(tha_filtered,G="G",approach=Val(:PriestleyTaylor)))
+summary(potential_ET(tha_filtered,G="G",approach=Val(:PenmanMonteith)),
         Gs_pot=quantile(tha_filtered$Gs_mol,0.95,na_rm=TRUE))
 ```
 
@@ -480,7 +480,7 @@ unc_all = mapply(aerodynamic_conductance,Dl=Dl_sample,z0m=z0m_sample,LAI=LAI_sam
                   )
 
 # select "Ga_h" output variable and convert to matrix
-unc_Ga_h = matrix(unlist(unc_all["Ga_h",]),ncol=n_pert,byrow=FALSE) 
+unc_Ga_h = matrix(unlist(unc_all["Ga_h",]),ncol=n_pert,byrow=false) 
 
 # calculate 2.5th, 50th, and 97.5th quantile of the n_pert calculations for every timestep
 Ga_low  = apply(unc_Ga_h,1,quantile,0.025,na_rm=T)

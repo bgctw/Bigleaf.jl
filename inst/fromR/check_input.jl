@@ -9,11 +9,12 @@
 #' - data   Input DataFrame or matrix
 #' - ...    Input variables. Either a list or individual vectors
 #' 
-#' @note This function can be run for named variables (in which case the return
+#' # Note
+#' This function can be run for named variables (in which case the return
 #'       value will be named according to the given name), or for placeholder
 #'       variables that are assigned and named according to e.g. entries of a character 
-#'       vector. In the latter case, the input variable has to be named as \code{"var"} or
-#'       \code{"var_qc"}.
+#'       vector. In the latter case, the input variable has to be named as `"var"` or
+#'       `"var_qc"`.
 #' 
 #' @keywords internal
 function check_input(data,...)
@@ -41,23 +42,23 @@ end
             if (is_numeric(var))
               assign(varname,var,pos=sys_frame(-1))
 else 
-              stop("column representing '",varname,"' in the input matrix/DataFrame must be numeric",call.=FALSE)
+              stop("column representing '",varname,"' in the input matrix/DataFrame must be numeric",call.=false)
 end
 else 
-            stop ("there is no column named '",var,"' in the input matrix/DataFrame. Indicate the name of the column representing variable '",varname,"', or alternatively, provide a numeric vector of the same length as the input matrix/DataFrame or of length 1.",call.=FALSE)
+            stop ("there is no column named '",var,"' in the input matrix/DataFrame. Indicate the name of the column representing variable '",varname,"', or alternatively, provide a numeric vector of the same length as the input matrix/DataFrame or of length 1.",call.=false)
 end
 else 
-          stop("name of variable '",varname,"' must have length 1",call.=FALSE)
+          stop("name of variable '",varname,"' must have length 1",call.=false)
 end
 else 
         if ("data" %in% names(formals(sys_function(which=-1))))
           if (var %in% as_character(unlist(match_call(definition=sys_function(-1),call=sys_call(-1))[-1])))
-            stop("variable '",var,"' is of type character and interpreted as a column name, but no input matrix/DataFrame is provided. Provide '",var,"' as a numeric vector, or an input matrix/DataFrame with a column named '",var,"'",call.=FALSE)
+            stop("variable '",var,"' is of type character and interpreted as a column name, but no input matrix/DataFrame is provided. Provide '",var,"' as a numeric vector, or an input matrix/DataFrame with a column named '",var,"'",call.=false)
 else 
-            stop("variable '",var,"' is not provided",call.=FALSE)
+            stop("variable '",var,"' is not provided",call.=false)
 end
 else 
-          stop("variable '",var,"' must be numeric",call.=FALSE)
+          stop("variable '",var,"' must be numeric",call.=false)
 end
 end
 else 
@@ -78,16 +79,16 @@ else if (is_numeric(var) & length(var) != nrow(data))
             var = rep(var,length=nrow(data))
             assign(varname,var,envir=sys_frame(-1))
 else 
-            stop("variable '",varname,"' must have the same length as the input matrix/DataFrame or length 1. Do NOT provide an input matrix/DataFrame if none of its variables are used!",call.=FALSE)
+            stop("variable '",varname,"' must have the same length as the input matrix/DataFrame or length 1. Do NOT provide an input matrix/DataFrame if none of its variables are used!",call.=false)
 end
 else if (!is_numeric(var))
-          stop("variable '",varname,"' must be numeric",call.=FALSE)
+          stop("variable '",varname,"' must be numeric",call.=false)
 end
 else 
         if (is_numeric(var))
           assign(varname,var,envir=sys_frame(-1))
 else 
-          stop("variable '",varname,"' must be numeric",call.=FALSE)
+          stop("variable '",varname,"' must be numeric",call.=false)
 end
 end
 end
@@ -100,15 +101,16 @@ end
 #' 
 #' - varlist List of variables for which the length has to be compared
 #' 
-#' @note This function only plays a role if no input DataFrame or matrix are 
+#' # Note
+#' This function only plays a role if no input DataFrame or matrix are 
 #'       provided. In this case it ensures that provided vectors have the same
 #'       length to avoid trouble later up the function call.
 #'       
 #' @keywords internal
 function check_length(varlist)
   
-  if (is_list(unlist(varlist,recursive=FALSE)))
-    varlist = unlist(varlist,recursive=FALSE)
+  if (is_list(unlist(varlist,recursive=false)))
+    varlist = unlist(varlist,recursive=false)
 end
   
   length_vars = sapply(varlist,length)
@@ -116,7 +118,7 @@ end
   
   if (length(unique(length_vars)) >= 2)
     if (sort(unique(length_vars))[1] != 1 | length(unique(length_vars)) > 2)
-      stop("All input variables must have the same length or a length of 1!",call.=FALSE)
+      stop("All input variables must have the same length or a length of 1!",call.=false)
 end
 end
   return(varlist)

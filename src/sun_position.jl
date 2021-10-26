@@ -1,27 +1,31 @@
 """
-    calc_sun_position_hor(datetime::DateTime, lat, long)
+    calc_sun_position_hor(datetime, lat, long)
 
 Compute the Sun position at given time and observer coordinates in horizontal coordinates.
 
 # Arguments:
-- `datetime`: time given in UTC. 
+- `datetime`: time: Either a `ZonedDateTime`, or `DateTime` assumed in UTC
 - `lat`, `long`: latitude and longitude in degree
 
 # Value
-`SLVector`: sun position with entries
+`NamedTuple`: sun position with entries
 - `altitude`: angle above the horizon [rad].
 - `azimuth`: angle ange the horizon plane eastwards of north [rad]
 - `hourangle`: [rad] as output by AstroLib.eq2hor
    Seems to represent time [day/2pi] after solar noon. 
    Value at local timezone noon provdes (local time - solar time).
 """
+function calc_sun_position_hor(datetime::ZonedDateTime, lat, long)
+  datetimeUTC = DateTime(datetime,UTC)
+  calc_sun_position_hor(datetimeUTC, lat, long)
+end,
 function calc_sun_position_hor(datetime::DateTime, lat, long)
     deg2rad = π/180
     jd = datetime2julian(datetime)
     pos_eq = calc_sun_position_MOD(jd)
     # precession is already account for in MOD
     pos_hor = eq2hor(pos_eq.α/deg2rad, pos_eq.δ/deg2rad, jd, lat, long; precession = false) .* deg2rad
-    SLVector(altitude = pos_hor[1], azimuth = pos_hor[2], hourangle = pos_hor[3])
+    (altitude = pos_hor[1], azimuth = pos_hor[2], hourangle = pos_hor[3])
 end
 
 
@@ -57,15 +61,15 @@ end
 Compute the Sun position at the Julian Day `JD`.
 
 Results are represented in the Mean Equinox of Date (MOD),
-i.e. accounting for precision but not for nutation and smaller pertubation
-of the x axes, in Spherical coordinates. 
+i.e. accounting for precession but not for nutation and smaller pertubation
+of the polar axes, in spherical ecliptic and equatorial coordinates. 
 The algorithm was adapted from [Vallado 2013, p. 277-279].
 
 # Arguments:
 - `JD`: time given as Julian Day . 
 
 # Value
-`SLVector`: sun position where
+`NamedTuple`: sun position where
 - Ecliptic coordinates (1:3)
   - λ: Ecliptic longitude of the Sun [rad].
   - β: Ecliptic latitude of the Sun [rad] is assumed 0.
@@ -128,7 +132,7 @@ function calc_sun_position_MOD(JD::Number)
     # declination
     δ = asin(sinϵ * sinλ_e)
 
-    S_MOD_rad = SLVector(
+    S_MOD_rad = (
         λ = λ_e, β = 0.0, r = r, 
         α = α, δ = δ, 
         ϵ = ϵ

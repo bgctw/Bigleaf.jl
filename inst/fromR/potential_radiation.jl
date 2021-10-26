@@ -27,7 +27,7 @@ function extraterrestrial_radiation(doy,constants = bigleaf_constants())
   FracYearRad = 2 * pi * (doy - 1) / 365.24
   
   #Eccentricity correction
-  ExtRadiation = constants$solar_constant * (
+  ExtRadiation = constants[:solar_constant] * (
     1.00011 + 0.034221 * cos(FracYearRad) + 0.00128 * sin(FracYearRad)
      + 0.000719 * cos(2 * FracYearRad) + 0.000077 * sin(2 * FracYearRad)
      )
@@ -42,14 +42,14 @@ end
 #'
 #' Compute potential radiation for given geolocation and day of year.
 #'
-#' - doy          Integer vector with day of year (start at 1), same length as \code{hour} or length 1.
+#' - doy          Integer vector with day of year (start at 1), same length as `hour` or length 1.
 #' - hour         Numeric vector with daytime as decimal hour of local time zone
 #' - latDeg       Latitude (decimal degrees)
 #' - longDeg      Longitude (decimal degrees)
 #' - timezone     Time zone (hours)
 #' - useSolartime by default corrects hour (given in local winter time)
 #'                     for latitude to solar time (where noon is exactly at 12:00).
-#'                     Set this to \code{FALSE} to directly use local winter time.
+#'                     Set this to `false` to directly use local winter time.
 #'
 #' # Value
  vector of potential radiation (W m-2)
@@ -60,7 +60,7 @@ end
 #' potRadApparentLocal = potential_radiation(
 #'   160, hour, 39.94, -5.77, timezone = +1)
 #' potRadTimezone = potential_radiation(
-#'   160, hour, 39.94, -5.77, timezone = +1, useSolartime = FALSE)
+#'   160, hour, 39.94, -5.77, timezone = +1, useSolartime = false)
 #' plot(potRadApparentLocal ~ hour, type = 'l'
 #'   , ylab = 'potential radiation (W m-2)')
 #' lines(potRadTimezone ~  hour, col = "blue")

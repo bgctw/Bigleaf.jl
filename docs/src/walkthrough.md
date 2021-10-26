@@ -28,7 +28,8 @@ using Latexify
 using DataDeps, Suppressor
 using RData
 import CodecBzip2, CodecXz
-@suppress_err register(DataDep(
+#@suppress_err # error in github-actions: GitHubActionsLogger has no field stream
+register(DataDep(
     "DE_Tha_Jun_2014.rda",
     "downloading exampple dataset DE_Tha_Jun_2014 from bitbucket.org/juergenknauer/bigleaf",
     "https://bitbucket.org/juergenknauer/bigleaf/raw/0ebe11626b4409305951e8add9f6436703c82584/data/DE_Tha_Jun_2014.rda",
@@ -70,9 +71,60 @@ There are a few general guidelines that are important to consider when using the
 
 ## Units
 
-It is imperative that variables are provided in the right units, as the plausibility of the input units is not checked in most cases. The required units of the input arguments can be found in the respective help file of the function. The good news is that units do not change across functions. For example, pressure is always required in kPa, and temperature always in °c.
+It is imperative that variables are provided in the right units, as the plausibility of 
+the input units is not checked in most cases. The required units of the input arguments 
+can be found in the respective help file of the function. The good news is that units 
+do not change across functions. For example, pressure is always required in kPa, 
+and temperature always in °c.
 
-## TODO ##
+## Function arguments
+
+Most functions of `Bigleaf.jl` require a DataFrame, from which the required
+variables are extracted. This is usually the first argument of a function. 
+Most functions further provide default values for their arguments, 
+such that in many cases it is not necessary to provide them explicitly.
+
+The column names in the DataFrame should correspond to the argument names
+of the corresponding method that accespts each input individually.
+
+We can demonstrate the usage with a simple example:
+
+```@example doc
+# explicit inputs
+Tair, pressure, Rn, =  14.81, 97.71, 778.17 
+potential_ET(Tair, pressure, Rn, Val(:PriestleyTaylor))
+# DataFrame
+potential_ET(tha, Val(:PriestleyTaylor))
+# DataFrame with a few columns overwritten by user values
+potential_ET(transform(tha, :Tair => x -> 25.0; renamecols=false), Val(:PriestleyTaylor))
+# varying one input only
+Tair_vec =  10.0:1.0:20.0
+DataFrame(potential_ET.(Tair_vec, pressure, Rn, Val(:PriestleyTaylor)))
+nothing # hide
+```
+
+## Ground heat flux and storage fluxes
+
+Many functions require the available energy ($A$), which is defined as ($A = R_n - G - S$, 
+all in $\text{W m}^{-2}$), where $R_n$ is the net radiation, $G$ is the ground heat flux, 
+and $S$ is the sum of all storage fluxes of the ecosystem 
+(see e.g. Leuning et al. 2012 for an overview). For some sites, $G$ is not available, 
+and for most sites, only a few components of $S$ are measured. 
+
+In `Bigleaf.jl` it is not a problem if $G$ and/or $S$ are missing (other than the results might be (slightly) biased), but special options exist for the treatment of missing $S$ and $G$ values. 
+
+Note that the default for G and S in the dataframe variant is missing (and assumed zero), 
+even if those columns are
+present in the DataFrame. You need to explictly pass those columns with the optional
+arguments: e.g. `potential_ET(df, Val(:PriestleyTaylor); G = df.G)`
+
+Note that in difference to the bigleaf R package missing entries in a provide
+vector are not relaced by zero by default. 
+You need to explitly use coalesce when specifying a ground heat flux
+for which missings should be replaced by zero: `;G = coalesce(df.G, zero(df.G))`
+ 
+
+# Function walkthrough #
 
 ## Meteorological variables
 
@@ -142,7 +194,14 @@ The following figure compares them at absole scale and as difference to the
 
 ## Global radiation
 
-Computing solar position in horizontal coordinates
+Potential radiation for given time and latitude:
+```@example doc
+doy, hour = 160, 10.5
+lat, long = 51.0, 11.5
+potrad = potential_radiation(doy, hour, lat, long)
+```
+
+Calculation is based on sun's altitude, one of the horizontal coordinates of its position.
 ```@example doc
 using Plots, StatsPlots, DataFrames, Dates, Pipe, Suppressor
 hours = 0:24
@@ -150,12 +209,9 @@ lat,long = 51.0, 13.6 # Dresden Germany
 #deg2second = 24*3600/360
 doy = 160
 datetimes = DateTime(2021) .+Day(doy-1) .+ Hour.(hours) #.- Second(round(long*deg2second))
-res3 = @suppress_err @pipe calc_sun_position_hor.(datetimes, lat, long) |> toDataFrame(_)
+res3 = @pipe calc_sun_position_hor.(datetimes, lat, long) |> DataFrame(_)
 @df res3 scatter(datetimes, cols([:altitude,:azimuth]), legend = :topleft, xlab="Date and Time", ylab = "rad")
-savefig("fig/globrad.svg")
 ```
-
-![](fig/globrad.svg)
 
 The hour-angle at noon represents the difference to
 local time. In the following example solar time is
@@ -163,7 +219,7 @@ about 55min ahead of local winter time.
 
 ```@example doc
 summernoon = DateTime(2021) +Day(doy-1) + Hour(12) 
-sunpos = @suppress_err calc_sun_position_hor(summernoon, lat, long) 
+sunpos = calc_sun_position_hor(summernoon, lat, long) 
 sunpos.hourangle * 24*60/(2*π) # convert angle to minutes
 ```
 

@@ -13,6 +13,7 @@ makedocs(;
     authors="Thomas Wutzler <twutz@bgc-jena.mpg.de>. Jürgen Knauer <Juergen.Knauer@csiro.au> and contributors",
     repo="https://github.com/bgctw/Bigleaf.jl/blob/{commit}{path}#{line}",
     sitename="Bigleaf.jl",
+    doctestfilters=[r".*Info.*"],
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://bgctw.github.io/Bigleaf.jl",
@@ -24,6 +25,7 @@ makedocs(;
         #"Unit conversions" => "unit_conversions.md",
         "Walkthrough" => "walkthrough.md",
         hide("metorological_variables.md"),
+        hide("evapotranspiration.md"),
         hide("global_radiation.md"),
         hide("unit_conversions.md"),
         hide("bigleaf_constants.md"),
