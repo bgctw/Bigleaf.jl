@@ -1,9 +1,6 @@
 """
     potential_ET(Tair, pressure, Rn, ::Val{:PriestleyTaylor}; ...)
-    potential_ET(Tair, pressure, Rn, VPD, Ga, ::Val{:PenmanMonteith}; ...)
-
     potential_ET(Tair, pressure, Rn, G, S, ::Val{:PriestleyTaylor}; ...)
-    potential_ET(Tair, pressure, Rn, VPD, Ga, G, S, ::Val{:PenmanMonteith}; ...)
 
     potential_ET(df, approach; ...)
     potential_ET!(df, approach; ...)
@@ -17,12 +14,12 @@ the Penman-Monteith equation with a prescribed surface conductance.
 - Rn:        Net radiation (W m-2)
 - VPD:       Vapor pressure deficit (kPa)
 - Ga:        Aerodynamic conductance to heat/water vapor (m s-1)
-- G:         Ground heat flux (W m-2)
-- S:         Sum of all storage fluxes (W m-2)
 - approach:  Approach used. 
   Either `Val(:PriestleyTaylor)` (default), or `Val(:PenmanMonteith)`.
 - df:      Data_frame or matrix containing all required variables; optional
 optional:
+- G:         Ground heat flux (W m-2). Defaults to zero.
+- S:         Sum of all storage fluxes (W m-2) . Defaults to zero.
 - `Esat_formula`: formula used in [`Esat_from_Tair`](@ref)
 - `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with entries 
   - cp - specific heat of air for constant pressure (J K-1 kg-1) 
@@ -102,8 +99,7 @@ for ecosystem water and carbon fluxes. Nature Climate Change 6, 1023 - 1027.
 # Calculate potential ET of a surface that receives a net radiation of 500 Wm-2
 # using Priestley-Taylor:
 Tair,pressure,Rn = 30.0,100.0,500.0
-ET_pot, LE_pot = potential_ET(Tair,pressure,Rn, Val(:PriestleyTaylor); 
-  alpha=1.26, infoGS = false)    
+ET_pot, LE_pot = potential_ET(Tair,pressure,Rn, Val(:PriestleyTaylor))    
 ≈(ET_pot, 0.0002035969; rtol = 1e-5)
 # output
 true
@@ -124,12 +120,9 @@ true
 ``` 
 """
 function potential_ET(Tair, pressure, Rn, approach::Val{:PriestleyTaylor};
-  G=missing,S=missing, missing_G_as_NA=false, missing_S_as_NA=false, 
-  infoGS=true,
-  kwargs...)
+  G=zero(Tair),S=zero(Tair), kwargs...)
   #
-  G_, S_ = fill_GS_missings(G,S,missing_G_as_NA, missing_S_as_NA; infoGS)
-  potential_ET(Tair, pressure, Rn, G_, S_, approach; kwargs...)
+  potential_ET(Tair, pressure, Rn, G, S, approach; kwargs...)
 end,
 function potential_ET(Tair, pressure, Rn, G, S, ::Val{:PriestleyTaylor};
   alpha=1.26,
@@ -143,13 +136,9 @@ function potential_ET(Tair, pressure, Rn, G, S, ::Val{:PriestleyTaylor};
   (ET_pot = ET_pot, LE_pot = LE_pot)
 end,
 function potential_ET(Tair, pressure, Rn, VPD, Ga, approach::Val{:PenmanMonteith};
-  G=missing,S=missing, missing_G_as_NA=false, missing_S_as_NA=false, 
-  infoGS=true,
-  kwargs...)
+  G=zero(Tair),S=zero(Tair), kwargs...)
   #
-  G_, S_ = fill_GS_missings(G,S,missing_G_as_NA, missing_S_as_NA; infoGS)
-  G_tr, S_tr = 0,0
-  potential_ET(Tair, pressure, Rn, VPD, Ga, G_tr, S_tr, approach; kwargs...)
+  potential_ET(Tair, pressure, Rn, VPD, Ga, G, S, approach; kwargs...)
 end,
 function potential_ET(Tair, pressure, Rn, VPD, Ga, G, S, ::Val{:PenmanMonteith};
   Gs_pot=0.6,
@@ -166,10 +155,9 @@ function potential_ET(Tair, pressure, Rn, VPD, Ga, G, S, ::Val{:PenmanMonteith};
   (ET_pot = ET_pot, LE_pot = LE_pot)
 end,
 function potential_ET(df, approach::Val{:PriestleyTaylor}; 
-  G=missing,S=missing, missing_G_as_NA=false, missing_S_as_NA=false, infoGS=true,
-  kwargs...) 
+  G=missing,S=missing, infoGS=true, kwargs...) 
   #
-  dfGS = fill_GS_missings(df, G,S, missing_G_as_NA, missing_S_as_NA; infoGS) 
+  dfGS = get_df_GS(df, G,S; infoGS) 
   f(args...) = potential_ET(args..., approach; kwargs...)
   select(hcat(select(df,:Tair, :pressure, :Rn), dfGS; copycols = false),
     All() => ByRow(f) => AsTable
@@ -179,24 +167,73 @@ function potential_ET(df, approach::Val{:PenmanMonteith};
   G=missing,S=missing, missing_G_as_NA=false, missing_S_as_NA=false, infoGS=true,
   kwargs...)
   #
-  dfGS = fill_GS_missings(df, G,S, missing_G_as_NA, missing_S_as_NA; infoGS) 
+  dfGS = get_df_GS(df, G,S; infoGS) 
   f(args...) = potential_ET(args..., approach; kwargs...)
   select(hcat(select(df,:Tair, :pressure, :Rn, :VPD, :Ga), dfGS; copycols = false),
     All() => ByRow(f) => AsTable
   )
 end,
-function potential_ET!(df, approach::Val{:PriestleyTaylor}; kwargs...) 
+function potential_ET!(df, approach::Val{:PriestleyTaylor}; 
+  G=missing,S=missing, infoGS=true, kwargs...) 
+  dfGS = get_df_GS(df, G,S; infoGS) 
+  # temporarily add G and S to the DataFrame to mutate
+  df._tmp_G .= dfGS.G
+  df._tmp_S .= dfGS.S
   f(args...) = potential_ET(args..., approach; kwargs...)
   transform!(df,
-    [:Tair, :pressure, :Rn, :G, :S] => ByRow(f) => AsTable
-  )
+    [:Tair, :pressure, :Rn, :_tmp_G, :_tmp_S] => ByRow(f) => AsTable
+   )
+   select!(df, Not([:_tmp_G, :_tmp_S]))
 end,
-function potential_ET!(df, approach::Val{:PenmanMonteith}; kwargs...)
+function potential_ET!(df, approach::Val{:PenmanMonteith}; 
+  G=missing,S=missing, infoGS=true, kwargs...) 
+  dfGS = get_df_GS(df, G,S; infoGS) 
+  df._tmp_G .= dfGS.G
+  df._tmp_S .= dfGS.S
   f(args...) = potential_ET(args..., approach; kwargs...)
   transform!(df, 
-    [:Tair, :pressure, :Rn, :VPD, :Ga, :G, :S] => ByRow(f) => AsTable
+    [:Tair, :pressure, :Rn, :VPD, :Ga, :_tmp_G, :_tmp_S] => ByRow(f) => AsTable
   )
+  select!(df, Not([:_tmp_G, :_tmp_S]))
 end
+
+function get_df_GS(df, G, S; infoGS=true)
+  nout = nrow(df)
+  G_ = if ismissing(G)
+    infoGS && @info("Ground heat flux G is not provided and set to 0.")
+    Zeros(nout)
+  else 
+    G
+  end
+  S_ = if ismissing(S)
+    infoGS && @info("Storage heat flux S is not provided and set to 0.")
+    Zeros(nout)
+  else
+    S
+  end
+  DataFrame(G  = G_, S = S_)
+end
+
+# function fill_GS_missings(df::DataFrame, G,S, missing_G_as_NA, missing_S_as_NA; infoGS=true)
+#   nout = nrow(df)
+#   G_ = ifelse(
+#     ismissing(G),
+#     (infoGS && @info("Ground heat flux G is not provided and set to 0."); Zeros(nout)),
+#     @. ifelse(missing_G_as_NA, G, coalesce(G, 0.0))
+#     )
+#   S_ = ifelse(
+#   ismissing(S),
+#   (infoGS && @info("Storage heat flux S is not provided and set to 0."); Zeros(nout)),
+#   @. ifelse(missing_S_as_NA, G, coalesce(S, 0.0))
+#   )
+#   DataFrame(G  = G_, S = S_)
+# end
+
+function fill_vec(G; is_replace_missing = true, fillvalue = zero(G))
+  @. ifelse(is_replace_missing, coalesce(G, fillvalue), G)
+end
+
+
 
 """
     TODO
@@ -288,36 +325,6 @@ function equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn,
   (ET_pot = ET_pot, LE_pot = LE_pot, LE_imp = LE_imp)
 end
 
-
-function fill_GS_missings(G,S,missing_G_as_NA, missing_S_as_NA; infoGS=true)
-  #
-  G_ = ifelse(
-    ismissing(G),
-    (infoGS && @info("Ground heat flux G is not provided and set to 0."); 0.0),
-    ifelse(missing_G_as_NA, G, coalesce(G, 0.0))
-    )
-  S_ = ifelse(
-    ismissing(S),
-    (infoGS && @info("Storage heat flux S is not provided and set to 0."); 0.0),
-    ifelse(missing_S_as_NA, G, coalesce(S, 0.0))
-    )
-  G_,S_
-end
-
-function fill_GS_missings(df::DataFrame, G,S, missing_G_as_NA, missing_S_as_NA; infoGS=true)
-  nout = nrow(df)
-  G_ = ifelse(
-    ismissing(G),
-    (infoGS && @info("Ground heat flux G is not provided and set to 0."); Zeros(nout)),
-    @. ifelse(missing_G_as_NA, G, coalesce(G, 0.0))
-    )
-  S_ = ifelse(
-  ismissing(S),
-  (infoGS && @info("Storage heat flux S is not provided and set to 0."); Zeros(nout)),
-  @. ifelse(missing_S_as_NA, G, coalesce(S, 0.0))
-  )
-  DataFrame(G  = G_, S = S_)
-end
 
 """
     fill_GS_missings!(df::DataFrame, G=df.G, S=df.S, 
