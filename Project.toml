@@ -1,7 +1,7 @@
 name = "Bigleaf"
 uuid = "e2ae9153-b66f-47c5-85f1-c6d65380123f"
 authors = ["Thomas Wutzler <twutz@bgc-jena.mpg.de> and contributors"]
-version = "0.2.0"
+version = "0.2.1-DEV"
 
 [deps]
 TimeZones = "f269a46b-ccf7-5d73-abea-4c690281aa53"
