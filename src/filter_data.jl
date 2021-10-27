@@ -37,10 +37,10 @@ no growing season (dormant season) and `true` indicate growing season.
 """
 function filter_growing_season(GPPd,tGPP;ws=15,min_int=5,warngap=true)
   nday = length(GPPd)
-  if sum(ismissing(GPPd)) >= 0.5*nday 
-    @warn "number of available GPPd data is less than half the total number of days. " *
-    "Filter is not applied!"
-    return(Trues(nday))
+  if sum(.!ismissing.(GPPd)) < 0.5*nday 
+    error("Expected number of available GPPd data " * 
+    "to be at least half the total number of days ($nday). " *
+    "But was only ($(sum(.!ismissing.(GPPd)))).")
   end
   GPP_threshold = quantile(skipmissing(GPPd), 0.95)*tGPP
   # smooth GPP

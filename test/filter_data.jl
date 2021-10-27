@@ -10,3 +10,10 @@
     @test rle(growseas) == (Bool[1, 0], [309, 56])
 end
 
+@testset "GPPfilter with few data" begin
+    rng = StableRNG(815)
+    GPPd = @pipe sin.((1:365).*π./365) .+ 0.5 .* rand(rng,365) |> allowmissing(_)
+    GPPd[1:200] .= missing
+    @test_throws ErrorException filter_growing_season(GPPd, 0.5) 
+end
+
