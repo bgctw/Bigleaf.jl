@@ -18,6 +18,11 @@ Pages = ["metorological_variables.md",]
 Pages = ["evapotranspiration.md",]
 ```
 
+## Surface conductance
+```@index
+Pages = ["surface_conductance.md",]
+```
+
 ## Global radiation
 ```@index
 Pages = ["global_radiation.md",]
@@ -26,6 +31,11 @@ Pages = ["global_radiation.md",]
 ## Unit conversions
 ```@index
 Pages = ["unit_conversions.md","bigleaf_constants.md",]
+```
+
+## Filtering data
+```@index
+Pages = ["filter_data.md",]
 ```
 
 

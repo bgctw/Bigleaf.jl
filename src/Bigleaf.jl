@@ -10,7 +10,7 @@ using AstroLib
 using Suppressor
 using Missings
 using Statistics, StatsBase # mean, rle
-using PaddedViews
+using PaddedViews, StaticArrays
 using Infiltrator
 
 export frac_hour, moving_average
@@ -26,8 +26,8 @@ export air_density, pressure_from_elevation, psychrometric_constant,
 export calc_sun_position_MOD, calc_sun_position_hor
 export potential_radiation, extraterrestrial_radiation, get_datetime_for_doy_hour
 export potential_ET, potential_ET!, equilibrium_imposed_ET, equilibrium_imposed_ET!
-export filter_growing_season
-#export surface_conductance
+export setinvalid_range!, setinvalid_qualityflag!, setinvalid_nongrowingseason!, get_growingseason
+export decoupling, surface_conductance, aerodynamic_conductance
 
 include("util.jl")    
 include("bigleaf_constants.jl")

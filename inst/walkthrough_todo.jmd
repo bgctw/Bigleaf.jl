@@ -1,81 +1,133 @@
-
-
-
-## Function arguments
-
-Most functions of the `Bigleaf.jl` package require an input matrix or (more common) a DataFrame, from which the required variables are extracted. This is usually the first argument of a function. Most functions further provide default values for their arguments, such that in many cases it is not necessary to provide them explicitly.
-
-Another convenient feature of the `Bigleaf.jl` package is that it supports functions
-that accept a DataFrame with columnnames corresponding to required arguments.
-
-We can demonstrate the usage with a simple example:
+# Setup
 
 ```julia
-potential_ET(tha,Tair="Tair",pressure="pressure",Rn="Rn",VPD="VPD",approach=Val(:PriestleyTaylor))
-potential_ET(tha)
-potential_ET(tha,Tair=tha$Tair)
-potential_ET(tha,Tair=25)
-potential_ET(Tair=25,pressure=100,Rn=200)
+using Bigleaf
+using DataFrames
+
+using Latexify
+using DataDeps, Suppressor
+using RData
+import CodecBzip2, CodecXz
+#@suppress_err # error in github-actions: GitHubActionsLogger has no field stream
+register(DataDep(
+    "DE_Tha_Jun_2014.rda",
+    "downloading exampple dataset DE_Tha_Jun_2014 from bitbucket.org/juergenknauer/bigleaf",
+    "https://bitbucket.org/juergenknauer/bigleaf/raw/0ebe11626b4409305951e8add9f6436703c82584/data/DE_Tha_Jun_2014.rda",
+    "395f02e1a1a2d175ac7499c200d9d48b1cb58ff4755dfd2d7fe96fd18258d73c"
+))
+#println(datadep"DE_Tha_Jun_2014.rda")
+ENV["DATADEPS_ALWAYS_ACCEPT"]="true" # avoid question to download
+DE_Tha_Jun_2014 = first(values(load(joinpath(datadep"DE_Tha_Jun_2014.rda/DE_Tha_Jun_2014.rda"))))
+tha = DE_Tha_Jun_2014
+LAI = 7.6   # leaf area index
+zh  = 26.5  # average vegetation height (m)
+zr  = 42    # sensor height (m)
+Dl  = 0.01  # leaf characteristic dimension (m)
 ```
-
-In the first line above, the input arguments are provided as the names of the DataFrame. In this case we do not need to provide them explicitly because the column names correspond to the default names of the function (i.e. the command can be written as in line 2). In the third example, we replace one variable name with a numeric vector. In the fourth row, we calculate PET for a constant temperature of 25°C, but take all other variables from the DataFrame. For some applications, in particular for exploratory or sensitivity analyses, application nr. 5 can be useful. In this case, we did not provide a DataFrame, but only numeric vectors of length one (or of any other length). This can be useful to see e.g. how sensitive the results of a given functions are with respect to one of the input variables. We could, for instance, investigate how potential ET as calculated with the Priestley-Taylor formulation changes when $R_n$ increases from 200 $\text{W m}^{-2}$ to 400 $\text{W m}^{-2}$ when all other variables are held constant:
-
-```julia
-potential_ET(Tair=25,pressure=100,Rn=200)
-potential_ET(Tair=25,pressure=100,Rn=400)
-```
-
-When using your own data, it is not mandatory to use exactly the same variable names as here, but working with `Bigleaf.jl` is easier if you do so because then the variable names do not have to be specified when calling a function.
-
-
-## Ground heat flux and storage fluxes
-
-Many functions require the available energy ($A$), which is defined as ($A = R_n - G - S$, all in $\text{W m}^{-2}$), where $R_n$ is the net radiation, $G$ is the ground heat flux, and $S$ is the sum of all storage fluxes of the ecosystem (see e.g. Leuning et al. 2012 for an overview). For some sites, $G$ is not available, and for most sites, only a few components of $S$ are measured. In `Bigleaf.jl` it is not a problem if $G$ and/or $S$ are missing (other than the results might be (slightly) biased), but special options exist for the treatment of missing $S$ and $G$ values. If the options `missing_G_as_NA = TRUE` or `missing_S_as_NA = TRUE`, then the output variable is not calculated for that time period. Otherwise missing $S$ and $G$ values are set to O automatically. Please note that the default is to ignore $S$ and $G$ values. If $G$ and/or $S$ are available, they always have to be added explicitly to the function call (by providing the column name of $G$/$S$ or a vector).  
-
-
-
-
-\vspace{1cm}
-
-
-
-## Function walkthrough
-
-In the following, we explain how to use several of the package's key functions. Further information on the functions can be found on the respective function help pages and the references therein.
-
 
 ## Data filtering
 
-For most applications it is meaningful to filter your data. There are two main reasons why we want to filter our data before we start calculating ecosystem properties. The first one is to exclude datapoints that do not fulfill the requirements of the EC technique or that are of bad quality due to e.g. instrument failure or gap-filling with poor confidence. Note that the quality assessment of the EC data is not the purpose of the `Bigleaf.jl` package. This is done by other packages (e.g. `REddyProc`), which often provide quality control flags for the variables. These quality control flags are used here to filter out bad-quality datapoints.
+For most applications it is meaningful to filter your data. There are two main reasons 
+why we want to filter our data before we start calculating ecosystem properties. 
+The first one is to exclude datapoints that do not fulfill the requirements of the 
+EC technique or that are of bad quality due to e.g. instrument failure or gap-filling 
+with poor confidence. Note that the quality assessment of the EC data is not the purpose 
+of the `Bigleaf.jl` package. This is done by other packages (e.g. `REddyProc`), 
+which often provide quality control flags for the variables. These quality control 
+flags are used here to filter out bad-quality datapoints.
 
-A second reason for filtering our data is that some derived properties are only meaningful if certain meteorological conditions are met. For instance, if we are interested in properties related to plant gas exchange, it makes most sense to focus on time periods when plants are photosynthetically active (i.e. in the growing season and at daytime).
+A second reason for filtering our data is that some derived properties are only 
+meaningful if certain meteorological conditions are met. For instance, if we are 
+interested in properties related to plant gas exchange, it makes most sense to focus on 
+time periods when plants are photosynthetically active 
+(i.e. in the growing season and at daytime).
 
-The Bigleaf package provides the function `filter_data` that filters the data according to the criteria described above. We start with an example where the DataFrame is filtered only with respect to data quality (`quality_control=TRUE`):
+`Bigleaf.jl` provides methods that update (or create) the :valid column in 
+a DataFrame. Records, i.e. rows, that contain non valid conditions are set to false.
+If the valid column was false before, it stays at false.
 
+One can check quality flags. By default (argument `setvalmissing = true`) this also
+replaces the non-valid values in the data-columns by `missing`.
 ```julia
-tha_filtered1 = filter_data(tha,quality_control=TRUE,vars_qc=c("LE","H","NEE","Tair","VPD","wind"),
-                             quality_ext="_qc",good_quality = c(0,1),missing_qc_as_bad=TRUE)
+thaf = copy(tha)   # keep the original tha DataFrame
+# if the :valid columns does not exist yet, it is created with all values true
+setinvalid_qualityflag!(thaf; vars = ["LE", "NEE"])
+sum(.!thaf.valid) # 7 records marked non-valid
+sum(ismissing.(thaf.NEE)) # 7 NEE values set to missing
+```
+In the function call above, `vars` lists the variables that should be filtered with 
+respect to their quality. Optional parameter `qc_suffix="_qc"` denotes the extension 
+of the variable name that identifies the column as a quality control indicator of a given 
+variable. The variables "LE" and "LE_qc", for example, denote the variable itself 
+(latent heat flux), and the quality of the variable "LE", respectively. The optional 
+argument `good_quality_threshold = 1.0` specifies the values of the quality column
+below which the quality control to be considered as acceptable quality 
+(i.e. to not be filtered). For example with default value 1, 
+all "LE" values whose "LE_qc" variable is larger than 1 are set to `missing`. 
+The variable `missing_qc_as_bad` is required to decide what to do in 
+case of missing values in the quality control variable. By default this is (conservatively) 
+set to `TRUE`, i.e. all entries where the qc variable is missing is set invalid. 
+
+We can  filter for meteorological conditions to be in acceptable ranges. 
+For each variable to check we supply the valid minimum and valid maxium as a two-tuple
+as the second component of a pair. If their is no limit towards small or
+large values, supply `-Inf` or `Inf` as the minimum or maximum respectively.
+```julia
+setinvalid_range!(thaf, 
+     :PPFD => (200, Inf), 
+     :ustar => (0.2, Inf), 
+     :LE =>(0, Inf), 
+     :VPD => (0.01, Inf)
+     )
+sum(.!thaf.valid) # many more records marked invalid
+minimum(skipmissing(thaf.PPFD)) >= 200 # values outsides range some set to missing
+sum(ismissing.(thaf.PPFD)
 ```
 
-In the function call above, `vars_qc` lists the variables that should be filtered with respect to their quality. This is usually a vector of type character that contains the column names of the variables that are to be filtered. `quality_ext` denotes the extension of the variable name that identifies the column as a quality control indicator of a given variable. The variables "LE" and "LE_qc", for example, denote the variable itself (latent heat flux), and the quality of the variable "LE", respectively. The argument `good_quality` specifies the values that the quality control indicator has to take in order to be considered as acceptable quality (i.e. to not be filtered). For example, if `good_quality=c(0,1)`, then all "LE" values whose "LE_qc" variable is larger than 1 are set to `NA`. The variable `missing_qc_as_bad` is required to decide what to do in case of missing values in the quality control variable. By default this is (conservatively) set to `TRUE`, i.e. all entries where the qc variable is missing is filtered out. The function prints some information on the amount of data filtered out. In this case, only a few values did not fulfill the quality criteria.
-In the next example, we filter for meteorological conditions only, including growing season (`filter_growseas=TRUE`):
-
+About half of the data were filtered because radiation was not high enough (night-time). 
+Another quarter was filtered because they showed negative LE values. 
+However, most of them occured during the night:
 ```julia
-tha_filtered2 = filter_data(tha,quality_control=false,filter_growseas=TRUE,
-                             filter_vars=c("PPFD","ustar","LE","VPD"),
-                             filter_vals_min=c(200,0.2,0,0.01), filter_vals_max=c(NA,NA,NA,NA),
-                             NA_as_invalid = TRUE,
-                             # arguments for growing season filter:
-                             GPP="GPP",doy="doy",year="year",tGPP=0.4,ws=15,min_int=5) 
+sum(ismissing.(thaf.PPFD)) / nrow(thaf)
+sum(.!ismissing.(thaf.PPFD) .&& ismissing.(thaf.LE)) / nrow(thaf)
 ```
 
-The arguments `filter_vars`, `filter_vals_min`, and `filter_vals_max` control the variables to be filtered (corresponding to the column names of the DataFrame), the minimum and the maximum acceptable values, respectively. If there is no minimum or maximum, the respective entry can be set to `NA`. In this case we filter for time periods in which PPFD (photosynthetic photon flux density) has to be higher than 200 $\mu$mol m$^{-2}$ s$^{-1}$, but no maximum limit is considered.
+A third method filters periods outside the growing season:
+```julia
+setinvalid_nongrowingseason!(thaf, 0.4) 
+sum(.!thaf2.valid) # tha dataset is all within growing season - no additional invalids
+```
 
-If `filter_growseas=TRUE`, the function implements a simple growing season filter based on daily smoothed GPP time series. The arguments `GPP`, `doy` and `year` are required at halfhourly/hourly time scale. GPP is aggregated to daily sums internally. The arguments `tGPP`, `ws`, and `min_int` determine how the growing season is filtered. `tGPP` determines how high daily GPP has to be in relation to its peak value within the year. In this case, the value of 0.4 denotes that smoothed GPP has to be at least 40% of the 95th quantile. `ws` controls the degree of smoothing in the timeseries (the purpose of which is to minimize the high variation of GPP between days), and should probably be between 10-20 days. `min_int` is a parameter that avoids that data are switching from inside the growing season and out from one day to the next, but determines the minimum number of days that the growing season should have. The growing season filter is applicable to all sites, with one more more growing seasons, but it's advisable that other parameter settings are used depending on the site.
+This function implements a simple growing season filter based on daily smoothed GPP time 
+series. 
+Arguments  `tGPP` determines how high daily GPP has to be in relation to its peak value 
+within the year. In this case, the value of 0.4 denotes that smoothed GPP has to be at 
+least 40% of the 95th quantile. 
+Argument `ws` controls the degree of smoothing in the timeseries 
+and should be between 10-20 days. 
+The purpose of which is to minimize the high variation of GPP between days,
+Argument `min_int` is a parameter that avoids that data are switching from 
+inside the growing season and out from one day to the next. 
+It determines the minimum number of days that a season should have. 
+The growing season filter is applicable to all sites, with one more more growing seasons,
+but its advisable that site-specific parameter settings are used.
 
-In this case, it does not really make sense to filter for growing season, since it's only one month of which we know that vegetation is active at the site. Luckily, the algorithm realizes that as well and does not filter out any data if `filter_growseas=TRUE` (same will happen at sites with a year-round growing season). In the function output we further see that almost half of the data were filtered because radiation was not high enough (night-time). Another 23.5% were filtered because they showed negative LE values. However, most of them occur during the night, and only 5.2% of them were not already filtered by the radiation filter (denoted as "additional data points" above).
+In this example, it does not really make sense to filter for growing season, 
+since it uses only one month of data of which we know that vegetation is active at the site. 
+The algorithm realizes that and does not mark any additional data as invalid.
 
-As a last step we will filter for precipitation events. This is often meaningful for ecophysiological studies because data during and shortly after rainfall events do not contain much information on the physiological activity of the vegetation (i.e. they comprise significant fractions of evaporation from the soil and plant surfaces). The purpose of such a filter is mostly to minimize the fraction of soil and interception evaporation on the total water flux. This filter simply excludes periods following a precipitation event. A precipitation event is here defined as any time step with a recorded precipitation higher than `tprecip` (in mm per timestep). The function then filters all time periods following a precipitation event. The number of subsequent time periods excluded is controlled by the argument `precip_hours`. Here, we exclude rainfall events and the following 24 hours.
+
+As a last step we will filter for precipitation events. 
+This is often meaningful for ecophysiological studies because data during and shortly 
+after rainfall events do not contain much information on the physiological activity 
+of the vegetation because they comprise significant fractions of evaporation from the 
+soil and plant surfaces. The purpose of such a filter is mostly to minimize the fraction 
+of soil and interception evaporation on the total water flux. This filter simply excludes 
+periods following a precipitation event. A precipitation event, here, is defined as any time 
+step with a recorded precipitation higher than `tprecip` (in mm per timestep). 
+The function then filters all time periods following a precipitation event. 
+The number of subsequent time periods excluded is controlled by the argument `precip_hours`. 
+Here, we exclude rainfall events and the following 24 hours.
 
 ```julia
 tha_filtered3 = filter_data(tha,quality_control=false,filter_growseas=false,

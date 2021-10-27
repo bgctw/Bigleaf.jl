@@ -123,8 +123,104 @@ vector are not relaced by zero by default.
 You need to explitly use coalesce when specifying a ground heat flux
 for which missings should be replaced by zero: `;G = coalesce(df.G, zero(df.G))`
  
-
 # Function walkthrough #
+
+## Data filtering
+
+For most applications it is meaningful to filter your data. There are two main reasons 
+why we want to filter our data before we start calculating ecosystem properties. 
+The first one is to exclude datapoints that do not fulfill the requirements of the 
+EC technique or that are of bad quality due to e.g. instrument failure or gap-filling 
+with poor confidence. Note that the quality assessment of the EC data is not the purpose 
+of the `Bigleaf.jl` package. This is done by other packages (e.g. `REddyProc`), 
+which often provide quality control flags for the variables. These quality control 
+flags are used here to filter out bad-quality datapoints.
+
+A second reason for filtering our data is that some derived properties are only 
+meaningful if certain meteorological conditions are met. For instance, if we are 
+interested in properties related to plant gas exchange, it makes most sense to focus on 
+time periods when plants are photosynthetically active 
+(i.e. in the growing season and at daytime).
+
+`Bigleaf.jl` provides methods that update (or create) the :valid column in 
+a DataFrame. Records, i.e. rows, that contain non valid conditions are set to false.
+If the valid column was false before, it stays at false.
+
+### `setinvalid_qualityflag!`
+One can check quality flags. By default (argument `setvalmissing = true`) this also
+replaces the non-valid values in the data-columns by `missing`.
+```julia
+thaf = copy(tha)   # keep the original tha DataFrame
+# if the :valid columns does not exist yet, it is created with all values true
+setinvalid_qualityflag!(thaf; vars = [`LE`, "NEE"])
+sum(.!thaf.valid) # 7 records marked non-valid
+sum(ismissing.(thaf.NEE)) # 7 NEE values set to missing
+```
+In the function call above, `vars` lists the variables that should be filtered with 
+respect to their quality. Optional parameter `qc_suffix="_qc"` denotes the extension 
+of the variable name that identifies the column as a quality control indicator of a given 
+variable. The variables `LE` and `LE_qc`, for example, denote the variable itself 
+(latent heat flux), and the quality of the variable `LE`, respectively. The optional 
+argument `good_quality_threshold = 1.0` specifies the values of the quality column
+below which the quality control to be considered as acceptable quality 
+(i.e. to not be filtered). For example with default value 1, 
+all `LE` values whose `LE_qc` variable is larger than 1 are set to `missing`. 
+The variable `missing_qc_as_bad` is required to decide what to do in 
+case of missing values in the quality control variable. By default this is (conservatively) 
+set to `TRUE`, i.e. all entries where the qc variable is missing is set invalid. 
+
+### `setinvalid_range!`
+
+We can  filter for meteorological conditions to be in acceptable ranges. 
+For each variable to check we supply the valid minimum and valid maxium as a two-tuple
+as the second component of a pair. If their is no limit towards small or
+large values, supply `-Inf` or `Inf` as the minimum or maximum respectively.
+```julia
+setinvalid_range!(thaf, 
+     :PPFD => (200, Inf), 
+     :ustar => (0.2, Inf), 
+     :LE =>(0, Inf), 
+     :VPD => (0.01, Inf)
+     )
+sum(.!thaf.valid) # many more records marked invalid
+minimum(skipmissing(thaf.PPFD)) >= 200 # values outsides range some set to missing
+sum(ismissing.(thaf.PPFD)
+```
+
+About half of the data were filtered because radiation was not high enough (night-time). 
+Another quarter was filtered because they showed negative LE values. 
+However, most of them occured during the night:
+```julia
+sum(ismissing.(thaf.PPFD)) / nrow(thaf) # 0.48
+sum(.!ismissing.(thaf.PPFD) .&& ismissing.(thaf.LE)) / nrow(thaf) # 0.05
+```
+
+### `setinvalid_nongrowingseason!`
+
+A third method filters periods outside the growing season:
+```julia
+setinvalid_nongrowingseason!(thaf, 0.4) 
+sum(.!thaf2.valid) # tha dataset is all within growing season - no additional invalids
+```
+
+This function implements a simple growing season filter based on daily smoothed GPP time 
+series. 
+Arguments  `tGPP` determines how high daily GPP has to be in relation to its peak value 
+within the year. In this case, the value of 0.4 denotes that smoothed GPP has to be at 
+least 40% of the 95th quantile. 
+Argument `ws` controls the degree of smoothing in the timeseries 
+and should be between 10-20 days. 
+The purpose of which is to minimize the high variation of GPP between days,
+Argument `min_int` is a parameter that avoids that data are switching from 
+inside the growing season and out from one day to the next. 
+It determines the minimum number of days that a season should have. 
+The growing season filter is applicable to all sites, with one more more growing seasons,
+but its advisable that site-specific parameter settings are used.
+
+In this example, it does not really make sense to filter for growing season, 
+since it uses only one month of data of which we know that vegetation is active at the site. 
+The algorithm realizes that and does not mark any additional data as invalid.
+
 
 ## Meteorological variables
 

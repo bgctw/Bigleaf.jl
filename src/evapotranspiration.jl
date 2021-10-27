@@ -137,7 +137,7 @@ function potential_ET(Tair, pressure, Rn, approach::Val{:PriestleyTaylor};
   G=zero(Tair),S=zero(Tair), kwargs...)
   #
   potential_ET(Tair, pressure, Rn, G, S, approach; kwargs...)
-end,
+end
 function potential_ET(Tair, pressure, Rn, G, S, ::Val{:PriestleyTaylor};
   alpha=1.26,
   Esat_formula=Val(:Sonntag_1990),
@@ -148,12 +148,12 @@ function potential_ET(Tair, pressure, Rn, G, S, ::Val{:PriestleyTaylor};
   LE_pot = (alpha * Delta * (Rn - G - S)) / (Delta + gamma)
   ET_pot = LE_to_ET(LE_pot,Tair)
   (ET_pot = ET_pot, LE_pot = LE_pot)
-end,
+end
 function potential_ET(Tair, pressure, Rn, VPD, Ga, approach::Val{:PenmanMonteith};
   G=zero(Tair),S=zero(Tair), kwargs...)
   #
   potential_ET(Tair, pressure, Rn, VPD, Ga, G, S, approach; kwargs...)
-end,
+end
 function potential_ET(Tair, pressure, Rn, VPD, Ga, G, S, ::Val{:PenmanMonteith};
   Gs_pot=0.6,
   Esat_formula=Val(:Sonntag_1990),
@@ -167,7 +167,7 @@ function potential_ET(Tair, pressure, Rn, VPD, Ga, G, S, ::Val{:PenmanMonteith};
     (Delta + gamma * (1 + Ga / Gs_pot))
   ET_pot = LE_to_ET(LE_pot,Tair)
   (ET_pot = ET_pot, LE_pot = LE_pot)
-end,
+end
 function potential_ET(df, approach::Val{:PriestleyTaylor}; 
   G=missing,S=missing, infoGS=true, kwargs...) 
   #
@@ -176,7 +176,7 @@ function potential_ET(df, approach::Val{:PriestleyTaylor};
   select(hcat(select(df,:Tair, :pressure, :Rn), dfGS; copycols = false),
     All() => ByRow(f) => AsTable
   )
-end,
+end
 function potential_ET(df, approach::Val{:PenmanMonteith}; 
   G=missing,S=missing, infoGS=true, kwargs...) 
   #
@@ -187,7 +187,7 @@ function potential_ET(df, approach::Val{:PenmanMonteith};
   select(hcat(select(df,:Tair, :pressure, :Rn, :VPD, :Ga), dfGS; copycols = false),
     All() => ByRow(f) => AsTable
   )
-end,
+end
 function potential_ET!(df, approach::Val{:PriestleyTaylor}; 
   G=missing,S=missing, infoGS=true, kwargs...) 
   dfGS = get_df_GS(df, G,S; infoGS) 
@@ -199,7 +199,7 @@ function potential_ET!(df, approach::Val{:PriestleyTaylor};
     [:Tair, :pressure, :Rn, :_tmp_G, :_tmp_S] => ByRow(f) => AsTable
    )
    select!(df, Not([:_tmp_G, :_tmp_S]))
-end,
+end
 function potential_ET!(df, approach::Val{:PenmanMonteith}; 
   G=missing,S=missing, infoGS=true, kwargs...) 
   dfGS = get_df_GS(df, G,S; infoGS) 
@@ -291,11 +291,7 @@ that would occur under fully coupled conditions (when Ga -> inf):
 ``ET_{imp} = (\\rho * cp * VPD * Gs * \\lambda) / \\gamma``
 
 where ``\\rho`` is the air density (kg m-3).
-
-# Note
-Surface conductance (Gs) can be calculated with [`surface_conductance`](@ref)      
-Aerodynamic conductance (Ga) can be calculated using [`aerodynamic_conductance`](@ref).
-      
+ 
 # Value
 A `NamedTuple` or `DataFrame` with the following columns:
 - `ET_eq`: Equilibrium ET (kg m-2 s-1)
@@ -320,8 +316,11 @@ true
 """
 function equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn;
   G=zero(Tair),S=zero(Tair), kwargs...)
+# # Note
+# Surface conductance (Gs) can be calculated with [`surface_conductance`](@ref)      
+# Aerodynamic conductance (Ga) can be calculated using [`aerodynamic_conductance`](@ref).
   equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn, G, S; kwargs...)
-end,
+end
 function equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn, G, S;
   Esat_formula=Val(:Sonntag_1990),
   constants=bigleaf_constants())
@@ -335,7 +334,7 @@ function equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn, G, S;
   ET_imp = LE_to_ET(LE_imp,Tair)
   ET_eq  = LE_to_ET(LE_eq,Tair)
   (;ET_eq, ET_imp, LE_eq, LE_imp)
-end,
+end
 function equilibrium_imposed_ET(df; 
   G=missing,S=missing, infoGS=true, kwargs...) 
   #
@@ -345,7 +344,7 @@ function equilibrium_imposed_ET(df;
   end
   dfb = hcat(select(df,:Tair, :pressure, :VPD, :Gs, :Rn), dfGS; copycols = false)
   select(dfb, All() => ByRow(f) => AsTable )
-end,
+end
 function equilibrium_imposed_ET!(df; 
   G=missing,S=missing, infoGS=true, kwargs...) 
   #
