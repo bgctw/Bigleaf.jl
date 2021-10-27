@@ -1,5 +1,5 @@
 """
-GPP-based Growing Season Filter
+    filter_growing_season(GPPd, tGPP; ws=15, min_int=5, warngap=true)
 
 Filters annual time series for growing season based on smoothed daily GPP data.
 
@@ -7,8 +7,10 @@ Filters annual time series for growing season based on smoothed daily GPP data.
 - GPPd:    daily GPP (any unit) 
 - tGPP:    GPP threshold (fraction of 95th percentile of the GPP time series).
                Takes values between 0 and 1. 
+optional               
 - ws:      window size used for GPP time series smoothing
 - min_int: minimum time interval in days for a given state of growing season
+- warngap: set to false to suppress warning on too few non-missing data
 
 # Details
 The basic idea behind the growing season filter is that vegetation is 
@@ -27,73 +29,48 @@ The argument `min_int` serves to avoid short fluctuations in the
 status growing season vs. no growing season by defining a minimum length
 of the status. If a time interval shorter than `min_int` is labeled
 as growing season or non-growing season, it is changed to the status of 
-the neighboring values.
+the neighboring values, i.e its opposite.
          
 # Value
-a vector of type integer of the same length as the input GPPd in which 0 indicate
-        no growing season (dormant season) and 1 indicate growing season.
+a `BitVector` of the same length as the input GPPd in which `false` indicate
+no growing season (dormant season) and `true` indicate growing season.
 """
-function filter_growing_season(GPPd,tGPP,ws=15,min_int=5)
+function filter_growing_season(GPPd,tGPP;ws=15,min_int=5,warngap=true)
   nday = length(GPPd)
   if sum(ismissing(GPPd)) >= 0.5*nday 
-    @warn "number of available GPPd data is less than half the total number of days " *
-    "per year. Filter is not applied!"
+    @warn "number of available GPPd data is less than half the total number of days. " *
+    "Filter is not applied!"
     return(Trues(nday))
   end
-  growseas = repeat([true], nday)
   GPP_threshold = quantile(skipmissing(GPPd), 0.95)*tGPP
-  
-  ## smooth GPP
-  GPPd_smoothed = filter(GPPd,method="convolution",filter=rep(1/ws,ws))
-  
-  ## set values at the beginning and end of the time series to the mean of the original values
-  wsd = floor(ws/2)
-  GPPd_smoothed[1:wsd] = mean(GPPd[1:(2*wsd)],na_rm=TRUE)
-  GPPd_smoothed[(length(GPPd)-(wsd-1)):length(GPPd)] = mean(GPPd[(length(GPPd)-(2*wsd-1)):length(GPPd)],na_rm=TRUE)
-  
+  # smooth GPP
+  #fromR: GPPd_smoothed = filter(GPPd,method="convolution",filter=rep(1/ws,ws))
+  GPPd_smoothed = moving_average(GPPd, ws)
+  # set values at the beginning and end of the time series to the mean of the original values
+  wsd = floor(Int, ws/2)
+  GPPd_smoothed[1:wsd] .= mean(skipmissing(GPPd[1:(2*wsd)]))
+  GPPd_smoothed[(length(GPPd)-(wsd-1)):length(GPPd)] .= mean(skipmissing(GPPd[(length(GPPd)-(2*wsd-1)):length(GPPd)]))
   # check for occurence of missing values and set them to mean of the values surrounding them
-  missing = which(is_na(GPPd_smoothed))
-  if (length(missing) > 0)
-    if (length(missing) > 10){warning("Attention, there is a gap in 'GPPd' of length n = ",length(missing))}
-      replace_val = mean(GPPd_smoothed[max(1,missing[1] - 4):min((missing[length(missing)] + 4),length(GPPd_smoothed))],na_rm=TRUE)
-      GPPd_smoothed[missing] = replace_val
-    end
+  imissing = findall(ismissing, GPPd_smoothed)
+  if length(imissing) > 0
+    warngap && length(imissing) > 10 && @warn "Attention, there is a gap in 'GPPd' of length n = $(length(imissing))"
+    #TODO check and correct for several gaps, see Impute package
+    replace_val = mean(skipmissing(GPPd_smoothed[max(1,imissing[1] - 4):min((imissing[length(imissing)] + 4),length(GPPd_smoothed))]))
+    GPPd_smoothed = coalesce.(GPPd_smoothed, replace_val)
+  end
   # filter daily GPP
-  growseas[GPPd_smoothed < GPP_threshold] = 0
-  
-  ## change short intervals to the surrounding values to avoid 'wrong' fluctuations
-  intervals = rle(growseas)
-  short_int = which(intervals$lengths <= min_int)
-  
-  if (length(short_int) > 0)
-    start = numeric()
-    end   = numeric()
-    
-    for (i in 1:length(short_int))
-      
-      start[i] = sum(intervals$lengths[1:short_int[i]-1]) + 1
-      end[i]   = start[i]+intervals$lengths[short_int[i]] - 1
-      
-      val = unique(growseas[start[i]:end[i]])
-      
-      if (val == 0 & growseas[start[i]-1] == 1)
-        growseas[start[i]:end[i]] = 1   
-else if (val == 1 & growseas[start[i]-1] == 0)
-          growseas[start[i]:end[i]] = 0
-end
-end
-end
-    
-    growseas = as_integer(growseas)
-    
-else 
-    
-    warning("number of available GPPd data is less than half the total number of days per year. Filter is not applied!")
-    growseas = as_integer(rep(1,length(GPPd)))
-    
-end
-  
+  growseas = GPPd_smoothed .>= GPP_threshold
+  # change short intervals to the surrounding values to avoid 'wrong' fluctuations
+  # switch shortest interval successively and recompute interval lengths
+  intervals = rle(growseas)[2]
+  imin = argmin(intervals)
+  while intervals[imin] < min_int
+      end_int = cumsum(intervals)
+      start_int = vcat(0, end_int[1:end-1]) .+ 1
+      growseas[start_int[imin]:end_int[imin]] .= !growseas[start_int[imin]]
+      intervals = rle(growseas)[2]
+      imin = argmin(intervals)
+  end
   return(growseas)
 end
-
 
