@@ -9,7 +9,6 @@ using Pipe
 using AstroLib
 using Suppressor
 using Missings
-using Statistics
 
 
 export frac_hour
