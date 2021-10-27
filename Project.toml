@@ -20,6 +20,7 @@ TimeZones = "f269a46b-ccf7-5d73-abea-4c690281aa53"
 [compat]
 AstroLib = "0.4"
 DataFrames = "1"
+FillArrays = "0.12"
 LabelledArrays = "1"
 Optim = "1"
 RecursiveArrayTools = "2"
