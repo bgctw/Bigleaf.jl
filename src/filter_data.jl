@@ -76,7 +76,8 @@ function setinvalid_qualityflag!(df, setvalsmissing::Val{false};
      vs_qc = x[(nvar+1):end]
      #valid = repeat(@MVector([true]), length(vs[1]))
      for i = 1:nvar
-         @. valid = valid && fvalid_var(vs[i], vs_qc[i], good_quality_threshold)
+         # works only from 1.7 @. valid = valid && fvalid_var(vs[i], vs_qc[i], good_quality_threshold)
+         valid .= valid .&& fvalid_var.(vs[i], vs_qc[i], good_quality_threshold)
      end
      valid
   end
@@ -102,8 +103,8 @@ If there were false values in the :value column before, they are kept false.
 In addition, set values outside ranges to missing.
 
 # Arguments
-- df: DataFrame with column :GPP
-- var_ranges: Pair `Varname_symbol => (min,max)`: closed valid interval for 
+- `df`: DataFrame with column :GPP
+- `var_ranges`: Pair `Varname_symbol => (min,max)`: closed valid interval for 
   respective column 
 optional
 - setvalmissing: set to false to prevent replacing values in value column outside ranges to missing.
@@ -157,12 +158,12 @@ Set non-growseason to false in :valid column.
 - df: DataFrame with column :GPP
 - tGPP: scalar threshold of daily GPP (see [`get_growingseason`](@ref))
 optional:
-- `update_GPPd`: set to true additionally update GPPd_smoothed column to
+- `update_GPPd`: set to true additionally update `:GPPd_smoothed` column to
   results from [`get_growingseason`](@ref)
 - and others passed to [`get_growingseason`](@ref)
 
 # Value
-df with modified columns :valid and if  :GPPd_smoothed, 
+df with modified columns :valid and if  `:GPPd_smoothed`, 
 where all non-growing season records are set to false.
 """
 function setinvalid_nongrowingseason!(df, tGPP; update_GPPd_smoothed = false, kwargs...)

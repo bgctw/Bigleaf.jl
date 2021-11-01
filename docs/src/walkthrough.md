@@ -42,9 +42,9 @@ nothing
 ```
 ```@example doc
 tha = DE_Tha_Jun_2014
-mdtable(select(describe(tha), :variable, :eltype, :min, :max), latex=false) # hide
+# mdtable(select(describe(tha), :variable, :eltype, :min, :max), latex=false) # hide
+nothing # hide
 ```
-
 
 And the first six rows of tha:
 ```@example doc
