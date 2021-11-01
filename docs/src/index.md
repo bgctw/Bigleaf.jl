@@ -18,11 +18,6 @@ Pages = ["metorological_variables.md",]
 Pages = ["evapotranspiration.md",]
 ```
 
-## Surface conductance
-```@index
-Pages = ["surface_conductance.md",]
-```
-
 ## Global radiation
 ```@index
 Pages = ["global_radiation.md",]
