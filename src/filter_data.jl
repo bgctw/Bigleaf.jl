@@ -76,8 +76,8 @@ function setinvalid_qualityflag!(df, setvalsmissing::Val{false};
      vs_qc = x[(nvar+1):end]
      #valid = repeat(@MVector([true]), length(vs[1]))
      for i = 1:nvar
-         # works only from 1.7 @. valid = valid && fvalid_var(vs[i], vs_qc[i], good_quality_threshold)
-         valid .= valid .&& fvalid_var.(vs[i], vs_qc[i], good_quality_threshold)
+         # TODO change when 1.7 is out which support .&&: @. valid = valid && fvalid_var(vs[i], vs_qc[i], good_quality_threshold)
+         @. valid = valid & fvalid_var(vs[i], vs_qc[i], good_quality_threshold)
      end
      valid
   end
@@ -131,16 +131,19 @@ end
 function set_badrange_missing!(df, var_ranges::Vararg{Pair,N}) where N
   tmp = map(var_ranges) do p
       var, (min, max) = p
-      var => (x -> @.(ifelse(!ismissing(x) && min <= x <= max, x, missing))) => var
+      var => ByRow(x -> (ifelse(!ismissing(x) && min <= x <= max, x, missing))) => var
   end
   transform!(df, tmp...)
 end
 
 function setinvalid_range!(df, setvalsmissing::Val{false}, var_ranges::Vararg{Pair,N}) where N
   function fval(valid, x...)
-    for (p,xi) in zip(var_ranges, x)
+    for (p,xj) in zip(var_ranges, x)
       var, (min, max) = p
-      @. valid = valid && !ismissing(xi) && (min <= xi <= max)
+      #TODO simplify once 1.7 with .&& is out: @. valid = valid && !ismissing(xi) && (min <= xi <= max)
+      for i in eachindex(xj)
+        valid[i] = valid[i] && !ismissing(xj[i]) && (min <= xj[i] <= max)
+      end
     end
     valid
   end
@@ -179,7 +182,8 @@ function setinvalid_nongrowingseason!(df, tGPP; update_GPPd_smoothed = false, kw
   transform!(dfday, 
     :GPPd => (x -> get_growingseason(x, tGPP; kwargs...)) => SA[:valid, :GPPd_smoothed])
   # rep(dfd.valid, each = df.nrow)
-  df[!,:valid] .= df.valid .&& vcat(fill.(dfday.valid, dfday.nrow)...)
+  #TODO simplify once 1.7 is out: df[!,:valid] .= df.valid .&& vcat(fill.(dfday.valid, dfday.nrow)...)
+  df[!,:valid] .= df.valid .& vcat(fill.(dfday.valid, dfday.nrow)...)
   if update_GPPd_smoothed
       df[!,:GPPd_smoothed] .= vcat(fill.(dfday.GPPd_smoothed, dfday.nrow)...)
   end
