@@ -103,3 +103,20 @@ end
     @test isequal(df3a.valid, df2a.valid)
 end
 
+@testset "setinvalid_afterprecip!" begin
+    min_precip = 0.01 
+    hours_after = 1.0
+    dfo = DataFrame(datetime = DateTime(2021) .+ Hour.(1:13), precip = 0.0)
+    dfo.precip[3] = 0.001
+    dfo.precip[10:12] .= 2.0
+    dfo.precip[6:8] .= 2.0
+    allowmissing!(dfo, :precip); dfo.precip[2] = missing
+    #
+    df = copy(dfo)
+    df2 = setinvalid_afterprecip!(df; min_precip, hours_after)
+    @test df2 === df 
+    @test all(.!df.valid[6:9])
+    @test all(.!df.valid[10:13])
+    @test all(df.valid[Not(vcat(6:9,10:13))])
+end
+

@@ -17,6 +17,8 @@ ENV["DATADEPS_ALWAYS_ACCEPT"]="true" # avoid question to download
 DE_Tha_Jun_2014 = first(values(load(joinpath(datadep"DE_Tha_Jun_2014.rda/DE_Tha_Jun_2014.rda"))))
 nothing
 tha = DE_Tha_Jun_2014
+
+
 tha.time = @. DateTime(tha.year) + Day(tha.doy-1) + frac_hour(Minute, tha.hour)
 tmp = first(tha.time)
 

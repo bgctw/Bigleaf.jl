@@ -19,6 +19,7 @@ register(DataDep(
 ENV["DATADEPS_ALWAYS_ACCEPT"]="true" # avoid question to download
 DE_Tha_Jun_2014 = first(values(load(joinpath(datadep"DE_Tha_Jun_2014.rda/DE_Tha_Jun_2014.rda"))))
 tha = DE_Tha_Jun_2014
+set_datetime_ydh!(tha)
 LAI = 7.6   # leaf area index
 zh  = 26.5  # average vegetation height (m)
 zr  = 42    # sensor height (m)
@@ -124,28 +125,17 @@ of the vegetation because they comprise significant fractions of evaporation fro
 soil and plant surfaces. The purpose of such a filter is mostly to minimize the fraction 
 of soil and interception evaporation on the total water flux. This filter simply excludes 
 periods following a precipitation event. A precipitation event, here, is defined as any time 
-step with a recorded precipitation higher than `tprecip` (in mm per timestep). 
+step with a recorded precipitation higher than `min_precip` (in mm per timestep). 
 The function then filters all time periods following a precipitation event. 
 The number of subsequent time periods excluded is controlled by the argument `precip_hours`. 
 Here, we exclude rainfall events and the following 24 hours.
+The timestamps in the DataFrame must be sorted in increasing order.
 
 ```julia
-tha_filtered3 = filter_data(tha,quality_control=false,filter_growseas=false,
-                             filter_precip=TRUE,precip="precip",tprecip=0.02,
-                             records_per_hour=2,precip_hours=24)
+setinvalid_afterprecip!(thaf; min_precip=0.02, hours_after=24)
+sum(.!thaf.valid) # some more invalids
 ```
 
-We can also do all the steps described above with a single function call, which is also the intention of the function:
-
-```julia
-tha_filtered = filter_data(tha,quality_control=TRUE,filter_growseas=TRUE,
-                            filter_precip=TRUE, filter_vars=c("PPFD","ustar","LE","VPD"),
-                            filter_vals_min=c(200,0.2,0,0.01),filter_vals_max=c(NA,NA,NA,NA),
-                            NA_as_invalid = TRUE,vars_qc=c("GPP","LE","H","NEE","Tair","VPD","wind"),
-                            quality_ext="_qc",good_quality = c(0,1),missing_qc_as_bad=TRUE,
-                            GPP="GPP",doy="doy",year="year",tGPP=0.4,ws=15,min_int=5,
-                            precip="precip",tprecip=0.02,records_per_hour=2,precip_hours=24)
-```
 
 When looking at the function output we see that we these settings, we exclude in total 1013 data points (70.35% of the data). In total, 29.65% of all data remained. The output of the `filter_data` function is another DataFrame (tha_filtered), in which all filtered timesteps are set to NA. (Note that this is the default case. If we add `filtered_data_to_NA=TRUE`, the data are left untouched, but an additional column "valid" is added to the DataFrame that specifies whether the time points fulfull the criteria or not). In the following examples we will work mostly with the filtered DataFrame `tha_filtered`.
 

@@ -17,7 +17,7 @@ The use of more detailed models is not within the scope of the `Bigleaf.jl` pack
 
 In this tutorial, we will work with a dataset from the eddy covariance site Tharandt (DE-Tha), a spruce forest in Eastern Germany. The DataFrame `DE_Tha_Jun_2014` is downloaded from the `bigleaf` 
 [R package](https://bitbucket.org/juergenknauer/Bigleaf/) repository and contains half-hourly data of meteorological and flux measurements made in June 2014. For loading the RData into Julia, see the 
-[source](https://github.com/bgctw/Bigleaf.jl/blob/main/docs/src/walkthrough.md?plain=1#L26) of this file. We give the data.frame a shorter name here.
+[source](https://github.com/bgctw/Bigleaf.jl/blob/main/docs/src/walkthrough.md?plain=1#L26) of this file. We give the data.frame a shorter name here and create a timestamp.
 
 ```@example doc
 using Bigleaf
@@ -42,6 +42,7 @@ nothing
 ```
 ```@example doc
 tha = DE_Tha_Jun_2014
+set_datetime_ydh!(tha)
 # mdtable(select(describe(tha), :variable, :eltype, :min, :max), latex=false) # hide
 nothing # hide
 ```
@@ -220,6 +221,26 @@ but its advisable that site-specific parameter settings are used.
 In this example, it does not really make sense to filter for growing season, 
 since it uses only one month of data of which we know that vegetation is active at the site. 
 The algorithm realizes that and does not mark any additional data as invalid.
+
+### `setinvalid_afterprecip!`
+
+As a last step we will filter for precipitation events. 
+This is often meaningful for ecophysiological studies because data during and shortly 
+after rainfall events do not contain much information on the physiological activity 
+of the vegetation because they comprise significant fractions of evaporation from the 
+soil and plant surfaces. The purpose of such a filter is mostly to minimize the fraction 
+of soil and interception evaporation on the total water flux. This filter simply excludes 
+periods following a precipitation event. A precipitation event, here, is defined as any time 
+step with a recorded precipitation higher than `min_precip` (in mm per timestep). 
+The function then filters all time periods following a precipitation event. 
+The number of subsequent time periods excluded is controlled by the argument `precip_hours`. 
+Here, we exclude rainfall events and the following 24 hours.
+The timestamps in the DataFrame must be sorted in increasing order.
+
+```julia
+setinvalid_afterprecip!(thaf; min_precip=0.02, hours_after=24)
+sum(.!thaf.valid) # some more invalids
+```
 
 
 ## Meteorological variables

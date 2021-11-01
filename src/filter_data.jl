@@ -272,5 +272,40 @@ function get_growingseason(GPPd,tGPP;ws=15,min_int=5,warngap=true)
   (is_growingseason = growseas, GPPd_smoothed = GPPd_smoothed)
 end
 
+"""
+    setinvalid_afterprecip!(df; min_precip = 0.01, hours_after = 24.0)
 
+Set records after precipitation to false in `:valid` column.
 
+# Arguments
+- df: DataFrame with columns `:datetime` and `:precip` sorted by `:datetime` 
+  in increasing order.
+optional:
+- `min_precip` (in mm per timestep): minimum precip to be considered effective
+  precipitation.
+- `hours_after`: time after the precipitation event to be considered invalid
+
+# Value
+`df` with modified column `:valid`.
+"""
+function setinvalid_afterprecip!(df; min_precip = 0.01, hours_after = 24.0)
+  dfo = @pipe copy(df) |>
+    select!(_, :datetime, :precip) |>
+    subset!(_, :precip => ByRow(>=(min_precip)); skipmissing = true) |>
+    select!(_,
+      :datetime => :p_start, 
+      :datetime => (x -> x .+ frac_hour(Second, hours_after)) => :p_end)
+  dfno = get_nonoverlapping_periods(dfo)
+  #
+  if !hasproperty(df, :valid) df[!,:valid] .= true; end
+  #ip = 1
+  # since date.time is ordered we need to search for the next index only from last position
+  i_start = i_end = 1
+  for ip in 1:nrow(dfno)
+      p_start, p_end = dfno.p_start[ip], dfno.p_end[ip]
+      i_start = i_end - 1 + findfirst(>=(p_start), df.datetime[i_end:end])
+      i_end = i_start - 1 + findlast(<=(p_end), df.datetime[i_start:end])
+      df.valid[i_start:i_end] .= false
+  end
+  df
+end

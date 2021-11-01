@@ -8,4 +8,5 @@ setinvalid_qualityflag!
 setinvalid_range!
 setinvalid_nongrowingseason!
 get_growingseason
+setinvalid_afterprecip!
 ```
