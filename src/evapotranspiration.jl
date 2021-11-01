@@ -2,41 +2,40 @@
     potential_ET(Tair, pressure, Rn, ::Val{:PriestleyTaylor}; ...)
     potential_ET(Tair, pressure, Rn, G, S, ::Val{:PriestleyTaylor}; ...)
 
-    potential_ET(df, approach; ...)
     potential_ET!(df, approach; ...)
 
 Potential evapotranspiration according to Priestley & Taylor 1972 or
 the Penman-Monteith equation with a prescribed surface conductance.
 
 # Arguments             
-- Tair:      Air temperature (degC)
-- pressure:  Atmospheric pressure (kPa)
-- Rn:        Net radiation (W m-2)
-- VPD:       Vapor pressure deficit (kPa)
-- Ga:        Aerodynamic conductance to heat/water vapor (m s-1)
-- approach:  Approach used. 
+- `Tair`:      Air temperature (degC)
+- `pressure`:  Atmospheric pressure (kPa)
+- `Rn`:        Net radiation (W m-2)
+- `VPD`:       Vapor pressure deficit (kPa)
+- `Ga`:        Aerodynamic conductance to heat/water vapor (m s-1)
+- `df`:      Data_frame or matrix containing all required variables; optional
+- `approach`:  Approach used. 
   Either `Val(:PriestleyTaylor)` (default), or `Val(:PenmanMonteith)`.
-- df:      Data_frame or matrix containing all required variables; optional
 optional:
-- G:         Ground heat flux (W m-2). Defaults to zero.
-- S:         Sum of all storage fluxes (W m-2) . Defaults to zero.
+- `G`:         Ground heat flux (W m-2). Defaults to zero.
+- `S`:         Sum of all storage fluxes (W m-2) . Defaults to zero.
 - `Esat_formula`: formula used in [`Esat_from_Tair`](@ref)
 - `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with entries 
-  - cp - specific heat of air for constant pressure (J K-1 kg-1) 
-  - eps - ratio of the molecular weight of water vapor to dry air 
-  - Pa2kPa - conversion pascal (Pa) to kilopascal (kPa) 
-  - for :PenmanMonteith:
-    - Rd - gas constant of dry air (J kg-1 K-1)
-    - Rgas - universal gas constant (J mol-1 K-1)
-    - Kelvin - conversion degree Celsius to Kelvin
+  - `cp` - specific heat of air for constant pressure (J K-1 kg-1) 
+  - `eps` - ratio of the molecular weight of water vapor to dry air 
+  - `Pa2kPa` - conversion pascal (Pa) to kilopascal (kPa) 
+  - for `PenmanMonteith`:
+    - `Rd` - gas constant of dry air (J kg-1 K-1)
+    - `Rgas` - universal gas constant (J mol-1 K-1)
+    - `Kelvin` - conversion degree Celsius to Kelvin
 additional optional arguments with data.frame variants
-- infoGS=ture: sete to false to avoid infor log-message if G or S is not 
-  specified
+- `infoGS = true`: Set to false to avoid info-log-message if G or S is not 
+  specified.
 additional optional for PriestleyTaylor:
-- alpha:     Priestley-Taylor coefficient
+- `alpha = 1.26`:     Priestley-Taylor coefficient
 additional optional for PenmanMonteith:
-- Gs_pot:    Potential/maximum surface conductance (mol m-2 s-1); 
-  defaults to 0.6 mol m-2 s-1;
+- `Gs_pot = 0.6`:    Potential/maximum surface conductance (mol m-2 s-1); 
+  
 
 # Details
 Potential evapotranspiration is calculated according to Priestley & Taylor, 1972
@@ -67,26 +66,22 @@ care for missing values (see examples).
       
 Both methods are provided with several forms:
 - all required inputs as positional arguments
-- providing a DataFrame with columns corresponding to required inputs
-  returning a DataFrame with only the result columns.
-- a mutating DataFrame version that returns the original DataFrame with
-  result columns added or modified.
+- a mutating DataFrame version with columns corresponding to required inputs
+  where the output columns are added or modified.
 
 # Value
 NamedTuple or DataFrame with the following entries:
 - `ET_pot`: Potential evapotranspiration (kg m-2 s-1)
 - `LE_pot`: Potential latent heat flux (W m-2)
-For the mutating form, the original df with columns `ET_pot`, `LE_pot` 
-updated or added.
 
 # References 
 - Priestley, C_H_B., Taylor, R_J., 1972: On the assessment of surface heat flux
-and evaporation using large-scale parameters. Monthly Weather Review 100, 81-92.  
+  and evaporation using large-scale parameters. Monthly Weather Review 100, 81-92.  
 - Allen, R_G., Pereira L_S., Raes D., Smith M., 1998: Crop evapotranspiration -
-Guidelines for computing crop water requirements - FAO Irrigation and drainage
-paper 56.
+  Guidelines for computing crop water requirements - FAO Irrigation and drainage
+  paper 56.
 - Novick, K_A., et al. 2016: The increasing importance of atmospheric demand
-for ecosystem water and carbon fluxes. Nature Climate Change 6, 1023 - 1027.
+  for ecosystem water and carbon fluxes. Nature Climate Change 6, 1023 - 1027.
             
 # See also 
 [`surface_conductance`](@ref)
@@ -123,11 +118,11 @@ df = DataFrame(Tair = 20.0:1.0:30.0,pressure = 100.0, Rn = 500.0, G = 105.0, VPD
 allowmissing!(df, Cols(:G)); df.G[1] = missing
 #
 # need to provide G explicitly
-df_ET = potential_ET(df, Val(:PriestleyTaylor); G = df.G, infoGS = false)    
+df_ET = potential_ET!(copy(df), Val(:PriestleyTaylor); G = df.G, infoGS = false)    
 ismissing(df_ET.ET_pot[1])
 #
 # use coalesce to replace missing values
-df_ET = potential_ET(df, Val(:PriestleyTaylor); G = coalesce.(df.G, zero(df.G)), infoGS = false)    
+df_ET = potential_ET!(copy(df), Val(:PriestleyTaylor); G = coalesce.(df.G, zero(df.G)), infoGS = false)    
 !ismissing(df_ET.ET_pot[1])
 # output
 true
@@ -168,26 +163,26 @@ function potential_ET(Tair, pressure, Rn, VPD, Ga, G, S, ::Val{:PenmanMonteith};
   ET_pot = LE_to_ET(LE_pot,Tair)
   (ET_pot = ET_pot, LE_pot = LE_pot)
 end
-function potential_ET(df, approach::Val{:PriestleyTaylor}; 
-  G=missing,S=missing, infoGS=true, kwargs...) 
-  #
-  dfGS = get_df_GS(df, G,S; infoGS) 
-  f(args...) = potential_ET(args..., approach; kwargs...)
-  select(hcat(select(df,:Tair, :pressure, :Rn), dfGS; copycols = false),
-    All() => ByRow(f) => AsTable
-  )
-end
-function potential_ET(df, approach::Val{:PenmanMonteith}; 
-  G=missing,S=missing, infoGS=true, kwargs...) 
-  #
-  dfGS = get_df_GS(df, G,S; infoGS) 
-  function f(args...) 
-    potential_ET(args..., approach; kwargs...)
-  end
-  select(hcat(select(df,:Tair, :pressure, :Rn, :VPD, :Ga), dfGS; copycols = false),
-    All() => ByRow(f) => AsTable
-  )
-end
+# function potential_ET(df, approach::Val{:PriestleyTaylor}; 
+#   G=missing,S=missing, infoGS=true, kwargs...) 
+#   #
+#   dfGS = get_df_GS(df, G,S; infoGS) 
+#   f(args...) = potential_ET(args..., approach; kwargs...)
+#   select(hcat(select(df,:Tair, :pressure, :Rn), dfGS; copycols = false),
+#     All() => ByRow(f) => AsTable
+#   )
+# end
+# function potential_ET(df, approach::Val{:PenmanMonteith}; 
+#   G=missing,S=missing, infoGS=true, kwargs...) 
+#   #
+#   dfGS = get_df_GS(df, G,S; infoGS) 
+#   function f(args...) 
+#     potential_ET(args..., approach; kwargs...)
+#   end
+#   select(hcat(select(df,:Tair, :pressure, :Rn, :VPD, :Ga), dfGS; copycols = false),
+#     All() => ByRow(f) => AsTable
+#   )
+# end
 function potential_ET!(df, approach::Val{:PriestleyTaylor}; 
   G=missing,S=missing, infoGS=true, kwargs...) 
   dfGS = get_df_GS(df, G,S; infoGS) 
@@ -250,25 +245,24 @@ end
 
 """
     equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn; ...)
-    equilibrium_imposed_ET(df; ...)
     equilibrium_imposed_ET!(df; ...)
 
 Evapotranspiration (ET) split up into imposed ET and equilibrium ET.
 
 # Argumens
-- Tair:      Air temperature (deg C)
-- pressure:  Atmospheric pressure (kPa)
-- VPD:       Air vapor pressure deficit (kPa)
-- Gs:        surface conductance to water vapor (m s-1)
-- Rn:        Net radiation (W m-2)
+- `Tair`:      Air temperature (deg C)
+- `pressure`:  Atmospheric pressure (kPa)
+- `VPD`:       Air vapor pressure deficit (kPa)
+- `Gs`:        surface conductance to water vapor (m s-1)
+- `Rn`:        Net radiation (W m-2)
 optional 
-- G:         Ground heat flux (W m-2); optional
-- S:         Sum of all storage fluxes (W m-2); optional
+- `G`:         Ground heat flux (W m-2); optional
+- `S`:         Sum of all storage fluxes (W m-2); optional
 - `Esat_formula`: formula used in [`Esat_from_Tair`](@ref)
 - `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with entries 
-  - cp - specific heat of air for constant pressure (J K-1 kg-1) 
-  - eps - ratio of the molecular weight of water vapor to dry  (-) 
-  - Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
+  - `cp` - specific heat of air for constant pressure (J K-1 kg-1) 
+  - `eps` - ratio of the molecular weight of water vapor to dry  (-) 
+  - `Pa2kPa` - conversion pascal (Pa) to kilopascal (kPa)
                  
 # Details
 Total evapotranspiration can be written in the form (Jarvis & McNaughton 6):
@@ -335,16 +329,16 @@ function equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn, G, S;
   ET_eq  = LE_to_ET(LE_eq,Tair)
   (;ET_eq, ET_imp, LE_eq, LE_imp)
 end
-function equilibrium_imposed_ET(df; 
-  G=missing,S=missing, infoGS=true, kwargs...) 
-  #
-  dfGS = get_df_GS(df, G,S; infoGS) 
-  function f(args...) 
-    equilibrium_imposed_ET(args...; kwargs...)
-  end
-  dfb = hcat(select(df,:Tair, :pressure, :VPD, :Gs, :Rn), dfGS; copycols = false)
-  select(dfb, All() => ByRow(f) => AsTable )
-end
+# function equilibrium_imposed_ET(df; 
+#   G=missing,S=missing, infoGS=true, kwargs...) 
+#   #
+#   dfGS = get_df_GS(df, G,S; infoGS) 
+#   function f(args...) 
+#     equilibrium_imposed_ET(args...; kwargs...)
+#   end
+#   dfb = hcat(select(df,:Tair, :pressure, :VPD, :Gs, :Rn), dfGS; copycols = false)
+#   select(dfb, All() => ByRow(f) => AsTable )
+# end
 function equilibrium_imposed_ET!(df; 
   G=missing,S=missing, infoGS=true, kwargs...) 
   #
@@ -358,8 +352,6 @@ function equilibrium_imposed_ET!(df;
    )
    select!(df, Not([:_tmp_G, :_tmp_S]))
 end
-
-
 
 """
     TODO; implement decoupling.

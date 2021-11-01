@@ -158,8 +158,8 @@ end
 Set non-growseason to false in :valid column.
 
 # Arguments
-- df: DataFrame with column :GPP
-- tGPP: scalar threshold of daily GPP (see [`get_growingseason`](@ref))
+- `df`: DataFrame with columns `:GPP` and `:datetime`
+- `tGPP`: scalar threshold of daily GPP (see [`get_growingseason`](@ref))
 optional:
 - `update_GPPd`: set to true additionally update `:GPPd_smoothed` column to
   results from [`get_growingseason`](@ref)
@@ -172,7 +172,7 @@ where all non-growing season records are set to false.
 function setinvalid_nongrowingseason!(df, tGPP; update_GPPd_smoothed = false, kwargs...)
   if !hasproperty(df, :valid) df[!,:valid] .= true; end
   # non-copying dataframe where we can add grouping column __day
-  dft = transform(df, :time => ByRow(Date) => :__day, copycols = false)
+  dft = transform(df, :datetime => ByRow(Date) => :__day, copycols = false)
   function mean_nonmissing(x)
       mx = mean(skipmissing(x))
       # if there is no non-missing record in a group, mean returns nan

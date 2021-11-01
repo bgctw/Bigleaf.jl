@@ -306,19 +306,21 @@ Here, the points denote the mean wind speed and the bars denote the standard dev
 
 ## Potential evapotranspiration
 
-For many hydrological applications, it is relevant to get an estimate on the potential evapotranspiration (PET). At the moment, the `Bigleaf.jl` package contains two formulations for the estimate of PET: the Priestley-Taylor equation, and the Penman-Monteith equation:
+For many hydrological applications, it is relevant to get an estimate on the potential 
+evapotranspiration (PET). At the moment, the `Bigleaf.jl` contains two formulations 
+for the estimate of PET: the Priestley-Taylor equation, and the Penman-Monteith equation:
 
 ```julia
-summary(potential_ET(tha_filtered,G="G",approach=Val(:PriestleyTaylor)))
-summary(potential_ET(tha_filtered,G="G",approach=Val(:PenmanMonteith)),
-        Gs_pot=quantile(tha_filtered$Gs_mol,0.95,na_rm=TRUE))
+potential_ET!(thaf, Val(:PriestleyTaylor); G = thaf.G, infoGS = false)
+# TODO need surface conductance to compute Ga and Gs_mol before
+# potential_ET!(thaf, Val(:PenmanMonteith);  G = thaf.G, 
+#        Gs_pot=quantile(skipmissing(thaf.Gs_mol),0.95))
 ```
 
-In the second calculation it is important to provide an estimate of `Gs_pot`, which corresponds to the potential surface conductance under optimal conditions. Here, we have approximated `Gs_pot` with the 95$^{\text{th}}$ percentile of all $G_s$ values of the site. 
-
-
-
-
+In the second calculation it is important to provide an estimate of aerodynamic 
+conductance Ga and ``Gs_{pot}``, the potential surface conductance under optimal conditions. 
+Here, we have approximated ``Gs_{pot}`` with the ``95^{\text{th}}`` percentile of all 
+``G_s`` values of the site. 
 
 ## Energy balance closure (EBC)
 

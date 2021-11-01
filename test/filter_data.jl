@@ -22,7 +22,7 @@ end
     nday = 365
     GPPd = @pipe sin.((1:nday).*π./365) .+ 0.5 .* rand(rng,365) |> allowmissing(_)
     GPPd[100:120] .= missing
-    df = DataFrame(time = DateTime(2021) .+ Hour(1).+ Day.(0:nday-1), GPP = GPPd)
+    df = DataFrame(datetime = DateTime(2021) .+ Hour(1).+ Day.(0:nday-1), GPP = GPPd)
     df2 = copy(df)
     df2a = setinvalid_nongrowingseason!(df2, 0.5; warngap = false)
     @test df2a === df2

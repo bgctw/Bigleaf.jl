@@ -1,5 +1,6 @@
 using DataFrames, Pipe, Missings
 using Dates, TimeZones
+using Statistics
 
 using Latexify
 using DataDeps, Suppressor
@@ -17,15 +18,25 @@ ENV["DATADEPS_ALWAYS_ACCEPT"]="true" # avoid question to download
 DE_Tha_Jun_2014 = first(values(load(joinpath(datadep"DE_Tha_Jun_2014.rda/DE_Tha_Jun_2014.rda"))))
 nothing
 tha = DE_Tha_Jun_2014
+set_datetime_ydh!(tha)
+
+thaf = copy(tha)
+setinvalid_qualityflag!(thaf)
+setinvalid_range!(thaf, 
+     :PPFD => (200, Inf), 
+     :ustar => (0.2, Inf), 
+     :LE =>(0, Inf), 
+     :VPD => (0.01, Inf)
+     )
+setinvalid_nongrowingseason!(thaf, 0.4)      
+setinvalid_afterprecip!(thaf; min_precip=0.02, hours_after=24)
 
 
-tha.time = @. DateTime(tha.year) + Day(tha.doy-1) + frac_hour(Minute, tha.hour)
-tmp = first(tha.time)
 
 dfGPPd = @pipe tha |> 
-    transform(_, :time => ByRow(yearmonthday) => :ymd, copycols = false) |>
+    transform(_, :datetime => ByRow(yearmonthday) => :ymd, copycols = false) |>
     groupby(_, :ymd) |>
-    combine(_, :time => (x -> Date(first(x))) => :date, :GPP => mean => :GPPd, ) 
+    combine(_, :datetime => (x -> Date(first(x))) => :date, :GPP => mean => :GPPd, ) 
     #x -> x[!,2]
 
 show(dfGPPd.GPPd)

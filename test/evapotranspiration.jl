@@ -13,12 +13,12 @@ end
 @testset "potential_ET dataframe" begin
     df = DataFrame(
     Tair = 20.0:1.0:30.0,pressure = 100.0, Rn = 500.0)
-    df_ET = @test_logs (:info,r"G is not provided") (:info,r"S is not provided") potential_ET(df, Val(:PriestleyTaylor); alpha=1.26)    
-    # non-mutating
-    @test ncol(df) == 3
-    @test nrow(df_ET) == nrow(df)
-    @test ≈(last(df_ET).ET_pot, 0.0002035969; rtol = 1e-5)
-    @test ≈(last(df_ET).LE_pot, 494.7202; rtol = 1e-5)
+    # df_ET = @test_logs (:info,r"G is not provided") (:info,r"S is not provided") potential_ET(df, Val(:PriestleyTaylor); alpha=1.26)    
+    # # non-mutating
+    # @test ncol(df) == 3
+    # @test nrow(df_ET) == nrow(df)
+    # @test ≈(last(df_ET).ET_pot, 0.0002035969; rtol = 1e-5)
+    # @test ≈(last(df_ET).LE_pot, 494.7202; rtol = 1e-5)
     #
     df2 = copy(df)
     # df2.VPD .= 2.0 # fail in older versions
@@ -29,9 +29,9 @@ end
     #     [] => ByRow(() -> 2.0) => :VPD,
     #     [] => ByRow(() -> 0.1) => :Ga,
     #     )
-    df_ET2 = @test_logs (:info,r"G is not provided") (:info,r"S is not provided") potential_ET(df2, Val(:PenmanMonteith))    
-    @test ncol(df2) == 5
-    @test nrow(df_ET2) == nrow(df2)
+    # df_ET2 = @test_logs (:info,r"G is not provided") (:info,r"S is not provided") potential_ET(df2, Val(:PenmanMonteith))    
+    # @test ncol(df2) == 5
+    # @test nrow(df_ET2) == nrow(df2)
     #TODO surface_conductance(Tair=20,pressure=100,VPD=2,Ga=0.1,Rn=400,LE=LE_pot_PM)
     #
     # mutating
@@ -49,9 +49,8 @@ end
     df = @pipe DataFrame(Tair = 20.0:1.0:30.0,pressure = 100.0, Rn = 500.0, G = 105.0) |>
       allowmissing(_, Cols(:G))
     df.G[1] = missing
-    df_ET = @test_logs (:info,r"S is not provided") potential_ET(df, Val(:PriestleyTaylor); G = df.G)    
-    # non-mutating
-    @test ncol(df) == 4
+    df_ET = @test_logs (:info,r"S is not provided") potential_ET!(copy(df), Val(:PriestleyTaylor); G = df.G)    
+    @test ncol(df_ET) == ncol(df)+2 # two columns added: ET_pot, LE_pot
     @test nrow(df_ET) == nrow(df)
     @test last(df_ET).ET_pot < 0.0002035969 # smaller because less energy available
     @test ismissing(first(df_ET).LE_pot)
@@ -59,21 +58,11 @@ end
     df2 = copy(df)
     df2[!, :VPD] .= 2.0
     df2[!, :Ga] .= 0.1
-    df_ET2 = @test_logs (:info,r"G is not provided") potential_ET(df2, Val(:PenmanMonteith), S = df.G)    
-    @test ncol(df2) == 6
+    df_ET2 = @test_logs (:info,r"G is not provided") potential_ET!(copy(df2), Val(:PenmanMonteith), S = df.G)    
+    @test ncol(df_ET2) == ncol(df2)+2 # two columns added: ET_pot, LE_pot
     @test nrow(df_ET2) == nrow(df2)
     @test ismissing(first(df_ET).LE_pot)
     #TODO surface_conductance(Tair=20,pressure=100,VPD=2,Ga=0.1,Rn=400,LE=LE_pot_PM)
-    #
-    # mutating
-    dfm = copy(df)
-    #@test_throws Exception 
-    @test_logs (:info,r"G is not provided") potential_ET!(dfm, Val(:PriestleyTaylor); S = dfm.G)   
-    #dfm = @test_logs (:info,r"G is not provided") (:info,r"S is not provided") hcat(dfm, Bigleaf.fill_GS_missings(dfm, missing, missing, false, false); copycols = false)        
-    #potential_ET!(dfm, Val(:PriestleyTaylor); alpha=1.26)   
-    @test ncol(dfm) == ncol(df)+2 # two columns added: ET_pot, LE_pot
-    dfm = @test_logs (:info,r"S is not provided")  potential_ET!(copy(df2), Val(:PenmanMonteith); G = dfm.G)   
-    @test ncol(dfm) == ncol(df2)+2 
 end
 
 @testset "equilibrium_imposed_ET scalars" begin
@@ -87,14 +76,15 @@ end
     #
     df = DataFrame(Tair = 20.0:1.0:22.0, pressure = 100.0, Rn = 50.0,  VPD = 0.5,  Gs = 0.01)
     ncoldf0 = ncol(df)
-    df_ET = @test_logs (:info,r"G is not provided") (:info,r"S is not provided") equilibrium_imposed_ET(df)
-    @test ncol(df) == ncoldf0
-    @test nrow(df_ET) == nrow(df)
-    @test ≈(first(df_ET).ET_eq, ET_eq)
-    @test ≈(first(df_ET).ET_imp, ET_imp)
+    # df_ET = @test_logs (:info,r"G is not provided") (:info,r"S is not provided") equilibrium_imposed_ET(df)
+    # @test ncol(df) == ncoldf0
+    # @test nrow(df_ET) == nrow(df)
+    # @test ≈(first(df_ET).ET_eq, ET_eq)
+    # @test ≈(first(df_ET).ET_imp, ET_imp)
     #
     dfm = copy(df)
     dfm_ET = equilibrium_imposed_ET!(dfm; infoGS = false)
+    @test dfm_ET === dfm
     @test ncol(dfm) == ncoldf0 + 4
     @test nrow(dfm) == nrow(df)
     @test ≈(first(dfm_ET).ET_eq, ET_eq)

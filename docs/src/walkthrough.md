@@ -76,7 +76,7 @@ It is imperative that variables are provided in the right units, as the plausibi
 the input units is not checked in most cases. The required units of the input arguments 
 can be found in the respective help file of the function. The good news is that units 
 do not change across functions. For example, pressure is always required in kPa, 
-and temperature always in °c.
+and temperature always in °C.
 
 ## Function arguments
 
@@ -88,6 +88,11 @@ such that in many cases it is not necessary to provide them explicitly.
 The column names in the DataFrame should correspond to the argument names
 of the corresponding method that accespts each input individually.
 
+Methods are usually provided with two forms:
+- all required scalar inputs as positional arguments with outputing a NamedTuple
+- a mutating DataFrame with columns corresponding to required inputs
+  where the output columns are added or modified.
+
 We can demonstrate the usage with a simple example:
 
 ```@example doc
@@ -95,10 +100,10 @@ We can demonstrate the usage with a simple example:
 Tair, pressure, Rn, =  14.81, 97.71, 778.17 
 potential_ET(Tair, pressure, Rn, Val(:PriestleyTaylor))
 # DataFrame
-potential_ET(tha, Val(:PriestleyTaylor))
+potential_ET!(copy(tha), Val(:PriestleyTaylor))
 # DataFrame with a few columns overwritten by user values
-potential_ET(transform(tha, :Tair => x -> 25.0; renamecols=false), Val(:PriestleyTaylor))
-# varying one input only
+potential_ET!(transform(tha, :Tair => x -> 25.0; renamecols=false), Val(:PriestleyTaylor))
+# varying one input only: scalar form with dot-notation
 Tair_vec =  10.0:1.0:20.0
 DataFrame(potential_ET.(Tair_vec, pressure, Rn, Val(:PriestleyTaylor)))
 nothing # hide
@@ -112,14 +117,16 @@ and $S$ is the sum of all storage fluxes of the ecosystem
 (see e.g. Leuning et al. 2012 for an overview). For some sites, $G$ is not available, 
 and for most sites, only a few components of $S$ are measured. 
 
-In `Bigleaf.jl` it is not a problem if $G$ and/or $S$ are missing (other than the results might be (slightly) biased), but special options exist for the treatment of missing $S$ and $G$ values. 
+In `Bigleaf.jl` it is not a problem if $G$ and/or $S$ are missing (other than the results 
+might be (slightly) biased), but special options exist for the treatment of missing 
+$S$ and $G$ values. 
 
 Note that the default for G and S in the dataframe variant is missing (and assumed zero), 
 even if those columns are
 present in the DataFrame. You need to explictly pass those columns with the optional
 arguments: e.g. `potential_ET(df, Val(:PriestleyTaylor); G = df.G)`
 
-Note that in difference to the bigleaf R package missing entries in a provide
+Note that in difference to the bigleaf R package missing entries in an input
 vector are not relaced by zero by default. 
 You need to explitly use coalesce when specifying a ground heat flux
 for which missings should be replaced by zero: `;G = coalesce(df.G, zero(df.G))`
@@ -150,10 +157,10 @@ If the valid column was false before, it stays at false.
 ### `setinvalid_qualityflag!`
 One can check quality flags. By default (argument `setvalmissing = true`) this also
 replaces the non-valid values in the data-columns by `missing`.
-```julia
+```@example doc
 thaf = copy(tha)   # keep the original tha DataFrame
 # if the :valid columns does not exist yet, it is created with all values true
-setinvalid_qualityflag!(thaf; vars = [`LE`, "NEE"])
+setinvalid_qualityflag!(thaf; vars = ["LE", "NEE"])
 sum(.!thaf.valid) # 7 records marked non-valid
 sum(ismissing.(thaf.NEE)) # 7 NEE values set to missing
 ```
@@ -176,7 +183,7 @@ We can  filter for meteorological conditions to be in acceptable ranges.
 For each variable to check we supply the valid minimum and valid maxium as a two-tuple
 as the second component of a pair. If their is no limit towards small or
 large values, supply `-Inf` or `Inf` as the minimum or maximum respectively.
-```julia
+```@example doc
 setinvalid_range!(thaf, 
      :PPFD => (200, Inf), 
      :ustar => (0.2, Inf), 
@@ -185,13 +192,13 @@ setinvalid_range!(thaf,
      )
 sum(.!thaf.valid) # many more records marked invalid
 minimum(skipmissing(thaf.PPFD)) >= 200 # values outsides range some set to missing
-sum(ismissing.(thaf.PPFD)
+sum(ismissing.(thaf.PPFD))
 ```
 
 About half of the data were filtered because radiation was not high enough (night-time). 
 Another quarter was filtered because they showed negative LE values. 
 However, most of them occured during the night:
-```julia
+```@example doc
 sum(ismissing.(thaf.PPFD)) / nrow(thaf) # 0.48
 sum(.!ismissing.(thaf.PPFD) .&& ismissing.(thaf.LE)) / nrow(thaf) # 0.05
 ```
@@ -199,9 +206,9 @@ sum(.!ismissing.(thaf.PPFD) .&& ismissing.(thaf.LE)) / nrow(thaf) # 0.05
 ### `setinvalid_nongrowingseason!`
 
 A third method filters periods outside the growing season:
-```julia
+```@example doc
 setinvalid_nongrowingseason!(thaf, 0.4) 
-sum(.!thaf2.valid) # tha dataset is all within growing season - no additional invalids
+sum(.!thaf.valid) # tha dataset is all within growing season - no additional invalids
 ```
 
 This function implements a simple growing season filter based on daily smoothed GPP time 
@@ -237,7 +244,7 @@ The number of subsequent time periods excluded is controlled by the argument `pr
 Here, we exclude rainfall events and the following 24 hours.
 The timestamps in the DataFrame must be sorted in increasing order.
 
-```julia
+```@example doc
 setinvalid_afterprecip!(thaf; min_precip=0.02, hours_after=24)
 sum(.!thaf.valid) # some more invalids
 ```
@@ -308,6 +315,26 @@ The following figure compares them at absole scale and as difference to the
 ![](fig/Esat_abs.svg)
 
 ![](fig/Esat_rel.svg)
+
+## Potential evapotranspiration
+
+For many hydrological applications, it is relevant to get an estimate on the potential 
+evapotranspiration (PET). At the moment, the `Bigleaf.jl` contains two formulations 
+for the estimate of PET: the Priestley-Taylor equation, and the Penman-Monteith equation:
+
+```@example doc
+potential_ET!(thaf, Val(:PriestleyTaylor); G = thaf.G, infoGS = false)
+# TODO need aerodynamci and surface conductance to compute Ga and Gs_mol before
+# potential_ET!(thaf, Val(:PenmanMonteith);  G = thaf.G, 
+#        Gs_pot=quantile(skipmissing(thaf.Gs_mol),0.95))
+select(thaf[24:26,:], :datetime, :ET_pot, :LE_pot)
+```
+
+In the second calculation it is important to provide an estimate of aerodynamic 
+conductance Ga and ``Gs_{pot}``, the potential surface conductance under optimal conditions. 
+Here, we have approximated ``Gs_{pot}`` with the ``95^{\text{th}}`` percentile of all 
+``G_s`` values of the site. 
+
 
 ## Global radiation
 
