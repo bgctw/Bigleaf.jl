@@ -62,6 +62,12 @@ end
     @test df2a.valid == [true, false, false]
     @test isequal(df2a.NEE, [1,2,missing])
     @test isequal(df2a.GPP, [10,missing,30])
+    df2 = copy(df)
+    df2a = setinvalid_qualityflag!(df2; vars = SA["NEE", "GPP"], setvalmissing = true, missing_qc_as_bad = false)
+    @test df2a === df2
+    @test df2a.valid == [true, true, false]
+    @test isequal(df2a.NEE, [1,2,missing])
+    @test isequal(df2a.GPP, [10,20,30])
 end
 
 @testset "setinvalid_range!" begin
