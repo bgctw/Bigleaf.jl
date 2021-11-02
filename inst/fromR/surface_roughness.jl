@@ -49,7 +49,7 @@ end
 #' A simple approximation of the two roughness parameters displacement height (d)
 #'              and roughness length for momentum (z0m).
 #'              
-#' - method    Method to use, one of `"canopy_height","canopy_height&LAI","wind_profile"` 
+#' - method    Method to use, one of `"canopy_height","canopy_height&LAI",Val(:wind_profile)` 
 #'                  NOTE: if `method = "canopy_height"`, only the following three arguments
 #'                  are used. If `method = "canopy_height&LAI"`, only `zh, LAI, cd`, 
 #'                  and `hs` are required.     
@@ -61,7 +61,7 @@ end
 #' - cd        Mean drag coefficient for individual leaves. Defaults to 0.2. 
 #'                  Only needed if `method = "canopy_height&LAI"`.
 #' - hs        roughness length of the soil surface (m). Only needed if `method = "canopy_height&LAI"`
-#'                  The following arguments are only needed if `method = "wind_profile"`!
+#'                  The following arguments are only needed if `method = Val(:wind_profile)`!
 #' - data      Data_frame or matrix containing all required variables
 #' - Tair      Air temperature (deg C)
 #' - pressure  Atmospheric pressure (kPa)
@@ -70,9 +70,9 @@ end
 #' - H         Sensible heat flux (W m-2)
 #' - d         Zero-plane displacement height (m); optional
 #' - z0m       Roughness length for momentum (m); optional
-#' - stab_roughness   Should stability correction be considered? Default is `TRUE`.
-#' - stab_formulation Stability correction function used (If `stab_correction = TRUE`).
-#'                         Either `"Dyer_1970"` or `"Businger_1971"`.
+#' - stab_roughness   Should stability correction be considered? Default is `true`.
+#' - stab_formulation Stability correction function used (If `stab_correction = true`).
+#'                         Either `Val(:Dyer_1970)` or `Val(:Businger_1971)`.
 #' - constants k - von-Karman constant (-) 
 #'                  Kelvin - conversion degree Celsius to Kelvin 
 #'                  cp - specific heat of air for constant pressure (J K-1 kg-1) 
@@ -105,7 +105,7 @@ end
 #'          
 #'            ``z0m = hs * zh * (1 - d/zh)   for 0.2 < X`` 
 #'          
-#'          If `method = "wind_profile"`, z0m is estimated by solving
+#'          If `method = Val(:wind_profile)`, z0m is estimated by solving
 #'          the wind speed profile for z0m:
 #'          
 #'            ``z0m = median((zr - d) * exp(-k*wind / ustar - psi_m)``
@@ -137,17 +137,17 @@ end
 #'    
 #' # fix d to 0.7*zh and estimate z0m from the wind profile
 #' df = DataFrame(Tair=c(25,25,25),pressure=100,wind=c(3,4,5),ustar=c(0.5,0.6,0.65),H=200)
-#' roughness_parameters(method="wind_profile",zh=25,zr=40,frac_d=0.7,data=df)
+#' roughness_parameters(method=Val(:wind_profile),zh=25,zr=40,frac_d=0.7,data=df)
 #' 
 #' # assume d = 0.8*zh
-#' roughness_parameters(method="wind_profile",zh=25,zr=40,frac_d=0.8,data=df) 
+#' roughness_parameters(method=Val(:wind_profile),zh=25,zr=40,frac_d=0.8,data=df) 
 #' 
 #' @importFrom stats median sd complete_cases 
 #' @export                                  
-function roughness_parameters(method=c("canopy_height","canopy_height&LAI","wind_profile"),zh,
+function roughness_parameters(method=c("canopy_height","canopy_height&LAI",Val(:wind_profile)),zh,
                                  frac_d=0.7,frac_z0m=0.1,LAI,zr,cd=0.2,hs=0.01,data,Tair="Tair",pressure="pressure",
-                                 wind="wind",ustar="ustar",H="H",d=NULL,z0m=NULL,
-                                 stab_roughness=TRUE,stab_formulation=c("Dyer_1970","Businger_1971"),
+                                 wind="wind",ustar="ustar",H="H",d=nothing,z0m=nothing,
+                                 stab_roughness=true,stab_formulation=c(Val(:Dyer_1970),Val(:Businger_1971)),
                                  constants=bigleaf_constants())
   
   method           = match_arg(method)
@@ -159,7 +159,7 @@ function roughness_parameters(method=c("canopy_height","canopy_height&LAI","wind
     z0m    = frac_z0m*zh
     z0m_se = NA
     
-else if (method == "canopy_height&LAI")
+elseif (method == "canopy_height&LAI")
     
     X = cd * LAI
     d = 1.1 * zh * log(1 + X^(1/4))
@@ -171,11 +171,11 @@ else
 end
     z0m_se = NA
     
-else if (method == "wind_profile")
+elseif (method == Val(:wind_profile))
     
     check_input(data,Tair,pressure,wind,ustar,H)
     
-    if (is_null(d))
+    if (isnothing(d))
       
       d = frac_d * zh
       
@@ -196,8 +196,8 @@ end
     
     z0m_all[z0m_all > zh] = NA
     
-    z0m    = median(z0m_all,na_rm=TRUE)
-    z0m_se = constants[:se_median] * (sd(z0m_all,na_rm=TRUE) / sqrt(length(z0m_all[complete_cases(z0m_all)])))
+    z0m    = median(z0m_all,na_rm=true)
+    z0m_se = constants[:se_median] * (sd(z0m_all,na_rm=true) / sqrt(length(z0m_all[complete_cases(z0m_all)])))
     
 end
   
@@ -218,7 +218,7 @@ end
 #' - pressure  Atmospheric pressure (kPa)                                                                                  
 #' - ustar     Friction velocity (m s-1)
 #' - H         Sensible heat flux (W m-2)
-#' - wind      Wind speed at height zr (m s-1); only used if `stab_correction = TRUE`
+#' - wind      Wind speed at height zr (m s-1); only used if `stab_correction = true`
 #' - zr        Instrument (reference) height (m)
 #' - zh        Canopy height (m)
 #' - d         Zero-plane displacement height (-)
@@ -227,12 +227,12 @@ end
 #' - z0m       Roughness length (m), optional; only used if `stab_correction = false` (default=0.1) 
 #' - frac_z0m  Fraction of roughness length on canopy height (-), optional; only used if `z0m` is not provided.
 #'                  Default is 0.1.
-#' - estimate_z0m Should `z0m` be estimated from the logarithmic wind profile? If `TRUE` (the default),
+#' - estimate_z0m Should `z0m` be estimated from the logarithmic wind profile? If `true` (the default),
 #'                     arguments `z0m` and `frac_z0m` are ignored.
 #'                     See [`roughness_parameters`](@ref) for details. 
-#' - stab_correction Should stability correction be applied? Defaults to `TRUE`
-#' - stab_formulation Stability correction function used (If `stab_correction = TRUE`).
-#'                         Either `"Dyer_1970"` or `"Businger_1971"`.
+#' - stab_correction Should stability correction be applied? Defaults to `true`
+#' - stab_formulation Stability correction function used (If `stab_correction = true`).
+#'                         Either `Val(:Dyer_1970)` or `Val(:Businger_1971)`.
 #' - constants k - von-Karman constant (-) 
 #'                  Kelvin - conversion degree Celsius to Kelvin 
 #'                  cp - specific heat of air for constant pressure (J K-1 kg-1) 
@@ -244,11 +244,11 @@ end
 #'          according to the Monin-Obhukov similarity theory).
 #'          In this case, the wind speed at a given height z is given by:
 #'          
-#'            ``u(z) = (ustar/k) * (ln((z - d) / z0m) - \psi{m``}
+#'            ``u(z) = (ustar/k) * (ln((z - d) / z0m) - \\psi_m``
 #'          
 #'          The roughness parameters zero-plane displacement height (d) and roughness length (z0m)
-#'          can be approximated from [`roughness_parameters`](@ref). ``\psi{m``} is omitted
-#'          if `stab_correction = false` (not recommended). If `estimate_z0m = TRUE`,
+#'          can be approximated from [`roughness_parameters`](@ref). ``\\psi_m`` is omitted
+#'          if `stab_correction = false` (not recommended). If `estimate_z0m = true`,
 #'          z0m is first estimated from the wind profile equation and then used in the equation
 #'          above for the calculation of `u(z)` (see e.g. Newman & Klein 2014).        
 #'                                                             
@@ -282,8 +282,8 @@ end
 #' 
 #' @export                                                                                                                          
 function wind_profile(data,z,Tair="Tair",pressure="pressure",ustar="ustar",H="H",wind="wind",
-                         zr,zh,d=NULL,frac_d=0.7,z0m=NULL,frac_z0m=NULL,estimate_z0m=TRUE,
-                         stab_correction=TRUE,stab_formulation=c("Dyer_1970","Businger_1971"),
+                         zr,zh,d=nothing,frac_d=0.7,z0m=nothing,frac_z0m=nothing,estimate_z0m=true,
+                         stab_correction=true,stab_formulation=c(Val(:Dyer_1970),Val(:Businger_1971)),
                          constants=bigleaf_constants())
   
   stab_formulation = match_arg(stab_formulation)
@@ -291,15 +291,15 @@ function wind_profile(data,z,Tair="Tair",pressure="pressure",ustar="ustar",H="H"
   check_input(data,ustar)
   
   ## determine roughness parameters
-  if (is_null(d))
-    if (is_null(frac_d))
+  if (isnothing(d))
+    if (isnothing(frac_d))
       stop("Either 'd' or 'frac_d' must be specified")
 end
     d = frac_d * zh
 end
   
-  if (is_null(z0m) & !estimate_z0m)
-    if (is_null(frac_z0m))
+  if (isnothing(z0m) & !estimate_z0m)
+    if (isnothing(frac_z0m))
       stop("Either 'z0m' or 'frac_z0m' must be specified if 'estimate_z0m' = false")
 end
     z0m = frac_z0m * zh
@@ -308,21 +308,21 @@ end
   
   if (estimate_z0m)
     
-    if (!is_null(z0m) | !is_null(frac_z0m))
-      cat("Note that arguments 'z0m' and 'frac_z0m' are ignored if 'estimate_z0m' = TRUE. z0m is
-           calculated from the logarithmic wind_profile equation.",fill=TRUE)
+    if (!isnothing(z0m) | !isnothing(frac_z0m))
+      cat("Note that arguments 'z0m' and 'frac_z0m' are ignored if 'estimate_z0m' = true. z0m is
+           calculated from the logarithmic wind_profile equation.",fill=true)
 end
     
     check_input(data,Tair,pressure,wind,ustar,H)
     
-    z0m = roughness_parameters(method="wind_profile",zh=zh,zr=zr,d=d,data=data,
+    z0m = roughness_parameters(method=Val(:wind_profile),zh=zh,zr=zr,d=d,data=data,
                                 Tair=Tair,pressure=pressure,wind=wind,ustar=ustar,H=H,
-                                stab_roughness=TRUE,stab_formulation=stab_formulation,
+                                stab_roughness=true,stab_formulation=stab_formulation,
                                 constants=constants)[,"z0m"]
 end
   
-  if ( any(z < (d + z0m) & !is_na(d + z0m)) )
-    warning("function is only valid for heights above d + z0m! Wind speed for heights below d + z0m will return 0!") 
+  if ( any(z < (d + z0m) & !ismissing(d + z0m)) )
+    @warn"function is only valid for heights above d + z0m! Wind speed for heights below d + z0m will return 0!") 
 end
   
   ## calculate wind speeds at given heights z

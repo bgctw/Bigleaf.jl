@@ -56,15 +56,15 @@
 #' 
 """
 """
-function Gb_Thom(ustar,Sc=NULL,Sc_name=NULL,constants=bigleaf_constants())
+function Gb_Thom(ustar,Sc=nothing,Sc_name=nothing,constants=bigleaf_constants())
   
-  check_input(NULL,ustar)
+  check_input(nothing,ustar)
   
   Rb_h = 6.2*ustar^-0.667
   Gb_h = 1/Rb_h
   kB_h = Rb_h*constants[:k]*ustar
   
-  if (!is_null(Sc) | !is_null(Sc_name))
+  if (!isnothing(Sc) | !isnothing(Sc_name))
     if (length(Sc) != length(Sc_name))
       stop("arguments 'Sc' and 'Sc_name' must have the same length")
 end
@@ -101,8 +101,8 @@ end
 #' - d                Zero-plane displacement height (-), can be calculated using `roughness_parameters`
 #' - z0m              Roughness length for momentum (m). If not provided, calculated from `roughness_parameters` 
 #'                         within `wind_profile`
-#' - stab_formulation Stability correction function used (If `stab_correction = TRUE`).
-#'                         Either `"Dyer_1970"` or `"Businger_1971"`.
+#' - stab_formulation Stability correction function used (If `stab_correction = true`).
+#'                         Either `Val(:Dyer_1970)` or `Val(:Businger_1971)`.
 #' - Sc               Optional: Schmidt number of additional quantities to be calculated
 #' - Sc_name          Optional: Name of the additonal quantities, has to be of same length than 
 #'                         `Sc_name`
@@ -173,8 +173,8 @@ end
 #' 
 #' @export                                                                                                                                                                                                                                                                                    
 function Gb_Choudhury(data,Tair="Tair",pressure="pressure",wind="wind",ustar="ustar",H="H",
-                         leafwidth,LAI,zh,zr,d,z0m=NULL,stab_formulation=c("Dyer_1970","Businger_1971"),
-                         Sc=NULL,Sc_name=NULL,constants=bigleaf_constants())
+                         leafwidth,LAI,zh,zr,d,z0m=nothing,stab_formulation=c(Val(:Dyer_1970),Val(:Businger_1971)),
+                         Sc=nothing,Sc_name=nothing,constants=bigleaf_constants())
   
   stab_formulation = match_arg(stab_formulation)
   
@@ -182,21 +182,21 @@ function Gb_Choudhury(data,Tair="Tair",pressure="pressure",wind="wind",ustar="us
   
   alpha   = 4.39 - 3.97*exp(-0.258*LAI)
 
-  if (is_null(z0m))
-    estimate_z0m = TRUE
-    z0m = NULL
+  if (isnothing(z0m))
+    estimate_z0m = true
+    z0m = nothing
 else 
     estimate_z0m = false
 end
   
   wind_zh = wind_profile(data=data,z=zh,Tair=Tair,pressure=pressure,ustar=ustar,H=H,
-                          zr=zr,estimate_z0m=estimate_z0m,zh=zh,d=d,z0m=z0m,frac_z0m=NULL,
-                          stab_correction=TRUE,stab_formulation=stab_formulation)
+                          zr=zr,estimate_z0m=estimate_z0m,zh=zh,d=d,z0m=z0m,frac_z0m=nothing,
+                          stab_correction=true,stab_formulation=stab_formulation)
   
   ## avoid zero windspeed
   wind_zh = pmax(0.01,wind_zh)
   
-  if (!is_null(Sc) | !is_null(Sc_name))
+  if (!isnothing(Sc) | !isnothing(Sc_name))
     if (length(Sc) != length(Sc_name))
       stop("arguments 'Sc' and 'Sc_name' must have the same length")
 end
@@ -244,8 +244,8 @@ end
 #' - N         Number of leaf sides participating in heat exchange (defaults to 2)
 #' - Cd        Foliage drag coefficient (-)
 #' - hs        Roughness height of the soil (m)
-#' - stab_formulation Stability correction function used (If `stab_correction = TRUE`).
-#'                         Either `"Dyer_1970"` or `"Businger_1971"`.
+#' - stab_formulation Stability correction function used (If `stab_correction = true`).
+#'                         Either `Val(:Dyer_1970)` or `Val(:Businger_1971)`.
 #' - Sc        Optional: Schmidt number of additional quantities to be calculated
 #' - Sc_name   Optional: Name of the additional quantities, has to be of same length than 
 #'                  `Sc_name`
@@ -334,32 +334,32 @@ end
 """
 """
 function Gb_Su(data,Tair="Tair",pressure="pressure",ustar="ustar",wind="wind",
-                  H="H",zh,zr,d,z0m=NULL,Dl,fc=NULL,LAI=NULL,N=2,Cd=0.2,hs=0.01,
-                  stab_formulation=c("Dyer_1970","Businger_1971"),
-                  Sc=NULL,Sc_name=NULL,constants=bigleaf_constants())
+                  H="H",zh,zr,d,z0m=nothing,Dl,fc=nothing,LAI=nothing,N=2,Cd=0.2,hs=0.01,
+                  stab_formulation=c(Val(:Dyer_1970),Val(:Businger_1971)),
+                  Sc=nothing,Sc_name=nothing,constants=bigleaf_constants())
   
   stab_formulation = match_arg(stab_formulation)
   
   check_input(data,list(Tair,pressure,ustar,wind,H))
   
-  if (is_null(fc))
-    if (is_null(LAI))
+  if (isnothing(fc))
+    if (isnothing(LAI))
       stop("one of 'fc' or 'LAI' must be provided",call.=false)
 else 
       fc = (1-exp(-LAI/2)) 
 end
 end 
   
-  if (is_null(z0m))
-    estimate_z0m = TRUE
-    z0m = NULL
+  if (isnothing(z0m))
+    estimate_z0m = true
+    z0m = nothing
 else 
     estimate_z0m = false
 end
   
   wind_zh = wind_profile(data=data,z=zh,Tair=Tair,pressure=pressure,ustar=ustar,H=H,
-                          zr=zr,estimate_z0m=estimate_z0m,zh=zh,d=d,z0m=z0m,frac_z0m=NULL,
-                          stab_correction=TRUE,stab_formulation=stab_formulation)
+                          zr=zr,estimate_z0m=estimate_z0m,zh=zh,d=d,z0m=z0m,frac_z0m=nothing,
+                          stab_correction=true,stab_formulation=stab_formulation)
   
   v   = kinematic_viscosity(Tair,pressure,constants)
   Re  = Reynolds_Number(Tair,pressure,ustar,hs,constants)
@@ -371,7 +371,7 @@ end
   Rb_h = kB_h/(constants[:k]*ustar)
   Gb_h = 1/Rb_h
   
-  if (!is_null(Sc) | !is_null(Sc_name))
+  if (!isnothing(Sc) | !isnothing(Sc_name))
     if (length(Sc) != length(Sc_name))
       stop("arguments 'Sc' and 'Sc_name' must have the same length")
 end

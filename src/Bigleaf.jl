@@ -29,6 +29,7 @@ export potential_ET, potential_ET!, equilibrium_imposed_ET, equilibrium_imposed_
 export setinvalid_range!, setinvalid_qualityflag!, 
     setinvalid_nongrowingseason!, get_growingseason, setinvalid_afterprecip!
 export decoupling, surface_conductance, aerodynamic_conductance
+export compute_Gb, compute_Gb!, add_Gb, Gb_Thom
 
 include("util.jl")    
 include("bigleaf_constants.jl")
@@ -38,5 +39,6 @@ include("sun_position.jl")
 include("potential_radiation.jl")
 include("evapotranspiration.jl")
 include("filter_data.jl")
+include("boundary_layer_conductance.jl")
 
 end

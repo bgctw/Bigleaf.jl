@@ -67,7 +67,7 @@ below which the quality control to be considered as acceptable quality
 all "LE" values whose "LE_qc" variable is larger than 1 are set to `missing`. 
 The variable `missing_qc_as_bad` is required to decide what to do in 
 case of missing values in the quality control variable. By default this is (conservatively) 
-set to `TRUE`, i.e. all entries where the qc variable is missing is set invalid. 
+set to `true`, i.e. all entries where the qc variable is missing is set invalid. 
 
 We can  filter for meteorological conditions to be in acceptable ranges. 
 For each variable to check we supply the valid minimum and valid maxium as a two-tuple
@@ -137,7 +137,7 @@ sum(.!thaf.valid) # some more invalids
 ```
 
 
-When looking at the function output we see that we these settings, we exclude in total 1013 data points (70.35% of the data). In total, 29.65% of all data remained. The output of the `filter_data` function is another DataFrame (tha_filtered), in which all filtered timesteps are set to NA. (Note that this is the default case. If we add `filtered_data_to_NA=TRUE`, the data are left untouched, but an additional column "valid" is added to the DataFrame that specifies whether the time points fulfull the criteria or not). In the following examples we will work mostly with the filtered DataFrame `tha_filtered`.
+When looking at the function output we see that we these settings, we exclude in total 1013 data points (70.35% of the data). In total, 29.65% of all data remained. The output of the `filter_data` function is another DataFrame (tha_filtered), in which all filtered timesteps are set to NA. (Note that this is the default case. If we add `filtered_data_to_NA=true`, the data are left untouched, but an additional column "valid" is added to the DataFrame that specifies whether the time points fulfull the criteria or not). In the following examples we will work mostly with the filtered DataFrame `tha_filtered`.
 
 
 
@@ -158,13 +158,13 @@ $G_a$ and in particular $G_b$ can be calculated with varying degrees of complexi
 summary(aerodynamic_conductance(tha_filtered))
 ```
 
-Note that by not providing additional arguments, the default values are taken (type ?aerodynamic_conductance to see default values of the function arguments). We also do not need most of the arguments that can be provided to the function in this case (i.e. if `Rb_model="Thom_1972"`). These are only required if we use a more complex formulation of $G_b$.
+Note that by not providing additional arguments, the default values are taken (type ?aerodynamic_conductance to see default values of the function arguments). We also do not need most of the arguments that can be provided to the function in this case (i.e. if `Rb_model=Val(:Thom_1972)`). These are only required if we use a more complex formulation of $G_b$.
 The output of the function is another DataFrame which contains separate columns for conductances and resistances of different scalars (momentum, heat, and CO$_2$ by default).
 For comparison, we now calculate a second estimate of $G_a$, where the calculation of $G_b$ is more physically-based (Su et al. 2001), and which requires more input variables compared to the first version. In particular, we now need LAI, the leaf characteristic dimension ($D_l$, assumed to be 1cm here), and information on sensor and canopy height ($z_r$ and $z_h$), as well as the displacement height (assumed to be 0.7*$z_h$):
 
 
 ```julia
-Ga_Su = aerodynamic_conductance(tha_filtered,Rb_model="Su_2001",LAI=LAI,zh=zh,d=0.7*zh,
+Ga_Su = aerodynamic_conductance(tha_filtered,Rb_model=Val(:Su_2001),LAI=LAI,zh=zh,d=0.7*zh,
                                  zr=zr,Dl=Dl)
 summary(Ga_Su)
 tha_filtered = cbind(tha_filtered,Ga_Su)
@@ -185,12 +185,12 @@ where $T_a$ is air temperature, $H$ is the sensible heat flux ($\text{W m}^{-2}$
 In `Bigleaf.jl`, the following function calculates conditions at the big-leaf surface:
 
 ```julia
-surf = surface_conditions(tha_filtered,calc_surface_CO2=TRUE)
+surf = surface_conditions(tha_filtered,calc_surface_CO2=true)
 summary(surf)
 tha_filtered = cbind(tha_filtered,surf)
 ```
 
-By default, the function calculates surface temperature and several humidity measures, including VPD and relative humidity. If we set `calc_surface_CO2=TRUE`, the CO$_2$ concentration at the surface is calculated additionally. Useful to know is that the expression "surface" depends on what kind of aerodynamic conductance we provide. If $G_a = G_{ah}$, we derive the conditions at the notional canopy surface (or the "big-leaf" surface). If $G_a = G_{am}$, we derive conditions in the intercanopy airspace (because $G_a$ does not account for the leaf boundary layer).
+By default, the function calculates surface temperature and several humidity measures, including VPD and relative humidity. If we set `calc_surface_CO2=true`, the CO$_2$ concentration at the surface is calculated additionally. Useful to know is that the expression "surface" depends on what kind of aerodynamic conductance we provide. If $G_a = G_{ah}$, we derive the conditions at the notional canopy surface (or the "big-leaf" surface). If $G_a = G_{am}$, we derive conditions in the intercanopy airspace (because $G_a$ does not account for the leaf boundary layer).
 
 We can compare the surface and air temperature:
 
@@ -239,18 +239,18 @@ With both $G_s$ and $G_a$ available, we can estimate the stomatal slope paramete
 
 ```julia
 ## stomatal slope from the USO model (Medlyn et al. 2011)
-g1_USO = stomatal_slope(tha_filtered,model="USO",g0=0,robust_nls=TRUE)
+g1_USO = stomatal_slope(tha_filtered,model="USO",g0=0,robust_nls=true)
 g1_USO
 ```
 
 In this case, we have estimated $g_1$ from the USO (optimal stomatal optimization) model as described in Medlyn et al. 2011. The output is a model object that prints the model formulat that is used to estimate $g_1$, the estimated parameter value(s), as well as the weighted residual sum-of-squares. Further information on this model object can be obtained using the `summary` function.
-In this case we have fixed the model intercept $g_0$ to 0 (this could also be any other value). We can also try to estimate $g_1$ and $g_0$ simultaneously (if we add `fitg0=TRUE` to the function call above), but note that the two parameters are usually correlated, and that the values of $g_0$ are not straightforward to interpret (especially at ecosystem level). The option `robust_nls=TRUE` specifies that $g_1$ is determined by a robust non-linear regression routine (from the `robustbase` package). We recommend to use this option since otherwise the parameter estimates are sensitive to outliers in $G_s$, which often occur even in filtered EC datasets.
+In this case we have fixed the model intercept $g_0$ to 0 (this could also be any other value). We can also try to estimate $g_1$ and $g_0$ simultaneously (if we add `fitg0=true` to the function call above), but note that the two parameters are usually correlated, and that the values of $g_0$ are not straightforward to interpret (especially at ecosystem level). The option `robust_nls=true` specifies that $g_1$ is determined by a robust non-linear regression routine (from the `robustbase` package). We recommend to use this option since otherwise the parameter estimates are sensitive to outliers in $G_s$, which often occur even in filtered EC datasets.
 By default, the model takes VPD and atmospheric CO$_2$ concentration as measured at the tower as input. We can also calculate $g_1$ by taking the surface conditions, which are probably more relevant for plant physiological processes than those measured a certain distance above the canopy:
 
 ```julia
 ## stomatal slope from the USO model (Medlyn et al. 2011)
 stomatal_slope(tha_filtered,Tair="Tsurf",VPD="VPD_surf",Ca="Ca_surf",model="USO",
-               g0=0,robust_nls=TRUE)
+               g0=0,robust_nls=true)
 ```
 which in this case, does not change our $g_1$ value significantly.
 
@@ -258,11 +258,11 @@ We can also calculate $g_1$ using two different models. One is the long-standing
 
 ```julia
 ## Ball&Berry slope
-stomatal_slope(tha_filtered,model="Ball&Berry",g0=0,robust_nls=TRUE)
+stomatal_slope(tha_filtered,model="Ball&Berry",g0=0,robust_nls=true)
 ```
 ```julia
 ## Leuning slope
-stomatal_slope(tha_filtered,model="Leuning",g0=0,fitD0=TRUE,robust_nls=TRUE)
+stomatal_slope(tha_filtered,model="Leuning",g0=0,fitD0=true,robust_nls=true)
 ```
 
 Note that the absolute value of the $g_1$ parameter depends on the model. In the Leuning model, we have a third parameter $D_0$ that can again either be estimated (as in the example above) or fixed to a pre-defined value (by default 1.5 kPa). $D_0$ describes the stomatal sensitivity to VPD (higher values correspond to a lower stomatal sensitivity to VPD - note however that $g_1$ and $D_0$ are strongly correlated, which makes an independent estimates of $D_0$ difficult to achieve). 
@@ -288,16 +288,16 @@ In `Bigleaf.jl`, a wind profile can be calculated assuming an exponential increa
 ```julia
 wind_heights = seq(22,60,2)
 wp = wind_profile(tha_filtered,heights=wind_heights,zh=zh,zr=zr)
-wp_means = colMeans(wp,na_rm=TRUE)
-wp_sd    = apply(wp,2,sd,na_rm=TRUE)
+wp_means = colMeans(wp,na_rm=true)
+wp_sd    = apply(wp,2,sd,na_rm=true)
 
 plot(wind_heights ~ wp_means,xlab=expression("wind speed (m s"^{-1}*")"),ylab="height (m)",
      las=1,mgp=c(2.2,0.5,0),tcl=0.2,xlim=c(0,5))
 arrows(wp_means-wp_sd,wind_heights,wp_means+wp_sd,wind_heights,angle=90,
        length=0.02,code=3)
-points(x=mean(tha_filtered[,"wind"],na_rm=TRUE),y=zr,col="blue",pch=16)
-arrows(mean(tha_filtered[,"wind"],na_rm=TRUE)-sd(tha_filtered[,"wind"],na_rm=TRUE),
-       zr,mean(tha_filtered[,"wind"],na_rm=TRUE)+sd(tha_filtered[,"wind"],na_rm=TRUE),
+points(x=mean(tha_filtered[,"wind"],na_rm=true),y=zr,col="blue",pch=16)
+arrows(mean(tha_filtered[,"wind"],na_rm=true)-sd(tha_filtered[,"wind"],na_rm=true),
+       zr,mean(tha_filtered[,"wind"],na_rm=true)+sd(tha_filtered[,"wind"],na_rm=true),
        zr,angle=90,length=0.02,code=3,col="blue")
 ```
 Here, the points denote the mean wind speed and the bars denote the standard deviation. The blue point/bar represent the values that were measured at 42m. In this case we see that the wind speed as "back-calculated" from the wind profile agrees well with the actual measurements.
@@ -421,8 +421,8 @@ invisible(capture_output(PET = potential_ET(Tair=25,pressure=100,Rn=200)))
 The `Bigleaf.jl` package contains a single list of constants (see `?Bigleaf_constants`). Whenever one or more constants are used in a function, this list is provided as a default argument, so the user does usually not need to interact with this list. However, should you wish to change a certain constant for the calculations (which could make sense in some cases, e.g. using a different value for the von-Karman constant (k)), individual constants can be changed within a function call. As an example, let's call a function with the `Bigleaf.jl` default value of k=0.41, and the alternative, often used value of k=0.4:
 
 ```julia
-summary(aerodynamic_conductance(tha_filtered,wind_profile=TRUE,zr=zr,d=0.7*zh,z0m=2.65)[,"Ga_h"])
-summary(aerodynamic_conductance(tha_filtered,wind_profile=TRUE,zr=zr,d=0.7*zh,z0m=2.65,
+summary(aerodynamic_conductance(tha_filtered,wind_profile=true,zr=zr,d=0.7*zh,z0m=2.65)[,"Ga_h"])
+summary(aerodynamic_conductance(tha_filtered,wind_profile=true,zr=zr,d=0.7*zh,z0m=2.65,
                                 constants=Bigleaf_constants(k=0.4))[,"Ga_h"])
 ```
 
@@ -519,8 +519,8 @@ In the example above we create a parameter space that we use for the subsequent 
 unc_all = mapply(aerodynamic_conductance,Dl=Dl_sample,z0m=z0m_sample,LAI=LAI_sample,
                         MoreArgs=list(data=tha_filtered,zr=42,zh=26.5,d=0.7*26.5,
                                       N=2,stab_correction=T,
-                                      stab_formulation="Dyer_1970",
-                                      Rb_model="Su_2001")
+                                      stab_formulation=Val(:Dyer_1970),
+                                      Rb_model=Val(:Su_2001))
                   )
 
 # select "Ga_h" output variable and convert to matrix
@@ -550,7 +550,7 @@ ind = c(1:48) # first day
 plot(Ga_mean[ind],type="l",lwd=2,xlab="timestep",ylab=expression("G"["ah"]~"(m s"^{-1}*")"),
      las=1,mgp=c(2.2,0.5,0),tcl=-0.2,ylim=c(0.045,0.14))
 
-ok = which(!is_na(Ga_mean[ind]))
+ok = which(!ismissing(Ga_mean[ind]))
 polygon(c(ok,rev(ok)),c(Ga_high[ind][ok],rev(Ga_low[ind][ok])),
         col="grey70",border=NA)
 points(Ga_mean[ind],type="l",lwd=2)
@@ -559,7 +559,7 @@ points(Ga_mean[ind],type="l",lwd=2)
 plot(Gs_mean[ind],type="l",lwd=2,xlab="timestep",tcl=-0.2,
      ylab=expression("G"["sw"]~"(mol m"^{-2}~"s"^{-1}*")"),las=1,mgp=c(2.2,0.5,0))
 
-ok = which(!is_na(Gs_mean[ind]))
+ok = which(!ismissing(Gs_mean[ind]))
 polygon(c(ok,rev(ok)),c(Gs_high[ind][ok],rev(Gs_low[ind][ok])),
         col="grey70",border=NA)
 points(Gs_mean[ind],type="l",lwd=2)

@@ -175,7 +175,7 @@ below which the quality control to be considered as acceptable quality
 all `LE` values whose `LE_qc` variable is larger than 1 are set to `missing`. 
 The variable `missing_qc_as_bad` is required to decide what to do in 
 case of missing values in the quality control variable. By default this is (conservatively) 
-set to `TRUE`, i.e. all entries where the qc variable is missing is set invalid. 
+set to `true`, i.e. all entries where the qc variable is missing is set invalid. 
 
 ### `setinvalid_range!`
 

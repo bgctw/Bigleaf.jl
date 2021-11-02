@@ -19,8 +19,8 @@
 #' - alpha     Priestley-Taylor coefficient; only used if `approach = Val(:PriestleyTaylor)`.
 #' - Gs_pot    Potential/maximum surface conductance (mol m-2 s-1); defaults to 0.6 mol m-2 s-1;
 #'                  only used if `approach = Val(:PenmanMonteith)`.
-#' - missing_G_as_NA  if `TRUE`, missing G are treated as `NA`s, otherwise set to 0. 
-#' - missing_S_as_NA  if `TRUE`, missing S are treated as `NA`s, otherwise set to 0. 
+#' - missing_G_as_NA  if `true`, missing G are treated as `NA`s, otherwise set to 0. 
+#' - missing_S_as_NA  if `true`, missing S are treated as `NA`s, otherwise set to 0. 
 #' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
 #'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
 #'                      See [`Esat_slope`](@ref). 
@@ -92,7 +92,7 @@
 #' surface_conductance(Tair=20,pressure=100,VPD=2,Ga=0.1,Rn=400,LE=LE_pot_PM)
 """
 """
-function potential_ET(data,Tair="Tair",pressure="pressure",Rn="Rn",G=NULL,S=NULL,
+function potential_ET(data,Tair="Tair",pressure="pressure",Rn="Rn",G=nothing,S=nothing,
                          VPD="VPD",Ga="Ga_h",approach=c(Val(:PriestleyTaylor),Val(:PenmanMonteith)),
                          alpha=1.26,Gs_pot=0.6,missing_G_as_NA=false,missing_S_as_NA=false,
                          Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
@@ -102,21 +102,21 @@ function potential_ET(data,Tair="Tair",pressure="pressure",Rn="Rn",G=NULL,S=NULL
   
   check_input(data,list(Tair,pressure,Rn,G,S))
   
-  if(!is_null(G))
+  if(!isnothing(G))
     if (!missing_G_as_NA)
-      G[is_na(G)] = 0
+      G[ismissing(G)] = 0
 end
 else 
-    cat("Ground heat flux G is not provided and set to 0.",fill=TRUE)
+    cat("Ground heat flux G is not provided and set to 0.",fill=true)
     G = 0
 end
   
-  if(!is_null(S))
+  if(!isnothing(S))
     if(!missing_S_as_NA)
-      S[is_na(S)] = 0 
+      S[ismissing(S)] = 0 
 end
 else 
-    cat("Energy storage fluxes S are not provided and set to 0.",fill=TRUE)
+    cat("Energy storage fluxes S are not provided and set to 0.",fill=true)
     S = 0
 end
   
@@ -129,7 +129,7 @@ end
     LE_pot = (alpha * Delta * (Rn - G - S)) / (Delta + gamma)
     ET_pot = LE_to_ET(LE_pot,Tair)
     
-else if (approach == Val(:PenmanMonteith))
+elseif (approach == Val(:PenmanMonteith))
     
     check_input(data,list(Gs_pot,VPD,Ga))
     
@@ -163,8 +163,8 @@ end
 #' - Rn        Net radiation (W m-2)
 #' - G         Ground heat flux (W m-2); optional
 #' - S         Sum of all storage fluxes (W m-2); optional
-#' - missing_G_as_NA  if `TRUE`, missing G are treated as `NA`s, otherwise set to 0. 
-#' - missing_S_as_NA  if `TRUE`, missing S are treated as `NA`s, otherwise set to 0. 
+#' - missing_G_as_NA  if `true`, missing G are treated as `NA`s, otherwise set to 0. 
+#' - missing_S_as_NA  if `true`, missing S are treated as `NA`s, otherwise set to 0. 
 #' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
 #'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
 #'                      See [`Esat_slope`](@ref). 
@@ -176,7 +176,7 @@ end
 #' 
 #' @export                            
 function reference_ET(data,Gs_ref=0.0143,Tair="Tair",pressure="pressure",VPD="VPD",Rn="Rn",Ga="Ga_h",
-                         G=NULL,S=NULL,missing_G_as_NA=false,missing_S_as_NA=false,
+                         G=nothing,S=nothing,missing_G_as_NA=false,missing_S_as_NA=false,
                          Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
                          constants=bigleaf_constants())
   
@@ -200,8 +200,8 @@ end
 #' - Rn        Net radiation (W m-2)
 #' - G         Ground heat flux (W m-2); optional
 #' - S         Sum of all storage fluxes (W m-2); optional
-#' - missing_G_as_NA  if `TRUE`, missing G are treated as `NA`s, otherwise set to 0. 
-#' - missing_S_as_NA  if `TRUE`, missing S are treated as `NA`s, otherwise set to 0.
+#' - missing_G_as_NA  if `true`, missing G are treated as `NA`s, otherwise set to 0. 
+#' - missing_S_as_NA  if `true`, missing S are treated as `NA`s, otherwise set to 0.
 #' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
 #'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
 #'                      See [`Esat_slope`](@ref). 
@@ -261,23 +261,23 @@ end
 """
 """
 function equilibrium_imposed_ET(data,Tair="Tair",pressure="pressure",VPD="VPD",Gs="Gs_ms",
-                                   Rn="Rn",G=NULL,S=NULL,missing_G_as_NA=false,missing_S_as_NA=false,
+                                   Rn="Rn",G=nothing,S=nothing,missing_G_as_NA=false,missing_S_as_NA=false,
                                    Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
                                    constants=bigleaf_constants())
   
   check_input(data,list(Tair,pressure,VPD,Rn,Gs,G,S))
   
-  if(!is_null(G))
-    if (!missing_G_as_NA){G[is_na(G)] = 0}
+  if(!isnothing(G))
+    if (!missing_G_as_NA){G[ismissing(G)] = 0}
 else 
-    cat("Ground heat flux G is not provided and set to 0.",fill=TRUE)
+    cat("Ground heat flux G is not provided and set to 0.",fill=true)
     G = 0
 end
   
-  if(!is_null(S))
-    if(!missing_S_as_NA){S[is_na(S)] = 0 }
+  if(!isnothing(S))
+    if(!missing_S_as_NA){S[ismissing(S)] = 0 }
 else 
-    cat("Energy storage fluxes S are not provided and set to 0.",fill=TRUE)
+    cat("Energy storage fluxes S are not provided and set to 0.",fill=true)
     S = 0
 end
   

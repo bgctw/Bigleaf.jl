@@ -9,7 +9,7 @@
 #' 
 #' - data            Data_frame or matrix containing all required input variables in 
 #'                        half-hourly or hourly resolution. Including year, month, day information
-#' - quality_control Should quality control be applied? Defaults to `TRUE`.
+#' - quality_control Should quality control be applied? Defaults to `true`.
 #' - filter_growseas Should data be filtered for growing season? Defaults to `false`.
 #' - filter_precip   Should precipitation filtering be applied? Defaults to `false`.
 #' - filter_vars     Additional variables to be filtered. Vector of type character.
@@ -17,7 +17,7 @@
 #'                        the same length than `filter_vars`. Set to `NA` to be ignored.
 #' - filter_vals_max Maximum values of the variables to be filtered. Numeric vector of 
 #'                        the same length than `filter_vars`. Set to `NA` to be ignored.
-#' - NA_as_invalid   If `TRUE` (the default) missing data are filtered out (applies to all variables).
+#' - NA_as_invalid   If `true` (the default) missing data are filtered out (applies to all variables).
 #' - vars_qc         Character vector indicating the variables for which quality filter should 
 #'                        be applied. Ignored if `quality_control = false`.
 #' - quality_ext     The extension to the variables' names that marks them as 
@@ -25,7 +25,7 @@
 #' - good_quality    Which values indicate good quality (i.e. not to be filtered) 
 #'                        in the quality control (qc) variables? Ignored if `quality_control = false`.
 #' - missing_qc_as_bad If quality control variable is `NA`, should the corresponding data point be
-#'                          treated as bad quality? Defaults to `TRUE`. Ignored if `quality_control = false`.                        
+#'                          treated as bad quality? Defaults to `true`. Ignored if `quality_control = false`.                        
 #' - precip          Precipitation (mm time-1)
 #' - GPP             Gross primary productivity (umol m-2 s-1); Ignored if `filter_growseas = false`.
 #' - doy             Day of year; Ignored if `filter_growseas = false`.
@@ -41,7 +41,7 @@
 #' - precip_hours    Number of hours removed following a precipitation event (h).
 #'                        Ignored if `filter_precip = false`.
 #' - records_per_hour Number of observations per hour. I_e. 2 for half-hourly data.
-#' - filtered_data_to_NA Logical. If `TRUE` (the default), all variables in the input
+#' - filtered_data_to_NA Logical. If `true` (the default), all variables in the input
 #'                              DataFrame/matrix are set to `NA` for the time step where ANY of the
 #'                              `filter_vars` were beyond their acceptable range (as
 #'                              determined by `filter_vals_min` and `filter_vals_max`).
@@ -69,7 +69,7 @@
 #'             are set to `NA` for all variables. If a threshold is set to `NA`, it will be ignored.
 #'          
 #' # Value
- If `filtered_data_to_NA = TRUE` (default), the input DataFrame/matrix with 
+ If `filtered_data_to_NA = true` (default), the input DataFrame/matrix with 
 #'         observations which did not fulfill the filter criteria set to `NA`. 
 #'         If `filtered_data_to_NA = false`, the input DataFrame/matrix with an additional 
 #'         column "valid", which indicates whether all the data of a time step fulfill the 
@@ -83,7 +83,7 @@
 #' 
 #'       Variables considered of bad quality (as specified by the corresponding quality control variables)      
 #'       will be set to `NA` by this routine. Data that do not fulfill the filtering criteria are set to
-#'       `NA` if `filtered_data_to_NA = TRUE`. Note that with this option *all* variables of the same
+#'       `NA` if `filtered_data_to_NA = true`. Note that with this option *all* variables of the same
 #'       time step are set to `NA`. Alternatively, if `filtered_data_to_NA = false` data are not set to `NA`,
 #'       and a new column "valid" is added to the DataFrame/matrix, indicating if any value of a row
 #'       did (1) or did not fulfill the filter criteria (0).
@@ -93,29 +93,29 @@
 #' ``` 
 #' # Example of data filtering; data are for a month within the growing season,
 #' # hence growing season is not filtered.
-#' # If filtered_data_to_NA=TRUE, all values of a row are set to NA if one filter
+#' # If filtered_data_to_NA=true, all values of a row are set to NA if one filter
 #' # variable is beyond its bounds. 
 #' DE_Tha_Jun_2014_2 = filter_data(DE_Tha_Jun_2014,quality_control=false,
 #'                                  vars_qc=c("Tair","precip","H","LE"),
-#'                                  filter_growseas=false,filter_precip=TRUE,
+#'                                  filter_growseas=false,filter_precip=true,
 #'                                  filter_vars=c("Tair","PPFD","ustar"),
 #'                                  filter_vals_min=c(5,200,0.2),
-#'                                  filter_vals_max=c(NA,NA,NA),NA_as_invalid=TRUE,
+#'                                  filter_vals_max=c(NA,NA,NA),NA_as_invalid=true,
 #'                                  quality_ext="_qc",good_quality=c(0,1),
-#'                                  missing_qc_as_bad=TRUE,GPP="GPP",doy="doy",
+#'                                  missing_qc_as_bad=true,GPP="GPP",doy="doy",
 #'                                  year="year",tGPP=0.5,ws=15,min_int=5,precip="precip",
 #'                                  tprecip=0.1,precip_hours=24,records_per_hour=2,
-#'                                  filtered_data_to_NA=TRUE)
+#'                                  filtered_data_to_NA=true)
 #'
 #'  ## same, but with filtered_data_to_NA=false
 #'  DE_Tha_Jun_2014_3 = filter_data(DE_Tha_Jun_2014,quality_control=false,
 #'                                  vars_qc=c("Tair","precip","H","LE"),
-#'                                  filter_growseas=false,filter_precip=TRUE,
+#'                                  filter_growseas=false,filter_precip=true,
 #'                                  filter_vars=c("Tair","PPFD","ustar"),
 #'                                  filter_vals_min=c(5,200,0.2),
-#'                                  filter_vals_max=c(NA,NA,NA),NA_as_invalid=TRUE,
+#'                                  filter_vals_max=c(NA,NA,NA),NA_as_invalid=true,
 #'                                  quality_ext="_qc",good_quality=c(0,1),
-#'                                  missing_qc_as_bad=TRUE,GPP="GPP",doy="doy",
+#'                                  missing_qc_as_bad=true,GPP="GPP",doy="doy",
 #'                                  year="year",tGPP=0.5,ws=15,min_int=5,precip="precip",
 #'                                  tprecip=0.1,precip_hours=24,records_per_hour=2,
 #'                                  filtered_data_to_NA=false)
@@ -127,56 +127,56 @@
 #'   
 #' @importFrom stats aggregate
 #' @export                     
-function filter_data(data,quality_control=TRUE,filter_growseas=false,
-                        filter_precip=false,filter_vars=NULL,
-                        filter_vals_min,filter_vals_max,NA_as_invalid=TRUE,
-                        vars_qc=NULL,quality_ext="_qc",good_quality=c(0,1),
-                        missing_qc_as_bad=TRUE,GPP="GPP",doy="doy",
+function filter_data(data,quality_control=true,filter_growseas=false,
+                        filter_precip=false,filter_vars=nothing,
+                        filter_vals_min,filter_vals_max,NA_as_invalid=true,
+                        vars_qc=nothing,quality_ext="_qc",good_quality=c(0,1),
+                        missing_qc_as_bad=true,GPP="GPP",doy="doy",
                         year="year",tGPP=0.5,ws=15,min_int=5,precip="precip",
                         tprecip=0.01,precip_hours=24,records_per_hour=2,
-                        filtered_data_to_NA=TRUE,constants=bigleaf_constants())
+                        filtered_data_to_NA=true,constants=bigleaf_constants())
   
   
   ### I) Quality control filter
   if (quality_control)
     
-    if (is_null(vars_qc))
-      stop("quality_control (qc) is TRUE, but no qc variables are provided!")
+    if (isnothing(vars_qc))
+      stop("quality_control (qc) is true, but no qc variables are provided!")
 end
     
-    if (any(!vars_qc %in% colnames(data)))
+    if (any(!vars_qc in colnames(data)))
       
-      missing_vars = vars_qc[which(!vars_qc %in% colnames(data))]
+      missing_vars = vars_qc[which(!vars_qc in colnames(data))]
       stop(paste("Variable ",missing_vars," is included in 'vars_qc', but does not exist in the input data!"))
       
 end
     
     vars_qc_qc = paste0(vars_qc,quality_ext)
-    if (any(!vars_qc_qc %in% colnames(data)))
+    if (any(!vars_qc_qc in colnames(data)))
       
-      missing_vars_qc = vars_qc_qc[which(!vars_qc_qc %in% colnames(data))]
+      missing_vars_qc = vars_qc_qc[which(!vars_qc_qc in colnames(data))]
       missing_vars2   = substr(missing_vars_qc,1,nchar(missing_vars_qc) - nchar(quality_ext))
       stop(paste("Quality control for variable ",missing_vars2,"(",missing_vars_qc,") does not exist in the input data!")) 
 end
     
     ## data quality
-    cat("Quality control:",fill=TRUE)
+    cat("Quality control:",fill=true)
     for (var in vars_qc)
       var_qc = paste0(var,quality_ext)
       check_input(data,var)
       check_input(data,var_qc)
 
       if (missing_qc_as_bad)
-        data[get(paste0(var,quality_ext)) > max(good_quality) | is_na(get(paste0(var,quality_ext))),var] = NA   # exclude bad quality data or those where qc flag is not available
-        qc_invalid      = sum(get(paste0(var,quality_ext)) > max(good_quality) | is_na(get(paste0(var,quality_ext)))) # count & report
+        data[get(paste0(var,quality_ext)) > max(good_quality) | ismissing(get(paste0(var,quality_ext))),var] = NA   # exclude bad quality data or those where qc flag is not available
+        qc_invalid      = sum(get(paste0(var,quality_ext)) > max(good_quality) | ismissing(get(paste0(var,quality_ext)))) # count & report
 else { # same, but consider missing quality flag variables as good
-        data[get(paste0(var,quality_ext)) > max(good_quality) & !is_na(get(paste0(var,quality_ext))),var] = NA
-        qc_invalid      = sum(get(paste0(var,quality_ext)) > max(good_quality) & !is_na(get(paste0(var,quality_ext))))
+        data[get(paste0(var,quality_ext)) > max(good_quality) & !ismissing(get(paste0(var,quality_ext))),var] = NA
+        qc_invalid      = sum(get(paste0(var,quality_ext)) > max(good_quality) & !ismissing(get(paste0(var,quality_ext))))
 end
       
       qc_invalid_perc = round((qc_invalid/nrow(data))*constants[:frac2percent],2)
       
-      cat(var,": ",qc_invalid," data points (",qc_invalid_perc,"%) set to NA",fill=TRUE,sep="")
+      cat(var,": ",qc_invalid," data points (",qc_invalid_perc,"%) set to NA",fill=true,sep="")
 end
 end
   
@@ -189,7 +189,7 @@ end
   if(filter_growseas)
     check_input(data,doy,year,GPP)
     date             = strptime(paste0(year,"-",doy),format="%Y-%j")
-    GPP_daily        = aggregate(GPP,by=list(strftime(date)),mean,na_rm=TRUE)[,2]
+    GPP_daily        = aggregate(GPP,by=list(strftime(date)),mean,na_rm=true)[,2]
     growing_season   = filter_growingseason(GPP_daily,tGPP=tGPP,ws=ws,min_int=min_int)
     growseas_invalid = which(sapply(growing_season,rep,48) == 0)
 end
@@ -199,25 +199,25 @@ end
   if (filter_precip)
     check_input(data,precip)
     if (NA_as_invalid)
-      precip_events = which(precip > tprecip | is_na(precip))
+      precip_events = which(precip > tprecip | ismissing(precip))
 else 
       precip_events = which(precip > tprecip)
 end
-    precip_invalid = unique(as_numeric(unlist(sapply(precip_events, function(x) x:(min(x+precip_hours*records_per_hour,nrow(data),na_rm=TRUE))))))
+    precip_invalid = unique(as_numeric(unlist(sapply(precip_events, function(x) x:(min(x+precip_hours*records_per_hour,nrow(data),na_rm=true))))))
 end
 
   # 3) all other filter variables (as defined in filter_vars)
   invalids = list(growseas_invalid,precip_invalid)
   
-  if (!is_null(filter_vars))
+  if (!isnothing(filter_vars))
     for (var in filter_vars)
       v  = which(filter_vars == var)
       vf = v + 2
       check_input(data,var)
       if (NA_as_invalid)
-        invalids[[vf]] = which(get(var) < filter_vals_min[v] | get(var) > filter_vals_max[v] | is_na(get(var)))
+        invalids[[vf]] = which(get(var) < filter_vals_min[v] | get(var) > filter_vals_max[v] | ismissing(get(var)))
 else 
-        invalids[[vf]] = which(get(var) < filter_vals_min[v] | get(var) > filter_vals_max[v] & !is_na(get(var)))
+        invalids[[vf]] = which(get(var) < filter_vals_min[v] | get(var) > filter_vals_max[v] & !ismissing(get(var)))
 end
 end
 end
@@ -237,17 +237,17 @@ end
     var_names = c("growing season","precipitation",filter_vars)
     
     if (quality_control)
-      cat("-------------------------------------------------------------------",fill=TRUE)
+      cat("-------------------------------------------------------------------",fill=true)
 end
       
-    cat("Data filtering:",fill=TRUE)
+    cat("Data filtering:",fill=true)
   
-    cat(length(growseas_invalid)," data points (",invalids_perc[1],"%) excluded by growing season filter",fill=TRUE,sep="")
+    cat(length(growseas_invalid)," data points (",invalids_perc[1],"%) excluded by growing season filter",fill=true,sep="")
   
     invisible(sapply(c(1:(length(invalids)-1)), function(x) cat(additional_invalids[x]," additional data points (",
                                                                 additional_invalids_perc[x],"%) excluded by ",var_names[x+1],
                                                                 " filter (",length(unlist(invalids[x+1]))," data points = ",
-                                                                invalids_perc[x+1]," % in total)",fill=TRUE,sep="")))
+                                                                invalids_perc[x+1]," % in total)",fill=true,sep="")))
   
   
     invalid        = unique(unlist(invalids))
@@ -255,8 +255,8 @@ end
   
     excl_perc = round((length(invalid)/nrow(data))*constants[:frac2percent],2)
   
-    cat(length(invalid)," data points (",excl_perc,"%) excluded in total",fill=TRUE,sep="")
-    cat(nrow(data) - length(invalid)," valid data points (",constants[:frac2percent]-excl_perc,"%) remaining.",fill=TRUE,sep="")
+    cat(length(invalid)," data points (",excl_perc,"%) excluded in total",fill=true,sep="")
+    cat(nrow(data) - length(invalid)," valid data points (",constants[:frac2percent]-excl_perc,"%) remaining.",fill=true,sep="")
   
   
     # 6) return input data frame with filtered time steps set to NA or an additional 'valid' column
@@ -317,24 +317,24 @@ end
 #' @export  
 function filter_growingseason(GPPd,tGPP,ws=15,min_int=5)
   
-  if(sum(is_na(GPPd)) < 0.5*length(GPPd))
+  if(sum(ismissing(GPPd)) < 0.5*length(GPPd))
     
     growseas      = rep(1,length(GPPd))
-    GPP_threshold = quantile(GPPd,probs=0.95,na_rm=TRUE)*tGPP
+    GPP_threshold = quantile(GPPd,probs=0.95,na_rm=true)*tGPP
     
     ## smooth GPP
     GPPd_smoothed = filter(GPPd,method="convolution",filter=rep(1/ws,ws))
     
     ## set values at the beginning and end of the time series to the mean of the original values
     wsd = floor(ws/2)
-    GPPd_smoothed[1:wsd] = mean(GPPd[1:(2*wsd)],na_rm=TRUE)
-    GPPd_smoothed[(length(GPPd)-(wsd-1)):length(GPPd)] = mean(GPPd[(length(GPPd)-(2*wsd-1)):length(GPPd)],na_rm=TRUE)
+    GPPd_smoothed[1:wsd] = mean(GPPd[1:(2*wsd)],na_rm=true)
+    GPPd_smoothed[(length(GPPd)-(wsd-1)):length(GPPd)] = mean(GPPd[(length(GPPd)-(2*wsd-1)):length(GPPd)],na_rm=true)
     
     # check for occurence of missing values and set them to mean of the values surrounding them
-    missing = which(is_na(GPPd_smoothed))
+    missing = which(ismissing(GPPd_smoothed))
     if (length(missing) > 0)
-      if (length(missing) > 10){warning("Attention, there is a gap in 'GPPd' of length n = ",length(missing))}
-      replace_val = mean(GPPd_smoothed[max(1,missing[1] - 4):min((missing[length(missing)] + 4),length(GPPd_smoothed))],na_rm=TRUE)
+      if (length(missing) > 10){@warn"Attention, there is a gap in 'GPPd' of length n = ",length(missing))}
+      replace_val = mean(GPPd_smoothed[max(1,missing[1] - 4):min((missing[length(missing)] + 4),length(GPPd_smoothed))],na_rm=true)
       GPPd_smoothed[missing] = replace_val
 end
     
@@ -358,7 +358,7 @@ end
         
         if (val == 0 & growseas[start[i]-1] == 1)
           growseas[start[i]:end[i]] = 1   
-else if (val == 1 & growseas[start[i]-1] == 0)
+elseif (val == 1 & growseas[start[i]-1] == 0)
           growseas[start[i]:end[i]] = 0
 end
 end
@@ -368,7 +368,7 @@ end
     
 else 
     
-    warning("number of available GPPd data is less than half the total number of days per year. Filter is not applied!")
+    @warn"number of available GPPd data is less than half the total number of days per year. Filter is not applied!")
     growseas = as_integer(rep(1,length(GPPd)))
     
 end

@@ -16,9 +16,9 @@
 #' - VPD              Vapor pressure deficit (kPa)
 #' - Ga               Aerodynamic conductance for heat/water vapor (m s-1)
 #' - calc_surface_CO2 Calculate surface CO2 concentration? Defaults to `false`.
-#' - Ca               Atmospheric CO2 concentration (mol mol-1). Required if `calc_surface_CO2 = TRUE`.
-#' - NEE              Net ecosystem exchange (umol m-2 s-1). Required if `calc_surface_CO2 = TRUE`.
-#' - Ga_CO2           Aerodynamic conductance for CO2 (m s-1). Required if `calc_surface_CO2 = TRUE`.
+#' - Ca               Atmospheric CO2 concentration (mol mol-1). Required if `calc_surface_CO2 = true`.
+#' - NEE              Net ecosystem exchange (umol m-2 s-1). Required if `calc_surface_CO2 = true`.
+#' - Ga_CO2           Aerodynamic conductance for CO2 (m s-1). Required if `calc_surface_CO2 = true`.
 #' - Esat_formula     Optional: formula to be used for the calculation of esat and the slope of esat.
 #'                         One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
 #'                         See [`Esat_slope`](@ref).           
@@ -59,7 +59,7 @@
 #' 
 #' # Note
 #' The following sign convention for NEE is employed (relevant if 
-#'       `calc_surface_CO2 = TRUE`): 
+#'       `calc_surface_CO2 = true`): 
 #'       negative values of NEE denote net CO2 uptake by the ecosystem.
 #' 
 #' # Value
@@ -81,7 +81,7 @@
 #'          
 #' # now calculate also surface CO2 concentration
 #' surface_conditions(Tair=25,pressure=100,LE=100,H=200,VPD=1.2,Ga=c(0.02,0.05,0.1),
-#'                    Ca=400,Ga_CO2=c(0.02,0.05,0.1),NEE=-20,calc_surface_CO2=TRUE)
+#'                    Ca=400,Ga_CO2=c(0.02,0.05,0.1),NEE=-20,calc_surface_CO2=true)
 #'                    
 #' #References
 #' Knauer, J. et al., 2018: Towards physiologically meaningful water-use efficiency estimates

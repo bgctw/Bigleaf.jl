@@ -36,7 +36,7 @@
 #'            ``uWUE= (GPP * sqrt(VPD)) / ET``
 #'          
 #'          All metrics are calculated based on the median of all values. E_g.
-#'          WUE = median(GPP/ET,na_rm=TRUE)
+#'          WUE = median(GPP/ET,na_rm=true)
 #' 
 #' # Value
  a named vector with the following elements:
@@ -64,12 +64,12 @@
 #' ## filter data for dry periods and daytime at DE-Tha in June 2014
 #' DE_Tha_Jun_2014_2 = filter_data(DE_Tha_Jun_2014,quality_control=false,
 #'                                  vars_qc=c("Tair","precip","VPD","H","LE"),
-#'                                  filter_growseas=false,filter_precip=TRUE,
+#'                                  filter_growseas=false,filter_precip=true,
 #'                                  filter_vars=c("Tair","PPFD","ustar"),
 #'                                  filter_vals_min=c(5,200,0.2),
-#'                                  filter_vals_max=c(NA,NA,NA),NA_as_invalid=TRUE,
+#'                                  filter_vals_max=c(NA,NA,NA),NA_as_invalid=true,
 #'                                  quality_ext="_qc",good_quality=c(0,1),
-#'                                  missing_qc_as_bad=TRUE,GPP="GPP",doy="doy",
+#'                                  missing_qc_as_bad=true,GPP="GPP",doy="doy",
 #'                                  year="year",tGPP=0.5,ws=15,min_int=5,precip="precip",
 #'                                  tprecip=0.1,precip_hours=24,records_per_hour=2)
 #' 
@@ -88,10 +88,10 @@ function WUE_metrics(data,GPP="GPP",NEE="NEE",LE="LE",VPD="VPD",Tair="Tair",
   GPP = (GPP * constants[:umol2mol] * constants[:Cmol]) * constants[:kg2g]  # gC m-2 s-1
   NEE = (NEE * constants[:umol2mol] * constants[:Cmol]) * constants[:kg2g]  # gC m-2 s-1
   
-  WUE     = median(GPP/ET,na_rm=TRUE)
-  WUE_NEE = median(abs(NEE)/ET,na_rm=TRUE)
-  IWUE    = median((GPP*VPD)/ET,na_rm=TRUE)
-  uWUE    = median((GPP*sqrt(VPD))/ET,na_rm=TRUE)
+  WUE     = median(GPP/ET,na_rm=true)
+  WUE_NEE = median(abs(NEE)/ET,na_rm=true)
+  IWUE    = median((GPP*VPD)/ET,na_rm=true)
+  uWUE    = median((GPP*sqrt(VPD))/ET,na_rm=true)
   
   return(c(WUE=WUE,WUE_NEE=WUE_NEE,IWUE=IWUE,uWUE=uWUE))
 end

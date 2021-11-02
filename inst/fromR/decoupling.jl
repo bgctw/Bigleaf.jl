@@ -92,9 +92,9 @@ function decoupling(data,Tair="Tair",pressure="pressure",Ga="Ga_h",Gs="Gs_ms",
     
     Omega = (epsilon + 1) / (epsilon + 1 + Ga/Gs)
     
-else if (approach == "Martin_1989") 
+elseif (approach == "Martin_1989") 
     
-    if (is_null(LAI))
+    if (isnothing(LAI))
       
       stop("LAI is not provided!")
       
