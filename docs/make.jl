@@ -26,9 +26,11 @@ makedocs(;
         "Walkthrough" => "walkthrough.md",
         hide("metorological_variables.md"),
         hide("evapotranspiration.md"),
+        hide("surface_conductance.md"),
         hide("global_radiation.md"),
         hide("unit_conversions.md"),
         hide("bigleaf_constants.md"),
+        hide("filter_data.md"),
         "Index" => "autodocs.md",
         ],
 )

@@ -190,7 +190,7 @@ end
     check_input(data,doy,year,GPP)
     date             = strptime(paste0(year,"-",doy),format="%Y-%j")
     GPP_daily        = aggregate(GPP,by=list(strftime(date)),mean,na_rm=TRUE)[,2]
-    growing_season   = filter_growing_season(GPP_daily,tGPP=tGPP,ws=ws,min_int=min_int)
+    growing_season   = filter_growingseason(GPP_daily,tGPP=tGPP,ws=ws,min_int=min_int)
     growseas_invalid = which(sapply(growing_season,rep,48) == 0)
 end
 
@@ -315,7 +315,7 @@ end
 #'                 
 #' @importFrom stats quantile filter                                 
 #' @export  
-function filter_growing_season(GPPd,tGPP,ws=15,min_int=5)
+function filter_growingseason(GPPd,tGPP,ws=15,min_int=5)
   
   if(sum(is_na(GPPd)) < 0.5*length(GPPd))
     

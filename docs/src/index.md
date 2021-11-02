@@ -28,4 +28,9 @@ Pages = ["global_radiation.md",]
 Pages = ["unit_conversions.md","bigleaf_constants.md",]
 ```
 
+## Filtering data
+```@index
+Pages = ["filter_data.md",]
+```
+
 

@@ -46,8 +46,8 @@ file an [issue](https://github.com/bgctw/Bigleaf.jl/issues) if you need a specif
 
 At the current state we ported
 - Meteorological variables
+- Evapotranspiration
+- Potential radiation
 - Unit conversions
-
-Upcoming:
-- Computation of potential radiation
+- Filtering data
 
