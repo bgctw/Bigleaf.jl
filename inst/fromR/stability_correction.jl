@@ -6,7 +6,7 @@
 #' 
 #' calculates the Monin-Obukhov length.
 #' 
-#' - data      Data_frame or matrix containing all required variables
+#' - data      DataFrame or matrix containing all required variables
 #' - Tair      Air temperature (deg C)
 #' - pressure  Atmospheric pressure (kPa)
 #' - ustar     Friction velocity (m s-1)
@@ -62,7 +62,7 @@ end
 #' calculates "zeta", a parameter characterizing stratification in 
 #'              the lower atmosphere.
 #' 
-#' - data      Data_frame or matrix containing all required variables
+#' - data      DataFrame or matrix containing all required variables
 #' - Tair      Air temperature (degC)
 #' - pressure  Atmospheric pressure (kPa)
 #' - ustar     Friction velocity (m s-1)
@@ -75,16 +75,16 @@ end
 #'                  g - gravitational acceleration (m s-2)
 #' 
 #' # Details
- The stability parameter ``\zeta`` is given by:
+ The stability parameter ``\\zeta`` is given by:
 #' 
-#'            ``\zeta = (zr - d) / L``
+#'            ``\\zeta = (zr - d) / L``
 #'          
 #'          where L is the Monin-Obukhov length (m), calculated from the function
 #'          [`Monin_Obukhov_length`](@ref). The displacement height d can 
 #'          be estimated from the function [`roughness_parameters`](@ref).
 #'          
 #' # Value
- - ``\zeta`` - : stability parameter (-)
+ - ``\\zeta`` - : stability parameter (-)
 #' 
 #' ```@example; output = false
 #' ``` 
@@ -117,17 +117,17 @@ end
 #'
 #' # Details
  The functions give the integrated form of the universal functions. They
-#'          depend on the value of the stability parameter ``\zeta``,
+#'          depend on the value of the stability parameter ``\\zeta``,
 #'          which can be calculated from the function [`stability_parameter`](@ref).
 #'          The integration of the universal functions is:
 #'          
 #'            ``\\psi = -x * zeta`` 
 #'          
-#'          for stable atmospheric conditions (``\zeta`` >= 0), and
+#'          for stable atmospheric conditions (``\\zeta`` >= 0), and
 #'          
 #'            ``\\psi = 2 * log( (1 + y) / 2) ``
 #'          
-#'          for unstable atmospheric conditions (``\zeta`` < 0).
+#'          for unstable atmospheric conditions (``\\zeta`` < 0).
 #'          
 #'          The different formulations differ in their value of x and y.
 #'   

@@ -8,7 +8,7 @@
 #'              by inverting bulk transfer equations for water, energy, and carbon
 #'              fluxes.
 #' 
-#' - data             Data_frame or matrix containing all required input variables
+#' - data             DataFrame or matrix containing all required input variables
 #' - Tair             Air temperature (deg C)
 #' - pressure         Atmospheric pressure (kPa)
 #' - H                Sensible heat flux (W m-2)
@@ -179,7 +179,7 @@ end
 #' Radiometric surface temperature from longwave radiation
 #'              measurements.
 #'              
-#' - data        Data_frame or matrix containing all required input variables            
+#' - data        DataFrame or matrix containing all required input variables            
 #' - LW_up       Longwave upward radiation (W m-2)
 #' - LW_down     Longwave downward radiation (W m-2)
 #' - emissivity  Emissivity of the surface (-)

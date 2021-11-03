@@ -7,7 +7,7 @@
 #' Filters time series of EC data for high-quality values and specified
 #'              meteorological conditions.
 #' 
-#' - data            Data_frame or matrix containing all required input variables in 
+#' - data            DataFrame or matrix containing all required input variables in 
 #'                        half-hourly or hourly resolution. Including year, month, day information
 #' - quality_control Should quality control be applied? Defaults to `true`.
 #' - filter_growseas Should data be filtered for growing season? Defaults to `false`.

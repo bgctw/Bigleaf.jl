@@ -7,7 +7,7 @@
 #' Calculates surface conductance to water vapor from the inverted Penman-Monteith
 #'              equation (by default) or from a simple flux-gradient approach.
 #' 
-#' - data      Data_frame or matrix containing all required input variables
+#' - data      DataFrame or matrix containing all required input variables
 #' - Tair      Air temperature (deg C)
 #' - pressure  Atmospheric pressure (kPa)
 #' - Rn        Net radiation (W m-2)

@@ -30,6 +30,9 @@ export setinvalid_range!, setinvalid_qualityflag!,
     setinvalid_nongrowingseason!, get_growingseason, setinvalid_afterprecip!
 export decoupling, surface_conductance, aerodynamic_conductance
 export compute_Gb, compute_Gb!, add_Gb, Gb_Thom
+export wind_profile
+export Monin_Obukhov_length, Monin_Obukhov_length!, stability_parameter, 
+    stability_parameter!, stability_correction, stability_correction!
 
 include("util.jl")    
 include("bigleaf_constants.jl")
@@ -39,6 +42,8 @@ include("sun_position.jl")
 include("potential_radiation.jl")
 include("evapotranspiration.jl")
 include("filter_data.jl")
-include("boundary_layer_conductance.jl")
+include("stability_correction.jl")
+include("surface_roughness.jl")
+#include("boundary_layer_conductance.jl")
 
 end

@@ -6,7 +6,7 @@
 #' 
 #' The canopy-atmosphere decoupling coefficient 'Omega'. 
 #' 
-#' - data        Data_frame or matrix containing all required input variables
+#' - data        DataFrame or matrix containing all required input variables
 #' - Tair        Air temperature (deg C)
 #' - pressure    Atmospheric pressure (kPa)
 #' - Ga          Aerodynamic conductance to heat/water vapor (m s-1)

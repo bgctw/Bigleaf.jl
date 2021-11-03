@@ -7,7 +7,7 @@
 #' Bulk aerodynamic conductance, including options for the boundary layer conductance
 #'              formulation and stability correction functions.
 #' 
-#' - data              Data_frame or matrix containing all required variables
+#' - data              DataFrame or matrix containing all required variables
 #' - Tair              Air temperature (deg C)
 #' - pressure          Atmospheric pressure (kPa)
 #' - wind              Wind speed (m s-1)

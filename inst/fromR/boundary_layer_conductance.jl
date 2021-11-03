@@ -88,7 +88,7 @@ end
 #' A formulation for the canopy boundary layer conductance 
 #'              for heat transfer according to Choudhury & Monteith 1988.
 #'              
-#' - data             Data_frame or matrix containing all required variables
+#' - data             DataFrame or matrix containing all required variables
 #' - Tair             Air temperature (degC)
 #' - pressure         Atmospheric pressure (kPa)
 #' - wind             Wind speed at sensor height (m s-1)
@@ -227,7 +227,7 @@ end
 #' A physically based formulation for the canopy boundary layer conductance
 #'              to heat transfer according to Su et al. 2001. 
 #'
-#' - data      Data_frame or matrix containing all required variables
+#' - data      DataFrame or matrix containing all required variables
 #' - Tair      Air temperature (degC)
 #' - pressure  Atmospheric pressure (kPa)
 #' - ustar     Friction velocity (m s-1)

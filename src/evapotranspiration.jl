@@ -13,7 +13,7 @@ the Penman-Monteith equation with a prescribed surface conductance.
 - `Rn`:        Net radiation (W m-2)
 - `VPD`:       Vapor pressure deficit (kPa)
 - `Ga`:        Aerodynamic conductance to heat/water vapor (m s-1)
-- `df`:      Data_frame or matrix containing all required variables; optional
+- `df`:      DataFrame or matrix containing all required variables; optional
 - `approach`:  Approach used. 
   Either `Val(:PriestleyTaylor)` (default), or `Val(:PenmanMonteith)`.
 optional:

@@ -96,7 +96,7 @@ end
 #' Calculates the degree of the energy balance non-closure for the entire time span
 #'              based on the ratio of two sums (energy balance ratio), and ordinary least squares (OLS).
 #' 
-#' - data  Data_frame or matrix containing all required variables.
+#' - data  DataFrame or matrix containing all required variables.
 #' - Rn    Net radiation (W m-2)
 #' - G     Ground heat flux (W m-2); optional
 #' - S     Sum of all storage fluxes (W m-2); optional
@@ -191,7 +191,7 @@ end
 #'              that the surface would receive if it had the same temperature than
 #'              the air.
 #'              
-#' - data       Data_frame or matrix containing all required variables
+#' - data       DataFrame or matrix containing all required variables
 #' - Rn         Net radiation (W m-2)
 #' - Tair       Air temperature (degC)
 #' - Tsurf      Surface temperature (degC)

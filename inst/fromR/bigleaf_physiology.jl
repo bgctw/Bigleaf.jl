@@ -480,7 +480,7 @@ end
 #' Estimation of the intrinsic WUE metric "g1" (stomatal slope) 
 #'              from nonlinear regression.
 #' 
-#' - data       Data_frame or matrix containing all required columns
+#' - data       DataFrame or matrix containing all required columns
 #' - Tair       Air (or surface) temperature (deg C)
 #' - pressure   Atmospheric pressure (kPa)
 #' - GPP        Gross primary productivity (umol CO2 m-2 s-1)
@@ -751,7 +751,7 @@ end
 #' calculates GPP_ref at a reference (usually saturating) PPFD and 
 #'              ecosystem quantum yield (alpha) using a rectangular light response curve.
 #' 
-#' - data      Data_frame or matrix containing all required columns
+#' - data      DataFrame or matrix containing all required columns
 #' - NEE       Net ecosystem exchange (umol CO2 m-2 s-1)
 #' - Reco      Ecosystem respiration (umol CO2 m-2 s-1)
 #' - PPFD      Photosynthetic photon flux density (umol m-2 s-1)
@@ -861,7 +861,7 @@ end
 #' 
 #' Sensitivity of surface conductance to vapor pressure deficit.
 #' 
-#' - data  Data_frame or matrix containing all required columns
+#' - data  DataFrame or matrix containing all required columns
 #' - Gs    Surface conductance to water vapor (mol m-2 s-1)
 #' - VPD   Vapor pressure deficit (kPa)
 #' - ...   Additional arguments to `\link[stats]{nls`}

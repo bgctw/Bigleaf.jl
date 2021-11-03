@@ -7,7 +7,7 @@
 #' Potential evapotranspiration according to Priestley & Taylor 1972 or
 #'              the Penman-Monteith equation with a prescribed surface conductance.
 #' 
-#' - data      Data_frame or matrix containing all required variables; optional
+#' - data      DataFrame or matrix containing all required variables; optional
 #' - Tair      Air temperature (degC)
 #' - pressure  Atmospheric pressure (kPa)
 #' - Rn        Net radiation (W m-2)
@@ -154,7 +154,7 @@ end
 #'              equation with a prescribed surface conductance.
 #'              This function is deprecated. Use potential_ET(...,approach=Val(:PenmanMonteith)) instead.
 #' 
-#' - data      Data_frame or matrix containing all required variables; optional
+#' - data      DataFrame or matrix containing all required variables; optional
 #' - Gs_ref    Reference surface conductance (m s-1); defaults to 0.0143 m s-1.
 #' - Tair      Air temperature (degC)
 #' - pressure  Atmospheric pressure (kPa)
@@ -192,7 +192,7 @@ end
 #' 
 #' Evapotranspiration (ET) split up into imposed ET and equilibrium ET.
 #' 
-#' - data      Data_frame or matrix containing all required input variables
+#' - data      DataFrame or matrix containing all required input variables
 #' - Tair      Air temperature (deg C)
 #' - pressure  Atmospheric pressure (kPa)
 #' - VPD       Air vapor pressure deficit (kPa)

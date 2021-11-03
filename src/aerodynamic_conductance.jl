@@ -5,7 +5,7 @@ Bulk aerodynamic conductance, including options for the boundary layer conductan
 formulation and stability correction functions.
 
 # Arguments
-- `data`              : Data_frame or matrix containing all required variables
+- `data`              : DataFrame or matrix containing all required variables
 - `Tair`              : Air temperature (deg C)
 - `pressure`          : Atmospheric pressure (kPa)
 - `wind`              : Wind speed (m s-1)
@@ -203,41 +203,41 @@ function aerodynamic_conductance(df;
   kB_h=nothing,Sc=nothing,Sc_name=nothing,constants=bigleaf_constants()
   )
 
-  ## calculate canopy boundary layer conductance (Gb)
-  if Rb_model in SA[Val(:Thom_1972),Val(:Choudhury_1988),Val(:Su_2001)]
-    if Rb_model == Val(:Thom_1972)
-      Gb_mod = Gb_Thom(ustar=ustar,Sc=Sc,Sc_name=Sc_name,constants=constants)
-    elseif Rb_model == Val(:Choudhury_1988)
-      Gb_mod = Gb_Choudhury(df,Tair=Tair,pressure=pressure,wind=wind,ustar=ustar,
-                             H=H,leafwidth=Dl,LAI=LAI,zh=zh,zr=zr,d=d,z0m=z0m,
-                             stab_formulation=stab_formulation,Sc=Sc,Sc_name=Sc_name,
-                             constants=constants)
-    elseif Rb_model == Val(:Su_2001)
-      Gb_mod = Gb_Su(data=df,Tair=Tair,pressure=pressure,ustar=ustar,wind=wind,
-                      H=H,zh=zh,zr=zr,d=d,z0m=z0m,Dl=Dl,N=N,fc=fc,LAI=LAI,Cd=Cd,hs=hs,
-                      stab_formulation=stab_formulation,Sc=Sc,Sc_name=Sc_name,
-                      constants=constants)  
-    end
-    kB_h = Gb_mod.kB_h
-    Rb_h = Gb_mod.Rb_h
-    Gb_h = Gb_mod.Gb_h
-    # TODO
-    # Gb_x = DataFrame(Gb_mod[,grep(names(Gb_mod),pattern="Gb_")[-1]])
-    # colnames(Gb_x) = grep(colnames(Gb_mod),pattern="Gb_",value=true)[-1]
-  elseif Rb_model == Val(:constant_kB1)
-    isnothing(kB_h) && error(
-      "value of kB-1 has to be specified if Rb_model is set to 'constant_kB-1'!")
-    Rb_h = kB_h/(constants[:k] * ustar)
-    Gb_h = 1/Rb_h
-    if (!isnothing(Sc) || !isnothing(Sc_name))
-      length(Sc) != length(Sc_name) && error(
-        "arguments 'Sc' and 'Sc_name' must have the same length")
-      !is_numeric(Sc) && error("argument 'Sc' must be numeric")
-      Sc   = SA[constants[:Sc_CO2], Sc]
-      Gb_x = DataFrame(lapply(Sc,function(x) Gb_h / (x/constants[:Pr])^0.67))
-      colnames(Gb_x) = paste0("Gb_",c("CO2",Sc_name))
-    end
-  end 
+  # ## calculate canopy boundary layer conductance (Gb)
+  # if Rb_model in SA[Val(:Thom_1972),Val(:Choudhury_1988),Val(:Su_2001)]
+  #   if Rb_model == Val(:Thom_1972)
+  #     Gb_mod = Gb_Thom(ustar=ustar,Sc=Sc,Sc_name=Sc_name,constants=constants)
+  #   elseif Rb_model == Val(:Choudhury_1988)
+  #     Gb_mod = Gb_Choudhury(df,Tair=Tair,pressure=pressure,wind=wind,ustar=ustar,
+  #                            H=H,leafwidth=Dl,LAI=LAI,zh=zh,zr=zr,d=d,z0m=z0m,
+  #                            stab_formulation=stab_formulation,Sc=Sc,Sc_name=Sc_name,
+  #                            constants=constants)
+  #   elseif Rb_model == Val(:Su_2001)
+  #     Gb_mod = Gb_Su(data=df,Tair=Tair,pressure=pressure,ustar=ustar,wind=wind,
+  #                     H=H,zh=zh,zr=zr,d=d,z0m=z0m,Dl=Dl,N=N,fc=fc,LAI=LAI,Cd=Cd,hs=hs,
+  #                     stab_formulation=stab_formulation,Sc=Sc,Sc_name=Sc_name,
+  #                     constants=constants)  
+  #   end
+  #   kB_h = Gb_mod.kB_h
+  #   Rb_h = Gb_mod.Rb_h
+  #   Gb_h = Gb_mod.Gb_h
+  #   # TODO
+  #   # Gb_x = DataFrame(Gb_mod[,grep(names(Gb_mod),pattern="Gb_")[-1]])
+  #   # colnames(Gb_x) = grep(colnames(Gb_mod),pattern="Gb_",value=true)[-1]
+  # elseif Rb_model == Val(:constant_kB1)
+  #   isnothing(kB_h) && error(
+  #     "value of kB-1 has to be specified if Rb_model is set to 'constant_kB-1'!")
+  #   Rb_h = kB_h/(constants[:k] * ustar)
+  #   Gb_h = 1/Rb_h
+  #   if (!isnothing(Sc) || !isnothing(Sc_name))
+  #     length(Sc) != length(Sc_name) && error(
+  #       "arguments 'Sc' and 'Sc_name' must have the same length")
+  #     !is_numeric(Sc) && error("argument 'Sc' must be numeric")
+  #     Sc   = SA[constants[:Sc_CO2], Sc]
+  #     Gb_x = DataFrame(lapply(Sc,function(x) Gb_h / (x/constants[:Pr])^0.67))
+  #     colnames(Gb_x) = paste0("Gb_",c("CO2",Sc_name))
+  #   end
+  # end 
   
 #   ## calculate aerodynamic conductance for momentum (Ga_m)
 #   if (wind_profile)

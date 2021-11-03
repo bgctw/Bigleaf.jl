@@ -58,7 +58,7 @@
 #'                  Only needed if `method = "canopy_height&LAI"`.
 #' - hs        roughness length of the soil surface (m). Only needed if `method = "canopy_height&LAI"`
 #'                  The following arguments are only needed if `method = Val(:wind_profile)`!
-#' - data      Data_frame or matrix containing all required variables
+#' - data      DataFrame or matrix containing all required variables
 #' - Tair      Air temperature (deg C)
 #' - pressure  Atmospheric pressure (kPa)
 #' - wind      Wind speed at height zr (m s-1)
@@ -209,28 +209,26 @@ Wind speed at a given height above the canopy estimated from single-level
 measurements of wind speed.
 
 # Arguments
-- `data`      : Data_frame or matrix containing all required variables
-- `z`         : Heights above ground for which wind speed is calculated.
-                  Needs to be of same length as `data` or of length 1
+- `z`         : Height above ground for which wind speed is calculated.
+- `ustar`     : Friction velocity (m s-1)
+- `d`         : Zero-plane displacement height (-)
+- `z0m`       : Roughness length (m), optional; 
+               TODO check in R: only used if `stab_correction = false` (default=0.1) 
+alternatively, in the DataFrame variant d and z0m can be specified as faction of zh
+- `zh`        : Canopy height (m)
+- `frac_d`    : Fraction of displacement height on canopy height (-)
+- `frac_z0m`  : Fraction of roughness length on canopy height (-)
+required for stability correction
 - `Tair`      : Air temperature (deg C)
 - `pressure`  : Atmospheric pressure (kPa)                                                                                  
-- `ustar`     : Friction velocity (m s-1)
 - `H`         : Sensible heat flux (W m-2)
+required for z0m estimation
 - `wind`      : Wind speed at height zr (m s-1); only used if `stab_correction = true`
 - `zr`        : Instrument (reference) height (m)
-- `zh`        : Canopy height (m)
-- `d`         : Zero-plane displacement height (-)
-- `frac_d`    : Fraction of displacement height on canopy height (-);
-            :      only used if `d` is not available
-- `z0m`       : Roughness length (m), optional; only used if `stab_correction = false` (default=0.1) 
-- `frac_z0m`  : Fraction of roughness length on canopy height (-), optional; only used if `z0m` is not provided.
-                 Default is 0.1.
-- `estimate_z0m` : Should `z0m` be estimated from the logarithmic wind profile? If `true` (the default),
-                    arguments `z0m` and `frac_z0m` are ignored.
-                    See [`roughness_parameters`](@ref) for details. 
-- `stab_correction`: Should stability correction be applied? Defaults to `true`
-- `stab_formulation`: Stability correction function used (If `stab_correction = true`).
-                        Either `Val(:Dyer_1970)` or `Val(:Businger_1971)`.
+optional
+- `stab_formulation = Val(:Dyer_1970)`: Stability correction function used 
+                        Either `Val(:Dyer_1970)`, or `Val(:Businger_1971)` or
+                        `Val(:no_stability_correction)`.
 - `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with entries 
   - `k` - von-Karman constant (-) 
   - `Kelvin` - conversion degree Celsius to Kelvin 
@@ -282,7 +280,20 @@ A vector of wind speed at heights `z`.
 #   ws[,i] = wind_profile(df,z=heights[i],zr=40,zh=25,d=16)
 # }
 ``` 
-"""                                                                                                                       
+"""  
+function wind_profile(::Val{:no_stability_correction}, z, ustar, d, z0m;
+  constants=bigleaf_constants())
+  wind_heights = max(0,(ustar / constants[:k]) * (log(max(0,(z - d)) / z0m)))
+end
+function wind_profile(stab_formulation, z, ustar, Tair,pressure,H, d, z0m;
+  constants=bigleaf_constants())
+  # in order to comput psi_m need Monin_Obukhov_length with additional vars
+  MOL = Monin_Obukhov_length(Tair,pressure,ustar,H; constants)
+  zeta  = stability_parameter(z,d,MOL)
+  psi_m = stability_correction(zeta; stab_formulation).psi_m
+  wind_heights = max(0,(ustar / constants[:k]) * (log(max(0,(z - d)) / z0m) - psi_m))
+end
+
 function wind_profile(df, z;
    zh=nothing,
    d=nothing, frac_d=0.7,
@@ -305,36 +316,20 @@ function wind_profile(df, z;
     @warn("function is only valid for heights above d + z0m! Wind speed for heights " * 
     "below d + z0m will return 0!") 
   end
-  wind_profile_(df, stab_formulation, z, d, z0m; constants)
-end
-
-function wind_profile(::Val{:no_stability_correction}, z, ustar, d, z0m;
-  constants=bigleaf_constants())
-  wind_heights = max(0,(ustar / constants[:k]) * (log(max(0,(z - d)) / z0m)))
-end
-function wind_profile(stab_formulation, ustar, Tair,pressure,H, d, z0m;
-  constants=bigleaf_constants())
-  zeta  = stability_parameter(Tair,pressure,ustar,H; zr=z,d,constants)
-  psi_m = stability_correction(stab_formulation, zeta).psi_m
-  wind_heights = max(0,(ustar / constants[:k]) * (log(max(0,(z - d)) / z0m) - psi_m))
-end
-
-function wind_profile(df::AbstractDataFrame, stab_formulation::Val{:no_stability_correction}, 
-  z, d, z0m;  constants=bigleaf_constants())
-  inputs = SA[:ustar]
-  fspeed(args...) = wind_profile(stab_formulation, z, args..., d, z0m; constants)
-  select(df, inputs => ByRows(fspeed) => :windz).windz
-end
-
-function wind_profile(df::AbstractDataFrame, stab_formulation, z, d, z0m;
-  constants=bigleaf_constants())
-  inputs = SA[:ustar, :Tair, :pressure, :H]
-  fspeed(args...) = wind_profile(stab_formulation, z, args..., d, z0m; constants)
-  select(df, inputs => ByRows(fspeed) => :windz).windz
+  wind_profile_(df, z, d, z0m; stab_formulation, constants)
 end
 
 
 
+function wind_profile(df::AbstractDataFrame, z, d, z0m; stab_formulation = Val(:Dyer_1970),
+    constants = bigleaf_constants())
+    inputs = get_stab_inputs(stab_formulation)
+  # do not use ByRow because z0m may be a vector
+  fspeed(args...) = wind_profile.(stab_formulation, z, args..., d, z0m; constants)
+    select(df, inputs => fspeed => :windz).windz
+end
+get_stab_inputs(::Val{:no_stability_correction}) = SA[:ustar]
+get_stab_inputs(::Union{Val{:Dyer_1970},Val{:Businger_1971}}) = SA[:ustar, :Tair, :pressure, :H]
 
 
 # function estimate_z0m(

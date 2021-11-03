@@ -62,7 +62,7 @@ end
 #'                  Only needed if `method = "canopy_height&LAI"`.
 #' - hs        roughness length of the soil surface (m). Only needed if `method = "canopy_height&LAI"`
 #'                  The following arguments are only needed if `method = Val(:wind_profile)`!
-#' - data      Data_frame or matrix containing all required variables
+#' - data      DataFrame or matrix containing all required variables
 #' - Tair      Air temperature (deg C)
 #' - pressure  Atmospheric pressure (kPa)
 #' - wind      Wind speed at height zr (m s-1)
@@ -211,7 +211,7 @@ end
 #' Wind speed at a given height above the canopy estimated from single-level
 #'              measurements of wind speed.
 #'          
-#' - data      Data_frame or matrix containing all required variables
+#' - data      DataFrame or matrix containing all required variables
 #' - z         Heights above ground for which wind speed is calculated.
 #'                  Needs to be of same length as `data` or of length 1
 #' - Tair      Air temperature (deg C)

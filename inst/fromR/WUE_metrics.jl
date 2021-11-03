@@ -6,7 +6,7 @@
 #' 
 #' Calculation of various water use efficiency (WUE) metrics.
 #' 
-#' - data      Data_frame or matrix containing all required variables
+#' - data      DataFrame or matrix containing all required variables
 #' - GPP       Gross primary productivity (umol CO2 m-2 s-1)
 #' - NEE       Net ecosystem exchange (umol CO2 m-2 s-1)
 #' - LE        Latent heat flux (W m-2)
