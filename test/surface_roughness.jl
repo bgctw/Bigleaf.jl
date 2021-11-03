@@ -3,7 +3,7 @@
     z = 30
     d=0.7*tha_heights.zh
     z0m=2.65
-    u30 = wind_profile(Val(:no_stability_correction), z, ustar, d, z0m)
+    u30 = wind_profile(z, ustar, d, z0m)
     @test ≈(u30, 1.93, rtol = 1/100 )
     #
     u30c = wind_profile(Val(:Dyer_1970), z, ustar, Tair,pressure, H, d, z0m)
@@ -17,4 +17,7 @@
     @test windzc[1] == u30c
     #plot(windz)
     #plot!(windz2)
+    psi_m = stability_correction!(copy(df, copycols=false), z, d).psi_m
+    windzc2 = wind_profile(df, z, d, z0m, psi_m)    
+    @test windzc2 == windzc
 end

@@ -281,17 +281,17 @@ A vector of wind speed at heights `z`.
 # }
 ``` 
 """  
-function wind_profile(::Val{:no_stability_correction}, z, ustar, d, z0m;
-  constants=bigleaf_constants())
-  wind_heights = max(0,(ustar / constants[:k]) * (log(max(0,(z - d)) / z0m)))
+function wind_profile(z, ustar, d, z0m, psi_m = 0.0; constants=bigleaf_constants())
+  wind_heights = max(0,(ustar / constants[:k]) * (log(max(0,(z - d)) / z0m) - psi_m))
 end
+
 function wind_profile(stab_formulation, z, ustar, Tair,pressure,H, d, z0m;
   constants=bigleaf_constants())
   # in order to comput psi_m need Monin_Obukhov_length with additional vars
   MOL = Monin_Obukhov_length(Tair,pressure,ustar,H; constants)
   zeta  = stability_parameter(z,d,MOL)
   psi_m = stability_correction(zeta; stab_formulation).psi_m
-  wind_heights = max(0,(ustar / constants[:k]) * (log(max(0,(z - d)) / z0m) - psi_m))
+  wind_profile(z, ustar, d, z0m, psi_m)
 end
 
 function wind_profile(df, z;
@@ -320,18 +320,17 @@ function wind_profile(df, z;
 end
 
 
-
 function wind_profile(df::AbstractDataFrame, z, d, z0m; stab_formulation = Val(:Dyer_1970),
-    constants = bigleaf_constants())
-    inputs = get_stab_inputs(stab_formulation)
-  # do not use ByRow because z0m may be a vector
-  fspeed(args...) = wind_profile.(stab_formulation, z, args..., d, z0m; constants)
-    select(df, inputs => fspeed => :windz).windz
+  constants = bigleaf_constants())
+  psi_m = stability_correction!(
+    copy(df, copycols=false), z, d; stab_formulation, constants).psi_m
+  wind_profile.(df, z, d, z0m, psi_m; constants)
 end
-get_stab_inputs(::Val{:no_stability_correction}) = SA[:ustar]
-get_stab_inputs(::Union{Val{:Dyer_1970},Val{:Businger_1971}}) = SA[:ustar, :Tair, :pressure, :H]
 
-
+function wind_profile(df::AbstractDataFrame, z, d, z0m, psi_m::AbstractVector,
+  constants = bigleaf_constants())
+  wind_profile.(z, df.ustar, d, z0m, psi_m; constants)
+end
 # function estimate_z0m(
 #   Tair,pressure,wind,ustar,H
 #   zh,zr,d)

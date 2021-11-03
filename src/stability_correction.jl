@@ -106,16 +106,23 @@ function stability_parameter(df::AbstractDataFrame; zr,d,
 end
 
 """
+    stability_correction(zeta; 
+      stab_formulation=Val(:Dyer_1970))
+    stability_correction(Tair,pressure,ustar,H, z,d; constants,
+      stab_formulation=Val(:Dyer_1970))
+    
 Integrated Stability Correction Functions for Heat and Momentum
-
-dimensionless stability functions needed to correct deviations
-from the exponential wind profile under non-neutral conditions.
 
 # Arguments
 - `zeta`             : Stability parameter zeta (-)
-- `stab_formulation` : Formulation for the stability function. Either `Val(:Dyer_1970)`, 
-                       or `Val(:Businger_1971)`
+- `stab_formulation` : Formulation for the stability function. Either 
+  `Val(:Dyer_1970)`, or `Val(:Businger_1971)` or `Val(:no_stability_correction)`
+In the alternative computes `zeta` by [`stability_parameter`](@ref) and
+[`Monin_Obukhov_length`](@ref) and requires respective arguments.
+
 # Details
+These dimensionless values are needed to correct deviations
+from the exponential wind profile under non-neutral conditions.
 The functions give the integrated form of the universal functions. They
 depend on the value of the stability parameter ``\\zeta``,
 which can be calculated from the function [`stability_parameter`](@ref).
@@ -160,6 +167,8 @@ true
 """            
 function stability_correction(zeta; stab_formulation=Val(:Dyer_1970))
   # integration of universal functions (after Paulson_1970 and Foken 2008)
+  stab_formulation isa Val{:no_stability_correction} && return(
+    (psi_h = zero(zeta), psi_m = zero(zeta)))
   ismissing(zeta) && return((psi_h = missing, psi_m = missing))
   is_stable = zeta >= 0 
   if is_stable
@@ -190,4 +199,17 @@ function get_stability_coefs_unstable(::Val{:Dyer_1970}, zeta)
   (;y_h, y_m)
 end
 
+function stability_correction(Tair,pressure,ustar,H, z,d; 
+  stab_formulation=Val(:Dyer_1970), constants = bigleaf_constants())
+  stab_formulation isa Val{:no_stability_correction} && return(
+    (psi_h = zero(z), psi_m = zero(z)))
+  MOL = Monin_Obukhov_length(Tair,pressure,ustar,H; constants)
+  zeta  = stability_parameter(z,d,MOL)
+  stability_correction(zeta; stab_formulation)
+end
 
+function stability_correction!(df, z, d; 
+  stab_formulation=Val(:Dyer_1970), constants = bigleaf_constants())
+  ft(args...) = stability_correction(args..., z, d; stab_formulation, constants)
+  transform!(df, SA[:Tair,:pressure,:ustar,:H] => ByRow(ft) => AsTable)
+end

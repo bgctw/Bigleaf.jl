@@ -36,4 +36,26 @@ end
     resm = stability_correction(missing)
     @test keys(resm) == (:psi_h, :psi_m)
     @test all(ismissing.(values(resm)))
+    #
+    resm = stability_correction(first(zeta); 
+        stab_formulation = Val(:no_stability_correction))
+    @test resm == (psi_h = 0.0, psi_m = 0.0)
+end
+
+@testset "stability_correction from raw" begin
+    datetime, ustar, Tair, pressure, H = values(tha48[24,1:5])
+    z=40.0;d=15.0
+    resm = stability_correction(Tair,pressure,ustar,H, z,d)
+    @test resm.psi_h ≈ 0.940 rtol=1/1000
+    @test resm.psi_m ≈ 0.902 rtol=1/1000
+    #
+    resm0 = stability_correction(Tair,pressure,ustar,H, z,d; 
+        stab_formulation = Val(:no_stability_correction))
+    @test resm0 == (psi_h = 0.0, psi_m = 0.0)
+    #
+    df = copy(tha48)
+    df.ustar[3] = missing
+    stability_correction!(df,z,d)
+    @test all(ismissing.((df.psi_h[3], df.psi_m[3])))
+    @test all(isapprox.((df.psi_h[24], df.psi_m[24]),values(resm)))
 end
