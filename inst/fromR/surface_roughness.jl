@@ -49,18 +49,18 @@ end
 #' A simple approximation of the two roughness parameters displacement height (d)
 #'              and roughness length for momentum (z0m).
 #'              
-#' - method    Method to use, one of `"canopy_height","canopy_height_LAI",Val(:wind_profile)` 
-#'                  NOTE: if `method = "canopy_height"`, only the following three arguments
-#'                  are used. If `method = "canopy_height_LAI"`, only `zh, LAI, cd`, 
+#' - method    Method to use, one of `Val(:canopy_height),Val(:canopy_height_LAI),Val(:wind_profile)` 
+#'                  NOTE: if `method = Val(:canopy_height)`, only the following three arguments
+#'                  are used. If `method = Val(:canopy_height_LAI)`, only `zh, LAI, cd`, 
 #'                  and `hs` are required.     
 #' - zh        Vegetation height (m)          
 #' - frac_d    Fraction of displacement height on canopy height (-)
-#' - frac_z0m  Fraction of roughness length on canopy height (-)
+#' - frac_{z0m}  Fraction of roughness length on canopy height (-)
 #' - LAI       Leaf area index (-) 
 #' - zr        Instrument (reference) height (m)
 #' - cd        Mean drag coefficient for individual leaves. Defaults to 0.2. 
-#'                  Only needed if `method = "canopy_height_LAI"`.
-#' - hs        roughness length of the soil surface (m). Only needed if `method = "canopy_height_LAI"`
+#'                  Only needed if `method = Val(:canopy_height_LAI)`.
+#' - hs        roughness length of the soil surface (m). Only needed if `method = Val(:canopy_height_LAI)`
 #'                  The following arguments are only needed if `method = Val(:wind_profile)`!
 #' - data      DataFrame or matrix containing all required variables
 #' - Tair      Air temperature (deg C)
@@ -83,17 +83,17 @@ end
 #' # Details
  The two main roughness parameters, the displacement height (d)
 #'          and the roughness length for momentum (z0m) can be estimated from simple
-#'          empirical relationships with canopy height (zh). If `method = "canopy_height"`,
+#'          empirical relationships with canopy height (zh). If `method = Val(:canopy_height)`,
 #'          the following formulas are used:  
 #'          
 #'            ``d = frac_d * zh``
 #'          
-#'            ``z0m = frac_z0m * zh``
+#'            ``z0m = frac_{z0m} * zh``
 #'          
-#'          where frac_d defaults to 0.7 and frac_z0m to 0.1.
+#'          where frac_d defaults to 0.7 and frac_{z0m} to 0.1.
 #'          
 #'          Alternatively, d and z0m can be estimated from both canopy height and LAI
-#'          (If `method = "canopy_height_LAI"`).
+#'          (If `method = Val(:canopy_height_LAI)`).
 #'          Based on data from Shaw & Pereira 1982, Choudhury & Monteith 1988 proposed 
 #'          the following semi-empirical relations:
 #'          
@@ -132,8 +132,8 @@ end
 #' ```@example; output = false
 #' ``` 
 #' # estimate d and z0m from canopy height for a dense (LAI=5) and open (LAI=2) canopy
-#' roughness_parameters(method="canopy_height_LAI",zh=25,LAI=5)
-#' roughness_parameters(method="canopy_height_LAI",zh=25,LAI=2)   
+#' roughness_parameters(method=Val(:canopy_height_LAI),zh=25,LAI=5)
+#' roughness_parameters(method=Val(:canopy_height_LAI),zh=25,LAI=2)   
 #'    
 #' # fix d to 0.7*zh and estimate z0m from the wind profile
 #' df = DataFrame(Tair=c(25,25,25),pressure=100,wind=c(3,4,5),ustar=c(0.5,0.6,0.65),H=200)
@@ -144,8 +144,8 @@ end
 #' 
 #' @importFrom stats median sd complete_cases 
 #' @export                                  
-function roughness_parameters(method=c("canopy_height","canopy_height_LAI",Val(:wind_profile)),zh,
-                                 frac_d=0.7,frac_z0m=0.1,LAI,zr,cd=0.2,hs=0.01,data,Tair="Tair",pressure="pressure",
+function roughness_parameters(method=c(Val(:canopy_height),Val(:canopy_height_LAI),Val(:wind_profile)),zh,
+                                 frac_d=0.7,frac_{z0m}=0.1,LAI,zr,cd=0.2,hs=0.01,data,Tair="Tair",pressure="pressure",
                                  wind="wind",ustar="ustar",H="H",d=nothing,z0m=nothing,
                                  stab_roughness=true,stab_formulation=c(Val(:Dyer_1970),Val(:Businger_1971)),
                                  constants=bigleaf_constants())
@@ -153,13 +153,13 @@ function roughness_parameters(method=c("canopy_height","canopy_height_LAI",Val(:
   method           = match_arg(method)
   stab_formulation = match_arg(stab_formulation)
   
-  if (method == "canopy_height")
+  if (method == Val(:canopy_height))
     
     d      = frac_d*zh
-    z0m    = frac_z0m*zh
+    z0m    = frac_{z0m}*zh
     z0m_se = missing
     
-elseif (method == "canopy_height_LAI")
+elseif (method == Val(:canopy_height_LAI))
     
     X = cd * LAI
     d = 1.1 * zh * log(1 + X^(1/4))
@@ -225,10 +225,10 @@ end
 #' - frac_d    Fraction of displacement height on canopy height (-);
 #'                  only used if `d` is not available
 #' - z0m       Roughness length (m), optional; only used if `stab_correction = false` (default=0.1) 
-#' - frac_z0m  Fraction of roughness length on canopy height (-), optional; only used if `z0m` is not provided.
+#' - frac_{z0m}  Fraction of roughness length on canopy height (-), optional; only used if `z0m` is not provided.
 #'                  Default is 0.1.
 #' - estimate_z0m Should `z0m` be estimated from the logarithmic wind profile? If `true` (the default),
-#'                     arguments `z0m` and `frac_z0m` are ignored.
+#'                     arguments `z0m` and `frac_{z0m}` are ignored.
 #'                     See [`roughness_parameters`](@ref) for details. 
 #' - stab_correction Should stability correction be applied? Defaults to `true`
 #' - stab_formulation Stability correction function used (If `stab_correction = true`).
@@ -282,7 +282,7 @@ end
 #' 
 #' @export                                                                                                                          
 function wind_profile(data,z,Tair="Tair",pressure="pressure",ustar="ustar",H="H",wind="wind",
-                         zr,zh,d=nothing,frac_d=0.7,z0m=nothing,frac_z0m=nothing,estimate_z0m=true,
+                         zr,zh,d=nothing,frac_d=0.7,z0m=nothing,frac_{z0m}=nothing,estimate_z0m=true,
                          stab_correction=true,stab_formulation=c(Val(:Dyer_1970),Val(:Businger_1971)),
                          constants=bigleaf_constants())
   
@@ -299,17 +299,17 @@ end
 end
   
   if (isnothing(z0m) & !estimate_z0m)
-    if (isnothing(frac_z0m))
-      stop("Either 'z0m' or 'frac_z0m' must be specified if 'estimate_z0m' = false")
+    if (isnothing(frac_{z0m}))
+      stop("Either 'z0m' or 'frac_{z0m}' must be specified if 'estimate_z0m' = false")
 end
-    z0m = frac_z0m * zh
+    z0m = frac_{z0m} * zh
 end
   
   
   if (estimate_z0m)
     
-    if (!isnothing(z0m) | !isnothing(frac_z0m))
-      cat("Note that arguments 'z0m' and 'frac_z0m' are ignored if 'estimate_z0m' = true. z0m is
+    if (!isnothing(z0m) | !isnothing(frac_{z0m}))
+      cat("Note that arguments 'z0m' and 'frac_{z0m}' are ignored if 'estimate_z0m' = true. z0m is
            calculated from the logarithmic wind_profile equation.",fill=true)
 end
     

@@ -267,7 +267,7 @@ function Gb_Choudhury(leafwidth,LAI,zh,zr,d;
   #   estimate_z0m = false
   # end
 #   wind_zh = wind_profile(data=df,z=zh,Tair=Tair,pressure=pressure,ustar=ustar,H=H,
-#                           zr=zr,estimate_z0m=estimate_z0m,zh=zh,d=d,z0m=z0m,frac_z0m=nothing,
+#                           zr=zr,estimate_z0m=estimate_z0m,zh=zh,d=d,z0m=z0m,frac_{z0m}=nothing,
 #                           stab_correction=true,stab_formulation=stab_formulation)
   
 #   ## avoid zero windspeed
@@ -422,7 +422,7 @@ function Gb_Su(df,zh,zr,d;
 # end
   
 #   wind_zh = wind_profile(data=df,z=zh,Tair=Tair,pressure=pressure,ustar=ustar,H=H,
-#                           zr=zr,estimate_z0m=estimate_z0m,zh=zh,d=d,z0m=z0m,frac_z0m=nothing,
+#                           zr=zr,estimate_z0m=estimate_z0m,zh=zh,d=d,z0m=z0m,frac_{z0m}=nothing,
 #                           stab_correction=true,stab_formulation=stab_formulation)
   
 #   v   = kinematic_viscosity(Tair,pressure,constants)

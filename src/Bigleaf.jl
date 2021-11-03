@@ -33,7 +33,7 @@ export compute_Gb, compute_Gb!, add_Gb, Gb_Thom
 export wind_profile
 export Monin_Obukhov_length, Monin_Obukhov_length!, stability_parameter, 
     stability_parameter!, stability_correction, stability_correction!,
-    roughness_parameters
+    roughness_parameters, Reynolds_Number
 
 include("util.jl")    
 include("bigleaf_constants.jl")

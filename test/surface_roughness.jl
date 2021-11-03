@@ -1,3 +1,10 @@
+@testset "" begin
+    Tair,pressure,ustar,z0m = 25,100,0.5,0.5
+    R = Reynolds_Number(Tair,pressure,ustar,z0m)                             
+    @test ≈(R, 15870, rtol=1e-3) 
+end
+
+
 @testset "roughness_parameters" begin
     zh = tha_heights.zh
     zr = tha_heights.zr
@@ -21,6 +28,14 @@
     #@test all(isapproxm.(values(rp), (18.55, 1.879, 0.3561), rtol=1e-3))
     #from R:
     @test all(isapproxm.(values(rp), (18.55, 1.879402, 0.356108), rtol=1e-3))
+    #
+    # no stability correction
+    rp0 = roughness_parameters(Val(:wind_profile), df, zh, zr; psi_m = 0.0)
+    @test keys(rp0) == keys_exp
+    # same magnitude as with stability correction
+    @test all(isapproxm.(values(rp0), values(rp), rtol=0.5))
+    #
+    # estimate psi
     rp_psiauto = roughness_parameters(Val(:wind_profile), df, zh, zr)
     @test propertynames(df) == propertynames(tha48) # not changed
     @test rp_psiauto == rp

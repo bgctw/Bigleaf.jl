@@ -12,11 +12,16 @@ Pages = ["index.md",]
 ```@index
 Pages = ["metorological_variables.md",]
 ```
+## Surface roughness
+```@index
+Pages = ["surface_roughness.md",]
+```
 
 ## Evapotranspiration
 ```@index
 Pages = ["evapotranspiration.md",]
 ```
+
 
 ## Global radiation
 ```@index

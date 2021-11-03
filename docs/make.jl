@@ -5,7 +5,7 @@ using Documenter, Latexify
 # https://discourse.julialang.org/t/generation-of-documentation-fails-qt-qpa-xcb-could-not-connect-to-display/60988/2
 ENV["GKSwstype"] = "100"
 
-DocMeta.setdocmeta!(Bigleaf, :DocTestSetup, :(using Bigleaf, Latexify); recursive=true, warn=false)
+DocMeta.setdocmeta!(Bigleaf, :DocTestSetup, :(using Bigleaf, Latexify, DataFrames); recursive=true, warn=false)
 doctest(Bigleaf, manual = false)
 
 makedocs(;
@@ -27,6 +27,7 @@ makedocs(;
         hide("metorological_variables.md"),
         hide("evapotranspiration.md"),
         hide("surface_conductance.md"),
+        hide("surface_roughness.md"),
         hide("global_radiation.md"),
         hide("unit_conversions.md"),
         hide("bigleaf_constants.md"),
