@@ -137,7 +137,7 @@ sum(.!thaf.valid) # some more invalids
 ```
 
 
-When looking at the function output we see that we these settings, we exclude in total 1013 data points (70.35% of the data). In total, 29.65% of all data remained. The output of the `filter_data` function is another DataFrame (tha_filtered), in which all filtered timesteps are set to NA. (Note that this is the default case. If we add `filtered_data_to_NA=true`, the data are left untouched, but an additional column "valid" is added to the DataFrame that specifies whether the time points fulfull the criteria or not). In the following examples we will work mostly with the filtered DataFrame `tha_filtered`.
+When looking at the function output we see that we these settings, we exclude in total 1013 data points (70.35% of the data). In total, 29.65% of all data remained. The output of the `filter_data` function is another DataFrame (tha_filtered), in which all filtered timesteps are set to missing. (Note that this is the default case. If we add `filtered_data_to_NA=true`, the data are left untouched, but an additional column "valid" is added to the DataFrame that specifies whether the time points fulfull the criteria or not). In the following examples we will work mostly with the filtered DataFrame `tha_filtered`.
 
 
 
@@ -455,7 +455,7 @@ G1_bootstrap = function(dat,LoopNum,SampSizeRel)
   # dat         = input DataFrame
   # LoopNum     = number of iterations
   # SampSizeRel = fraction of data sampled for each iteration
-  dfout=DataFrame(matrix(NA,nrow = LoopNum,ncol = 0)) #Define output dataframe
+  dfout=DataFrame(matrix(missing,nrow = LoopNum,ncol = 0)) #Define output dataframe
   dat$RunNum=1:nrow(dat)
   SampSize=round(length(dat$RunNum)*SampSizeRel) #calculate number of data used for resampling
 
@@ -552,7 +552,7 @@ plot(Ga_mean[ind],type="l",lwd=2,xlab="timestep",ylab=expression("G"["ah"]~"(m s
 
 ok = which(!ismissing(Ga_mean[ind]))
 polygon(c(ok,rev(ok)),c(Ga_high[ind][ok],rev(Ga_low[ind][ok])),
-        col="grey70",border=NA)
+        col="grey70",border=missing)
 points(Ga_mean[ind],type="l",lwd=2)
 
 
@@ -561,7 +561,7 @@ plot(Gs_mean[ind],type="l",lwd=2,xlab="timestep",tcl=-0.2,
 
 ok = which(!ismissing(Gs_mean[ind]))
 polygon(c(ok,rev(ok)),c(Gs_high[ind][ok],rev(Gs_low[ind][ok])),
-        col="grey70",border=NA)
+        col="grey70",border=missing)
 points(Gs_mean[ind],type="l",lwd=2)
 ```
 

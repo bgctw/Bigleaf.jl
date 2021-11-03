@@ -117,7 +117,7 @@ Integrated Stability Correction Functions for Heat and Momentum
 - `zeta`             : Stability parameter zeta (-)
 - `stab_formulation` : Formulation for the stability function. Either 
   `Val(:Dyer_1970)`, or `Val(:Businger_1971)` or `Val(:no_stability_correction)`
-In the alternative computes `zeta` by [`stability_parameter`](@ref) and
+In the alternative form computes `zeta` by [`stability_parameter`](@ref) and
 [`Monin_Obukhov_length`](@ref) and requires respective arguments.
 
 # Details
@@ -125,6 +125,7 @@ These dimensionless values are needed to correct deviations
 from the exponential wind profile under non-neutral conditions.
 The functions give the integrated form of the universal functions. They
 depend on the value of the stability parameter ``\\zeta``,
+a function of heigh `z`,
 which can be calculated from the function [`stability_parameter`](@ref).
 The integration of the universal functions is:
 
@@ -132,7 +133,7 @@ The integration of the universal functions is:
 
 for stable atmospheric conditions (``\\zeta`` >= 0), and
 
-``\\psi = 2 * log( (1 + y) / 2)``
+``\\psi = 2 * log( (1 + y(zeta)) / 2)``
 
 for unstable atmospheric conditions (``\\zeta`` < 0).
 

@@ -1,8 +1,36 @@
-#@testset "wind_profile" begin
+@testset "roughness_parameters" begin
+    zh = tha_heights.zh
+    zr = tha_heights.zr
+    LAI = tha_heights.LAI
+    keys_exp = (:d, :z0m, :z0m_se)
+    rp = roughness_parameters(Val(:canopy_height), zh)
+    #round.(values(rp); sigdigits = 4)
+    @test keys(rp) == keys_exp
+    @test all(isapproxm.(values(rp), (18.55, 2.65, missing), rtol=1e-3))
+    #
+    rp = roughness_parameters(Val(:canopy_height_LAI), zh, LAI)
+    #round.(values(rp); sigdigits = 4)
+    @test keys(rp) == keys_exp
+    @test all(isapproxm.(values(rp), (21.77, 1.419, missing), rtol=1e-3))
+    #
+    df = copy(tha48)
+    psi_m = stability_correction!(copy(df, copycols=false), zr, d; constants).psi_m
+    rp = roughness_parameters(Val(:wind_profile), df, zh, zr; psi_m)
+    #round.(values(rp); sigdigits = 4)
+    @test keys(rp) == keys_exp
+    #@test all(isapproxm.(values(rp), (18.55, 1.879, 0.3561), rtol=1e-3))
+    #from R:
+    @test all(isapproxm.(values(rp), (18.55, 1.879402, 0.356108), rtol=1e-3))
+    rp_psiauto = roughness_parameters(Val(:wind_profile), df, zh, zr)
+    @test propertynames(df) == propertynames(tha48) # not changed
+    @test rp_psiauto == rp
+end
+
+@testset "wind_profile" begin
     datetime, ustar, Tair, pressure, H = values(tha48[1,:])
     z = 30
     d=0.7*tha_heights.zh
-    z0m=2.65
+    z0m=2.14 #2.65
     u30 = wind_profile(z, ustar, d, z0m)
     @test ≈(u30, 1.93, rtol = 1/100 )
     #
@@ -20,4 +48,12 @@
     psi_m = stability_correction!(copy(df, copycols=false), z, d).psi_m
     windzc2 = wind_profile(df, z, d, z0m, psi_m)    
     @test windzc2 == windzc
+    #
+    # estimate z0m
+    # need to give zh and zr in addition to many variables in df
+    @test_throws Exception wind_profile(df, z, d)    
+    windzc3 = wind_profile(df, z, d; zh=tha_heights.zh, zr=tha_heights.zr)    
+    # may have used slightly different estimated z0m
+    @test all(isapprox.(windzc3, windzc, atol=0.01))
 end
+

@@ -32,7 +32,8 @@ export decoupling, surface_conductance, aerodynamic_conductance
 export compute_Gb, compute_Gb!, add_Gb, Gb_Thom
 export wind_profile
 export Monin_Obukhov_length, Monin_Obukhov_length!, stability_parameter, 
-    stability_parameter!, stability_correction, stability_correction!
+    stability_parameter!, stability_correction, stability_correction!,
+    roughness_parameters
 
 include("util.jl")    
 include("bigleaf_constants.jl")

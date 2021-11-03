@@ -13,7 +13,7 @@
 #' - GPP              Gross primary productivity (umol CO2 m-2 s-1)
 #' - Gs               Surface conductance to water vapor (mol m-2 s-1)
 #' - Rleaf            Ecosystem respiration stemming from leaves (umol CO2 m-2 s-1); defaults to 0          
-#' - missing_Rleaf_as_NA if Rleaf is provided, should missing values be treated as `NA` (`true`)
+#' - missing_Rleaf_as_NA if Rleaf is provided, should missing values be treated as `missing` (`true`)
 #'                            or set to 0 (`false`, the default)?
 #' - constants        DwDc - Ratio of the molecular diffusivities for water vapor and CO2 (-)
 #' 
@@ -115,7 +115,7 @@ end
 #' - Jmax_dS   Entropy term for Jmax (kJ mol-1 K-1)
 #' - Theta     Curvature term in the light response function of J (-)
 #' - alpha_canopy Canopy absorptance (-)
-#' - missing_Rleaf_as_NA if Rleaf is provided, should missing values be treated as `NA` (`true`)
+#' - missing_Rleaf_as_NA if Rleaf is provided, should missing values be treated as `missing` (`true`)
 #'                            or set to 0 (`false`, the default)?
 #' - Ci_C4        intercellular CO2 concentration below which photosynthesis
 #'                     is considered to be CO2-limited (umol mol-1), ignored
@@ -262,7 +262,7 @@ end
 #'                                  filter_growseas=false,filter_precip=true,
 #'                                  filter_vars=c("Tair","PPFD","ustar","LE"),
 #'                                  filter_vals_min=c(5,200,0.2,0),
-#'                                  filter_vals_max=c(NA,NA,NA,NA),NA_as_invalid=true,
+#'                                  filter_vals_max=c(missing,missing,missing,missing),NA_as_invalid=true,
 #'                                  quality_ext="_qc",good_quality=c(0,1),
 #'                                  missing_qc_as_bad=true,GPP="GPP",doy="doy",
 #'                                  year="year",tGPP=0.5,ws=15,min_int=5,precip="precip",
@@ -309,12 +309,12 @@ function photosynthetic_capacity(data,C3=true,Temp,GPP="GPP",Ci,PPFD="PPFD",PPFD
     Ko  = Ko * constants[:J2kJ]
     
     # basic filtering on Ci 
-    Ci[Ci < 80 | ismissing(Ci)] = NA
+    Ci[Ci < 80 | ismissing(Ci)] = missing
     
     # Presumed limitation states 
     GPPc = GPPj = GPP
-    GPPj[PPFD < PPFD_j[1] | PPFD > PPFD_j[2] | ismissing(PPFD)] = NA
-    GPPc[PPFD < PPFD_c | ismissing(PPFD)] = NA
+    GPPj[PPFD < PPFD_j[1] | PPFD > PPFD_j[2] | ismissing(PPFD)] = missing
+    GPPc[PPFD < PPFD_c | ismissing(PPFD)] = missing
     
     if(!isnothing(Rleaf))
       if(!missing_Rleaf_as_NA){Rleaf[ismissing(Rleaf)] = 0 }
@@ -332,8 +332,8 @@ else {  # C4 vegetation
     
     # Presumed limitation states (C4) 
     GPPc = GPPj = GPP
-    GPPj[PPFD < PPFD_j[1] | PPFD > PPFD_j[2] | ismissing(PPFD) | Ci < 0] = NA
-    GPPc[PPFD < PPFD_c | Ci < Ci_C4 | ismissing(PPFD)] = NA
+    GPPj[PPFD < PPFD_j[1] | PPFD > PPFD_j[2] | ismissing(PPFD) | Ci < 0] = missing
+    GPPc[PPFD < PPFD_c | Ci < Ci_C4 | ismissing(PPFD)] = missing
     
     Vcmax = GPPc
     J     = 3 * GPPj / (1 - 0.5)
@@ -351,12 +351,12 @@ end
                                                                                                  4.0 * Theta * APPFD_PSII[i] * Jmax)) /
                                                                                          (2.0 * Theta)))},
                                                            interval=c(0,1000),tol=1e-02)$minimum,
-                                                  error=function(err){NA}
+                                                  error=function(err){missing}
     )
     )
 else 
     @warn"Not enough observations to calculate Jmax!")
-    Jmax = NA
+    Jmax = missing
 end
   
   # calculate Vcmax25 and Jmax25
@@ -437,9 +437,9 @@ function Arrhenius_temp_response(param,Temp,Ha,Hd,dS,constants=bigleaf_constants
   Temp = Temp + constants[:Kelvin]
   Tref = 25.0 + constants[:Kelvin]
   
-  Ha = ifelse(missing(Ha),NA,Ha*constants[:kJ2J])
-  Hd = ifelse(missing(Hd),NA,Hd*constants[:kJ2J])
-  dS = ifelse(missing(dS),NA,dS*constants[:kJ2J])
+  Ha = ifelse(missing(Ha),missing,Ha*constants[:kJ2J])
+  Hd = ifelse(missing(Hd),missing,Hd*constants[:kJ2J])
+  dS = ifelse(missing(dS),missing,dS*constants[:kJ2J])
   
   if (ismissing(Ha))
     
@@ -500,7 +500,7 @@ end
 #' - constants  Kelvin - conversion degree Celsius to Kelvin 
 #'                   Rgas - universal gas constant (J mol-1 K-1) 
 #'                   DwDc - Ratio of the molecular diffusivities for water vapor and CO2
-#' - missing_Rleaf_as_NA if Rleaf is provided, should missing values be treated as `NA` (`true`)
+#' - missing_Rleaf_as_NA if Rleaf is provided, should missing values be treated as `missing` (`true`)
 #'                            or set to 0 (`false`, the default)?
 #' - ...        Additional arguments to `\link[stats]{nls`} or `\link[robustbase]{nlrob`} if `robust_nls = true`.
 #' 
@@ -562,7 +562,7 @@ end
 #'                                  filter_growseas=false,filter_precip=true,
 #'                                  filter_vars=c("Tair","PPFD","ustar","LE"),
 #'                                  filter_vals_min=c(5,200,0.2,0),
-#'                                  filter_vals_max=c(NA,NA,NA,NA),NA_as_invalid=true,
+#'                                  filter_vals_max=c(missing,missing,missing,missing),NA_as_invalid=true,
 #'                                  quality_ext="_qc",good_quality=c(0,1),
 #'                                  missing_qc_as_bad=true,GPP="GPP",doy="doy",
 #'                                  year="year",tGPP=0.5,ws=15,min_int=5,precip="precip",
@@ -901,7 +901,7 @@ end
 #'                                  filter_growseas=false,filter_precip=true,
 #'                                  filter_vars=c("Tair","PPFD","ustar","VPD"),
 #'                                  filter_vals_min=c(5,200,0.2,0.3),
-#'                                  filter_vals_max=c(NA,NA,NA,NA),
+#'                                  filter_vals_max=c(missing,missing,missing,missing),
 #'                                  NA_as_invalid=true,quality_ext="_qc",
 #'                                  good_quality=c(0,1),missing_qc_as_bad=true,
 #'                                  precip="precip",tprecip=0.1,precip_hours=24,

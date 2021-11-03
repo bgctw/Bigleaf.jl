@@ -67,7 +67,7 @@
 #'                                  filter_growseas=false,filter_precip=true,
 #'                                  filter_vars=c("Tair","PPFD","ustar"),
 #'                                  filter_vals_min=c(5,200,0.2),
-#'                                  filter_vals_max=c(NA,NA,NA),NA_as_invalid=true,
+#'                                  filter_vals_max=c(missing,missing,missing),NA_as_invalid=true,
 #'                                  quality_ext="_qc",good_quality=c(0,1),
 #'                                  missing_qc_as_bad=true,GPP="GPP",doy="doy",
 #'                                  year="year",tGPP=0.5,ws=15,min_int=5,precip="precip",

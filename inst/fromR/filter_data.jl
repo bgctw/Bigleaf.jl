@@ -14,9 +14,9 @@
 #' - filter_precip   Should precipitation filtering be applied? Defaults to `false`.
 #' - filter_vars     Additional variables to be filtered. Vector of type character.
 #' - filter_vals_min Minimum values of the variables to be filtered. Numeric vector of 
-#'                        the same length than `filter_vars`. Set to `NA` to be ignored.
+#'                        the same length than `filter_vars`. Set to `missing` to be ignored.
 #' - filter_vals_max Maximum values of the variables to be filtered. Numeric vector of 
-#'                        the same length than `filter_vars`. Set to `NA` to be ignored.
+#'                        the same length than `filter_vars`. Set to `missing` to be ignored.
 #' - NA_as_invalid   If `true` (the default) missing data are filtered out (applies to all variables).
 #' - vars_qc         Character vector indicating the variables for which quality filter should 
 #'                        be applied. Ignored if `quality_control = false`.
@@ -24,7 +24,7 @@
 #'                        quality control variables. Ignored if `quality_control = false`.                       
 #' - good_quality    Which values indicate good quality (i.e. not to be filtered) 
 #'                        in the quality control (qc) variables? Ignored if `quality_control = false`.
-#' - missing_qc_as_bad If quality control variable is `NA`, should the corresponding data point be
+#' - missing_qc_as_bad If quality control variable is `missing`, should the corresponding data point be
 #'                          treated as bad quality? Defaults to `true`. Ignored if `quality_control = false`.                        
 #' - precip          Precipitation (mm time-1)
 #' - GPP             Gross primary productivity (umol m-2 s-1); Ignored if `filter_growseas = false`.
@@ -42,7 +42,7 @@
 #'                        Ignored if `filter_precip = false`.
 #' - records_per_hour Number of observations per hour. I_e. 2 for half-hourly data.
 #' - filtered_data_to_NA Logical. If `true` (the default), all variables in the input
-#'                              DataFrame/matrix are set to `NA` for the time step where ANY of the
+#'                              DataFrame/matrix are set to `missing` for the time step where ANY of the
 #'                              `filter_vars` were beyond their acceptable range (as
 #'                              determined by `filter_vals_min` and `filter_vals_max`).
 #'                              If `false`, values are not filtered, and an additional column 'valid'
@@ -58,7 +58,7 @@
 #'             the same name as the variable plus the extension as specified in `quality_ext`
 #'             must be provided. For time steps where the value of the quality indicator is not included
 #'             in the argument `good_quality`, i.e. the quality is not considered as 'good', 
-#'             its value is set to `NA`.
+#'             its value is set to `missing`.
 #'             
 #'          2) Meteorological filtering. Under certain conditions (e.g. low ustar), the assumptions
 #'             of the EC method are not fulfilled. Further, some data analysis require certain meteorological
@@ -66,11 +66,11 @@
 #'             The filter applied in this second step serves to exclude time periods that do not fulfill the criteria
 #'             specified in the arguments. More specifically, time periods where one of the variables is higher
 #'             or lower than the specified thresholds (`filter_vals_min` and `filter_vals_max`)
-#'             are set to `NA` for all variables. If a threshold is set to `NA`, it will be ignored.
+#'             are set to `missing` for all variables. If a threshold is set to `missing`, it will be ignored.
 #'          
 #' # Value
  If `filtered_data_to_NA = true` (default), the input DataFrame/matrix with 
-#'         observations which did not fulfill the filter criteria set to `NA`. 
+#'         observations which did not fulfill the filter criteria set to `missing`. 
 #'         If `filtered_data_to_NA = false`, the input DataFrame/matrix with an additional 
 #'         column "valid", which indicates whether all the data of a time step fulfill the 
 #'         filtering criteria (1) or not (0).
@@ -82,9 +82,9 @@
 #'       `tprecip` filters all data that are greater than `tprecip`. 
 #' 
 #'       Variables considered of bad quality (as specified by the corresponding quality control variables)      
-#'       will be set to `NA` by this routine. Data that do not fulfill the filtering criteria are set to
-#'       `NA` if `filtered_data_to_NA = true`. Note that with this option *all* variables of the same
-#'       time step are set to `NA`. Alternatively, if `filtered_data_to_NA = false` data are not set to `NA`,
+#'       will be set to `missing` by this routine. Data that do not fulfill the filtering criteria are set to
+#'       `missing` if `filtered_data_to_NA = true`. Note that with this option *all* variables of the same
+#'       time step are set to `missing`. Alternatively, if `filtered_data_to_NA = false` data are not set to `missing`,
 #'       and a new column "valid" is added to the DataFrame/matrix, indicating if any value of a row
 #'       did (1) or did not fulfill the filter criteria (0).
 #'       
@@ -93,14 +93,14 @@
 #' ``` 
 #' # Example of data filtering; data are for a month within the growing season,
 #' # hence growing season is not filtered.
-#' # If filtered_data_to_NA=true, all values of a row are set to NA if one filter
+#' # If filtered_data_to_NA=true, all values of a row are set to missing if one filter
 #' # variable is beyond its bounds. 
 #' DE_Tha_Jun_2014_2 = filter_data(DE_Tha_Jun_2014,quality_control=false,
 #'                                  vars_qc=c("Tair","precip","H","LE"),
 #'                                  filter_growseas=false,filter_precip=true,
 #'                                  filter_vars=c("Tair","PPFD","ustar"),
 #'                                  filter_vals_min=c(5,200,0.2),
-#'                                  filter_vals_max=c(NA,NA,NA),NA_as_invalid=true,
+#'                                  filter_vals_max=c(missing,missing,missing),NA_as_invalid=true,
 #'                                  quality_ext="_qc",good_quality=c(0,1),
 #'                                  missing_qc_as_bad=true,GPP="GPP",doy="doy",
 #'                                  year="year",tGPP=0.5,ws=15,min_int=5,precip="precip",
@@ -113,7 +113,7 @@
 #'                                  filter_growseas=false,filter_precip=true,
 #'                                  filter_vars=c("Tair","PPFD","ustar"),
 #'                                  filter_vals_min=c(5,200,0.2),
-#'                                  filter_vals_max=c(NA,NA,NA),NA_as_invalid=true,
+#'                                  filter_vals_max=c(missing,missing,missing),NA_as_invalid=true,
 #'                                  quality_ext="_qc",good_quality=c(0,1),
 #'                                  missing_qc_as_bad=true,GPP="GPP",doy="doy",
 #'                                  year="year",tGPP=0.5,ws=15,min_int=5,precip="precip",
@@ -122,7 +122,7 @@
 #'                                  
 #'  # note the additional column 'valid' in DE_Tha_Jun_2014_3.
 #'  # To remove time steps marked as filtered out (i.e. 0 values in column 'valid'):
-#'  DE_Tha_Jun_2014_3[DE_Tha_Jun_2014_3["valid"] == 0,] = NA
+#'  DE_Tha_Jun_2014_3[DE_Tha_Jun_2014_3["valid"] == 0,] = missing
 #'   
 #'   
 #' @importFrom stats aggregate
@@ -167,16 +167,16 @@ end
       check_input(data,var_qc)
 
       if (missing_qc_as_bad)
-        data[get(paste0(var,quality_ext)) > max(good_quality) | ismissing(get(paste0(var,quality_ext))),var] = NA   # exclude bad quality data or those where qc flag is not available
+        data[get(paste0(var,quality_ext)) > max(good_quality) | ismissing(get(paste0(var,quality_ext))),var] = missing   # exclude bad quality data or those where qc flag is not available
         qc_invalid      = sum(get(paste0(var,quality_ext)) > max(good_quality) | ismissing(get(paste0(var,quality_ext)))) # count & report
 else { # same, but consider missing quality flag variables as good
-        data[get(paste0(var,quality_ext)) > max(good_quality) & !ismissing(get(paste0(var,quality_ext))),var] = NA
+        data[get(paste0(var,quality_ext)) > max(good_quality) & !ismissing(get(paste0(var,quality_ext))),var] = missing
         qc_invalid      = sum(get(paste0(var,quality_ext)) > max(good_quality) & !ismissing(get(paste0(var,quality_ext))))
 end
       
       qc_invalid_perc = round((qc_invalid/nrow(data))*constants[:frac2percent],2)
       
-      cat(var,": ",qc_invalid," data points (",qc_invalid_perc,"%) set to NA",fill=true,sep="")
+      cat(var,": ",qc_invalid," data points (",qc_invalid_perc,"%) set to missing",fill=true,sep="")
 end
 end
   
@@ -259,10 +259,10 @@ end
     cat(nrow(data) - length(invalid)," valid data points (",constants[:frac2percent]-excl_perc,"%) remaining.",fill=true,sep="")
   
   
-    # 6) return input data frame with filtered time steps set to NA or an additional 'valid' column
+    # 6) return input data frame with filtered time steps set to missing or an additional 'valid' column
     if (filtered_data_to_NA)
       data_filtered = data
-      data_filtered[valid < 1,] = NA
+      data_filtered[valid < 1,] = missing
 else 
       data_filtered = DataFrame(data,valid)
 end

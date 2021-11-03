@@ -16,9 +16,9 @@
 #' - LE        Latent heat flux (W m-2)
 #' - VPD       Vapor pressure deficit (kPa)
 #' - Ga        Aerodynamic conductance to heat/water vapor (m s-1)
-#' - missing_G_as_NA  if `true`, missing G are treated as `NA`s, otherwise they are set to 0.
+#' - missing_G_as_NA  if `true`, missing G are treated as `missing`s, otherwise they are set to 0.
 #'                         Only used if `formulation = Val(:PenmanMonteith)`.
-#' - missing_S_as_NA  if `true`, missing S are treated as `NA`s, otherwise they are set to 0. 
+#' - missing_S_as_NA  if `true`, missing S are treated as `missing`s, otherwise they are set to 0. 
 #'                          Only used if `formulation = Val(:PenmanMonteith)`.
 #' - formulation Formulation used. Either `Val(:PenmanMonteith)` (the default) 
 #'                    using the inverted Penman-Monteith equation, or `"Flux-Gradient"`,
@@ -46,7 +46,7 @@
 #'  Available energy (A) is defined as A = Rn - G - S. If G and/or S are not provided, A = Rn.
 #'  
 #'  By default, any missing data in G and S are set to 0. If `missing_S_as_NA = true`
-#'  or `missing_S_as_NA = true`, Gs will give `NA` for these timesteps.
+#'  or `missing_S_as_NA = true`, Gs will give `missing` for these timesteps.
 #'  
 #'  If `formulation="Flux-Gradient"`, Gs (in mol m-2 s-1) is calculated from VPD and ET only:
 #'  
@@ -76,7 +76,7 @@
 #'                                  filter_growseas=false,filter_precip=true,
 #'                                  filter_vars=c("Tair","PPFD","ustar","LE"),
 #'                                  filter_vals_min=c(5,200,0.2,0),
-#'                                  filter_vals_max=c(NA,NA,NA,NA),NA_as_invalid=true,
+#'                                  filter_vals_max=c(missing,missing,missing,missing),NA_as_invalid=true,
 #'                                  quality_ext="_qc",good_quality=c(0,1),
 #'                                  missing_qc_as_bad=true,GPP="GPP",doy="doy",
 #'                                  year="year",tGPP=0.5,ws=15,min_int=5,precip="precip",

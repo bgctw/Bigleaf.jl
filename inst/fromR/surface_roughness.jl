@@ -49,9 +49,9 @@ end
 #' A simple approximation of the two roughness parameters displacement height (d)
 #'              and roughness length for momentum (z0m).
 #'              
-#' - method    Method to use, one of `"canopy_height","canopy_height&LAI",Val(:wind_profile)` 
+#' - method    Method to use, one of `"canopy_height","canopy_height_LAI",Val(:wind_profile)` 
 #'                  NOTE: if `method = "canopy_height"`, only the following three arguments
-#'                  are used. If `method = "canopy_height&LAI"`, only `zh, LAI, cd`, 
+#'                  are used. If `method = "canopy_height_LAI"`, only `zh, LAI, cd`, 
 #'                  and `hs` are required.     
 #' - zh        Vegetation height (m)          
 #' - frac_d    Fraction of displacement height on canopy height (-)
@@ -59,8 +59,8 @@ end
 #' - LAI       Leaf area index (-) 
 #' - zr        Instrument (reference) height (m)
 #' - cd        Mean drag coefficient for individual leaves. Defaults to 0.2. 
-#'                  Only needed if `method = "canopy_height&LAI"`.
-#' - hs        roughness length of the soil surface (m). Only needed if `method = "canopy_height&LAI"`
+#'                  Only needed if `method = "canopy_height_LAI"`.
+#' - hs        roughness length of the soil surface (m). Only needed if `method = "canopy_height_LAI"`
 #'                  The following arguments are only needed if `method = Val(:wind_profile)`!
 #' - data      DataFrame or matrix containing all required variables
 #' - Tair      Air temperature (deg C)
@@ -93,7 +93,7 @@ end
 #'          where frac_d defaults to 0.7 and frac_z0m to 0.1.
 #'          
 #'          Alternatively, d and z0m can be estimated from both canopy height and LAI
-#'          (If `method = "canopy_height&LAI"`).
+#'          (If `method = "canopy_height_LAI"`).
 #'          Based on data from Shaw & Pereira 1982, Choudhury & Monteith 1988 proposed 
 #'          the following semi-empirical relations:
 #'          
@@ -132,8 +132,8 @@ end
 #' ```@example; output = false
 #' ``` 
 #' # estimate d and z0m from canopy height for a dense (LAI=5) and open (LAI=2) canopy
-#' roughness_parameters(method="canopy_height&LAI",zh=25,LAI=5)
-#' roughness_parameters(method="canopy_height&LAI",zh=25,LAI=2)   
+#' roughness_parameters(method="canopy_height_LAI",zh=25,LAI=5)
+#' roughness_parameters(method="canopy_height_LAI",zh=25,LAI=2)   
 #'    
 #' # fix d to 0.7*zh and estimate z0m from the wind profile
 #' df = DataFrame(Tair=c(25,25,25),pressure=100,wind=c(3,4,5),ustar=c(0.5,0.6,0.65),H=200)
@@ -144,7 +144,7 @@ end
 #' 
 #' @importFrom stats median sd complete_cases 
 #' @export                                  
-function roughness_parameters(method=c("canopy_height","canopy_height&LAI",Val(:wind_profile)),zh,
+function roughness_parameters(method=c("canopy_height","canopy_height_LAI",Val(:wind_profile)),zh,
                                  frac_d=0.7,frac_z0m=0.1,LAI,zr,cd=0.2,hs=0.01,data,Tair="Tair",pressure="pressure",
                                  wind="wind",ustar="ustar",H="H",d=nothing,z0m=nothing,
                                  stab_roughness=true,stab_formulation=c(Val(:Dyer_1970),Val(:Businger_1971)),
@@ -157,9 +157,9 @@ function roughness_parameters(method=c("canopy_height","canopy_height&LAI",Val(:
     
     d      = frac_d*zh
     z0m    = frac_z0m*zh
-    z0m_se = NA
+    z0m_se = missing
     
-elseif (method == "canopy_height&LAI")
+elseif (method == "canopy_height_LAI")
     
     X = cd * LAI
     d = 1.1 * zh * log(1 + X^(1/4))
@@ -169,7 +169,7 @@ elseif (method == "canopy_height&LAI")
 else 
       z0m = 0.3 * zh * (1 - d/zh)
 end
-    z0m_se = NA
+    z0m_se = missing
     
 elseif (method == Val(:wind_profile))
     
@@ -194,7 +194,7 @@ else
       
 end
     
-    z0m_all[z0m_all > zh] = NA
+    z0m_all[z0m_all > zh] = missing
     
     z0m    = median(z0m_all,na_rm=true)
     z0m_se = constants[:se_median] * (sd(z0m_all,na_rm=true) / sqrt(length(z0m_all[complete_cases(z0m_all)])))
@@ -274,7 +274,7 @@ end
 #' ``` 
 #' heights = seq(18,40,2)  # heights above ground for which to calculate wind speed
 #' df = DataFrame(Tair=25,pressure=100,wind=c(3,4,5),ustar=c(0.5,0.6,0.65),H=c(200,230,250)) 
-#' ws = DataFrame(matrix(NA,ncol=length(heights),nrow=nrow(df)))
+#' ws = DataFrame(matrix(missing,ncol=length(heights),nrow=nrow(df)))
 #' colnames(ws) = paste0(heights,"m")
 #' for (i in seq_along(heights))
 #'   ws[,i] = wind_profile(df,z=heights[i],zr=40,zh=25,d=16)

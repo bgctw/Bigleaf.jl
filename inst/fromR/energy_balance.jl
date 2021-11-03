@@ -105,8 +105,8 @@ end
 #' - instantaneous    should the energy balance be calculated at the time step 
 #'                         of the observations (`true`), or over the entire time period
 #'                         provided as input (`false`)
-#' - missing_G_as_NA  if `true`, missing G are treated as `NA`s ,otherwise set to 0. 
-#' - missing_S_as_NA  if `true`, missing S are treated as `NA`s, otherwise set to 0.
+#' - missing_G_as_NA  if `true`, missing G are treated as `missing`s ,otherwise set to 0. 
+#' - missing_S_as_NA  if `true`, missing S are treated as `missing`s, otherwise set to 0.
 #' 
 #' 
 #' # Details

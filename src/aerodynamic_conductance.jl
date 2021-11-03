@@ -133,8 +133,8 @@ a dataframe with the following columns:
 - `Gb_h`: Canopy boundary layer conductance for heat transfer (m s-1)
 - `Rb_h`: Canopy boundary layer resistance for heat transfer (s m-1)
 - `kB_h`: kB-1 parameter for heat transfer
-- `zeta`: Stability parameter 'zeta' (NA if `wind_profile = false`)
-- `psi_h`: Integrated stability correction function (NA if `wind_profile = false`)
+- `zeta`: Stability parameter 'zeta' (missing if `wind_profile = false`)
+- `psi_h`: Integrated stability correction function (missing if `wind_profile = false`)
 - `Ra_CO2`: Aerodynamic resistance for CO2 transfer (s m-1)
 - `Ga_CO2`: Aerodynamic conductance for CO2 transfer (m s-1)
 - `Gb_CO2`: Canopy boundary layer conductance for CO2 transfer (m s-1)
