@@ -1,4 +1,4 @@
-@testset "" begin
+@testset "Reynolds_Number" begin
     Tair,pressure,ustar,z0m = 25,100,0.5,0.5
     R = Reynolds_Number(Tair,pressure,ustar,z0m)                             
     @test ≈(R, 15870, rtol=1e-3) 
@@ -6,9 +6,9 @@ end
 
 
 @testset "roughness_parameters" begin
-    zh = tha_heights.zh
-    zr = tha_heights.zr
-    LAI = tha_heights.LAI
+    zh = thal.zh
+    zr = thal.zr
+    LAI = thal.LAI
     keys_exp = (:d, :z0m, :z0m_se)
     rp = roughness_parameters(Val(:canopy_height), zh)
     #round.(values(rp); sigdigits = 4)
@@ -21,7 +21,8 @@ end
     @test all(isapproxm.(values(rp), (21.77, 1.419, missing), rtol=1e-3))
     #
     df = copy(tha48)
-    psi_m = stability_correction!(copy(df, copycols=false), zr, d; constants).psi_m
+    d=0.7*zh
+    psi_m = stability_correction!(copy(df, copycols=false), zr, d).psi_m
     rp = roughness_parameters(Val(:wind_profile), df, zh, zr; psi_m)
     #round.(values(rp); sigdigits = 4)
     @test keys(rp) == keys_exp
@@ -44,14 +45,17 @@ end
 @testset "wind_profile" begin
     datetime, ustar, Tair, pressure, H = values(tha48[1,:])
     z = 30
-    d=0.7*tha_heights.zh
-    z0m=2.14 #2.65
+    d=0.7*thal.zh
+    z0m= 2.65
     u30 = wind_profile(z, ustar, d, z0m)
     @test ≈(u30, 1.93, rtol = 1/100 )
     #
     u30c = wind_profile(Val(:Dyer_1970), z, ustar, Tair,pressure, H, d, z0m)
     @test ≈(u30c, 2.31, rtol = 1/100 )
     #
+    z0m=2.14 #2.65
+    u30 = wind_profile(z, ustar, d, z0m) # used below
+    u30c = wind_profile(Val(:Dyer_1970), z, ustar, Tair,pressure, H, d, z0m)
     df = copy(tha48)
     windz = wind_profile(df, z, d, z0m; stab_formulation = Val(:no_stability_correction))    
     @test length(windz) == 48
@@ -67,7 +71,7 @@ end
     # estimate z0m
     # need to give zh and zr in addition to many variables in df
     @test_throws Exception wind_profile(df, z, d)    
-    windzc3 = wind_profile(df, z, d; zh=tha_heights.zh, zr=tha_heights.zr)    
+    windzc3 = wind_profile(df, z, d; zh=thal.zh, zr=thal.zr)    
     # may have used slightly different estimated z0m
     @test all(isapprox.(windzc3, windzc, atol=0.01))
 end

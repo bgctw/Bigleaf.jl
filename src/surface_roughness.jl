@@ -261,7 +261,8 @@ end
 
 function wind_profile(df::AbstractDataFrame, z, d, z0m = nothing; 
   zh = nothing, zr = nothing, 
-  stab_formulation = Val(:Dyer_1970), constants = bigleaf_constants())
+  stab_formulation = Val(:Dyer_1970), constants = bigleaf_constants()
+  )
   psi_m = stability_correction!(
     copy(df, copycols=false), z, d; stab_formulation, constants).psi_m
   if isnothing(z0m)

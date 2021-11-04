@@ -5,14 +5,10 @@ An empirical formulation for the canopy boundary layer conductance
 for heat transfer based on a simple ustar (friction velocity) dependency.
 
 # Arguments  
+For `Val(:Thom_1972)`
 - `ustar`     : Friction velocity (m s-1)
 optional
-- `Sc`        : `Pair{Symbol,Number}` Output name and Schmidt number of 
-                additional quantities to be calculated
 - `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with entries 
-  - `k` - von-Karman constant 
-  - `Sc_CO2` - Schmidt number for CO2  
-  - `Pr` - Prandtl number (if `Sc` is provided)
  
 # Details
 The empirical equation for Rb suggested by Thom 1972 is:
@@ -54,24 +50,19 @@ a NameTuple or DataFrame with the following columns:
 function compute_Gb!(df::AbstractDataFrame, approach::Val{:Thom_1972}; kwargs...)
   compute_Gb_!(df, approach, :ustar; kwargs...) # inputcols
 end
-function compute_Gb!(df::AbstractDataFrame, approach::Val{:Thom_1972}; kwargs...)
-  compute_Gb_!(df, approach, SA[zh,zr,d]; kwargs...) # inputcols
+function compute_Gb!(df::AbstractDataFrame, approach::Val{:Choudhury_1988}; kwargs...)
+  Gb_Choudhury!(df; kwargs...)
 end
-function compute_Gb!(df::AbstractDataFrame, approach::Val{:Thom_1972}; kwargs...)
-  compute_Gb_!(df, approach, :ustar; kwargs...) # inputcols
+function compute_Gb!(df::AbstractDataFrame, approach::Val{:Su_2001}; kwargs...)
+  Gb_Su!(df; kwargs...)
 end
+
 function compute_Gb_!(df::AbstractDataFrame, approach, inputcols; 
   Sc::AbstractVector=SA[], kwargs...
   )
   fGb(args...) = compute_Gb(approach, args...; kwargs...)
   transform!(df, :ustar => ByRow(fGb) => SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2])
-  if length(Sc) != 0
-    Sc_names = map(x -> x.first, Sc)
-    transform!(df, :Gb_h => ByRow(Gb_h -> add_Gb(Gb_h, Sc...)) => Sc_names)
-  end
 end
-compute_Gb(::Val{:Thom_1972}, args...; kwargs...) = Gb_Thom(args...; kwargs...)
-compute_Gb(::Val{:Thom_1972}, args...; kwargs...) = Gb_Thom(args...; kwargs...)
 compute_Gb(::Val{:Thom_1972}, args...; kwargs...) = Gb_Thom(args...; kwargs...)
 
 """
@@ -144,6 +135,7 @@ end
 
 """
     add_Gb(Gb_h::Union{Missing,Number}, Sc::Vararg{Pair,N}; constants=bigleaf_constants())
+    add_Gb(df::AbstractDataFrame, Sc::Vararg{Pair,N}; Gb_h = df.Gb_h, kwargs...) 
 
 compute additional boundary layer conductance quantities for given Schmidt-numbers
 
@@ -151,12 +143,13 @@ compute additional boundary layer conductance quantities for given Schmidt-numbe
 - `Gb_h`     : Boundary layer conductance for heat transfer (m s-1)
 - `Sc`       : several `Pair{Symbol,Number}` Output name and Schmidt number of 
                 additional conductances to be calculated
+- `df`       : DataFrame to add output columns               
 optional
 - `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with entries 
   - `Pr` - Prandtl number 
 
 # Value
-a NameTuple with keys as in `Sc` and corresponding conductances (m s-1)
+a NameTuple or `df` with keys as in `Sc` and corresponding conductances (m s-1)
 """
 function add_Gb(Gb_h::Union{Missing,Number}, Sc::Vararg{Pair,N}; 
   constants=bigleaf_constants()) where N
@@ -165,6 +158,13 @@ function add_Gb(Gb_h::Union{Missing,Number}, Sc::Vararg{Pair,N};
    Gbxv = @. Gb_h / (Scv/constants[:Pr])^0.67
    Gbx = NamedTuple{Scn}(Gbxv)
 end
+function add_Gb!(df::AbstractDataFrame, Sc::Vararg{Pair,N}; Gb_h = df.Gb_h, kwargs...) where N
+  N == 0 && return(df)
+  ft(Gb_h) = add_Gb(Gb_h, Sc...; kwargs...)
+  transform!(df, :Gb_h => ByRow(ft) => AsTable)
+end
+
+
 
   
 """
@@ -207,16 +207,17 @@ for heat transfer according to Choudhury & Monteith 1988.
 Boundary layer conductance according to Choudhury & Monteith 1988 is
 given by:
 
-``Gb_h = LAI((2a/\\alpha)*\\sqrt(u(h)/w)*(1-exp(-\\alpha/2)))``
+``Gb_h = LAI((2a/\\alpha)*\\sqrt(u(zh)/w)*(1-exp(-\\alpha/2)))``
 
-where u(zh) is the wind speed at the canopy surface, approximated from
-measured wind speed at sensor height zr and a wind extinction coefficient ``\\alpha``:
-
-``u(zh) = u(zr) / (exp(\\alpha(zr/zh -1)))``.
-
-``\\alpha`` is modeled as an empirical relation to LAI (McNaughton & van den Hurk 1995):
+where ``\\alpha`` is modeled as an empirical relation to LAI (McNaughton & van den Hurk 1995):
 
 ``\\alpha = 4.39 - 3.97*exp(-0.258*LAI)``
+
+``w`` is leafwidth and ``u(zh)`` is the wind speed at the canopy surface.
+
+It can be approximated from measured wind speed at sensor height zr and a wind extinction 
+coefficient ``\\alpha``: ``u(zh) = u(zr) / (exp(\\alpha(zr/zh -1)))``.
+However, here it is computed from [`wind_profile`](@ref)
 
 Gb (=1/Rb) for water vapor and heat are assumed to be equal in this package.
 Gb for other quantities x is calculated as (Hicks et al. 1987):
@@ -225,7 +226,9 @@ where Sc_x is the Schmidt number of quantity x, and Pr is the Prandtl number (0.
          
 # Note
 If the roughness length for momentum (`z0m`) is not provided as input, it is estimated 
-from the function `roughness_parameters` within `wind_profile`. This function
+in the DataFrame variant from the function [`roughness_parameters`](@ref) within 
+[`wind_profile`(@ref)]. 
+This function
 estimates a single `z0m` value for the entire time period! If a varying `z0m` value 
 (e.g. across seasons or years) is required, `z0m` should be provided as input argument.
          
@@ -252,51 +255,28 @@ estimates a single `z0m` value for the entire time period! If a varying `z0m` va
 # Gb_Choudhury(data=df,leafwidth=0.01,LAI=5,zh=25,d=17.5,zr=40) 
 ``` 
 """
-function Gb_Choudhury(leafwidth,LAI,zh,zr,d;
-  z0m=nothing,
+function Gb_Choudhury(ustar; leafwidth, LAI, wind_zh, constants=bigleaf_constants())
+  alpha   = 4.39 - 3.97*exp(-0.258*LAI)
+  wind_zh = max(0.01, wind_zh) ## avoid zero windspeed
+  Gb_h = LAI*((0.02/alpha)*sqrt(wind_zh/leafwidth)*(1-exp(-alpha/2)))
+  # TODO facture out derving 3 others form Gb_h?
+  Rb_h = 1/Gb_h
+  kB_h = Rb_h*constants[:k]*ustar
+  Gb_CO2 = Gb_h / (constants[:Sc_CO2]/constants[:Pr])^0.67
+  (;Rb_h, Gb_h, kB_h, Gb_CO2)
+end
+
+function Gb_Choudhury!(df::AbstractDataFrame; leafwidth, LAI, zh, zr, d=0.7*zh,
+  z0m = nothing,
   stab_formulation=Val(:Dyer_1970),
   constants=bigleaf_constants()
   )
-  error("Not implemented yet. Need windprofile")
-  # alpha   = 4.39 - 3.97*exp(-0.258*LAI)
-
-  # if isnothing(z0m)
-  #   estimate_z0m = true
-  #   z0m = nothing
-  # else 
-  #   estimate_z0m = false
-  # end
-#   wind_zh = wind_profile(data=df,z=zh,Tair=Tair,pressure=pressure,ustar=ustar,H=H,
-#                           zr=zr,estimate_z0m=estimate_z0m,zh=zh,d=d,z0m=z0m,frac_{z0m}=nothing,
-#                           stab_correction=true,stab_formulation=stab_formulation)
-  
-#   ## avoid zero windspeed
-#   wind_zh = pmax(0.01,wind_zh)
-  
-#   if (!isnothing(Sc) | !isnothing(Sc_name))
-#     if (length(Sc) != length(Sc_name))
-#       stop("arguments 'Sc' and 'Sc_name' must have the same length")
-# end
-#     if (!is_numeric(Sc))
-#       stop("argument 'Sc' must be numeric")
-# end
-# end
-  
-#   Gb_h = LAI*((0.02/alpha)*sqrt(wind_zh/leafwidth)*(1-exp(-alpha/2)))
-#   Rb_h = 1/Gb_h
-#   kB_h = Rb_h*constants[:k]*ustar
-  
-#   Sc   = c(constants[:Sc_CO2],Sc)
-#   Gb_x = DataFrame(lapply(Sc,function(x) Gb_h / (x/constants[:Pr])^0.67))
-#   colnames(Gb_x) = paste0("Gb_",c("CO2",Sc_name))
-  
-  
-#   return(DataFrame(Gb_h,Rb_h,kB_h,Gb_x))
+  wind_zh = wind_profile(df, zh, d, z0m; zh, zr, stab_formulation, constants)
+  # Broadcasting does not work over keyword arguments, need to pass as positional
+  fwind(ustar, wind_zh; kwargs...) = Gb_Choudhury(ustar;wind_zh, kwargs...)
+  ft(ustar) = fwind.(ustar, wind_zh; leafwidth, LAI, constants)
+  transform!(df, :ustar => ft => AsTable)
 end
-
-
-
-
 
 """
 Boundary Layer Conductance according to Su et al. 2001
@@ -340,43 +320,40 @@ to heat transfer according to Su et al. 2001.
  - kB_h: kB-1 parameter for heat transfer
     
 # Details
- The formulation is based on the kB-1 model developed by Massman 1999. 
-         Su et al. 2001 derived the following approximation:
-          
-           ``kB-1 = (k Cd fc^2) / (4Ct ustar/u(zh)) + kBs-1(1 - fc)^2``
-         
-         If fc (fractional vegetation cover) is missing, it is estimated from LAI:
+The formulation is based on the kB-1 model developed by Massman 1999. 
+Su et al. 2001 derived the following approximation:
+ 
+``kB-1 = (k Cd fc^2) / (4Ct ustar/u(zh)) + kBs-1(1 - fc)^2``
 
-           ``fc = 1 - exp(-LAI/2)``
-         
-         The wind speed at the top of the canopy is calculated using function
-         [`wind_profile`](@ref).
-         
-         Ct is the heat transfer coefficient of the leaf (Massman 1999):
-         
-           ``Ct = Pr^-2/3 Reh^-1/2 N``
-         
-         where Pr is the Prandtl number (set to 0.71), and Reh is the Reynolds number for leaves:
-         
-           ``Reh = Dl wind(zh) / v``
-          
-         kBs-1, the kB-1 value for bare soil surface, is calculated according 
-         to Su et al. 2001:
-         
-           ``kBs^-1 = 2.46(Re)^0.25 - ln(7.4)``
-         
-         Gb (=1/Rb) for water vapor and heat are assumed to be equal in this package.
-         Gb for other quantities x is calculated as (Hicks et al. 1987):
+If fc (fractional vegetation cover) is missing, it is estimated from LAI:
+``fc = 1 - exp(-LAI/2)``
+
+The wind speed at the top of the canopy is calculated using function
+[`wind_profile`](@ref).
+
+Ct is the heat transfer coefficient of the leaf (Massman 1999):
+
+``Ct = Pr^-2/3 Reh^-1/2 N``
+
+where Pr is the Prandtl number (set to 0.71), and Reh is the Reynolds number for leaves:
+
+``Reh = Dl wind(zh) / v``
  
-           ``Gb_x = Gb / (Sc_x / Pr)^0.67``
- 
-         where Sc_x is the Schmidt number of quantity x, and Pr is the Prandtl number (0.71).
+kBs-1, the kB-1 value for bare soil surface, is calculated according 
+to Su et al. 2001:
+
+``kBs^-1 = 2.46(Re)^0.25 - ln(7.4)``
+
+Gb (=1/Rb) for water vapor and heat are assumed to be equal in this package.
+Gb for other quantities x is calculated as (Hicks et al. 1987):
+  ``Gb_x = Gb / (Sc_x / Pr)^0.67``
+where Sc_x is the Schmidt number of quantity x, and Pr is the Prandtl number (0.71).
 
 # Note
 If the roughness length for momentum (`z0m`) is not provided as input, it is estimated 
-      from the function `roughness_parameters` within `wind_profile`. This function
-      estimates a single `z0m` value for the entire time period! If a varying `z0m` value 
-      (e.g. across seasons or years) is required, `z0m` should be provided as input argument.
+from the function `roughness_parameters` within `wind_profile`. This function
+estimates a single `z0m` value for the entire time period! If a varying `z0m` value 
+(e.g. across seasons or years) is required, `z0m` should be provided as input argument.
 
 
 # References
@@ -405,48 +382,35 @@ If the roughness length for momentum (`z0m`) is not provided as input, it is est
 # Gb_Su(data=df,zh=25,zr=40,d=17.5,Dl=0.1,LAI=1.5)
 ``` 
 """
-function Gb_Su(df,zh,zr,d;
-  z0m=nothing,Dl,fc=nothing,LAI=nothing,N=2,Cd=0.2,hs=0.01,
-  stab_formulation=Val(:Dyer_1970),
+function Gb_Su(Tair,pressure,ustar; zh, wind_zh, Dl, fc, N=2, Cd=0.2, hs=0.01,
+  constants=bigleaf_constants()
   )
+  wind_zh = max(0.01,wind_zh) ## avoid zero windspeed
+  v   = kinematic_viscosity(Tair,pressure;constants)
+  Re  = Reynolds_Number(Tair,pressure,ustar,hs; constants)
+  kBs = 2.46 * (Re)^0.25 - log(7.4)
+  Reh = Dl * wind_zh / v
+  Ct  = 1*constants[:Pr]^-0.6667*Reh^-0.5*N
+  #
+  kB_h = (constants[:k]*Cd)/(4*Ct*ustar/wind_zh)*fc^2 + kBs*(1 - fc)^2
+  Rb_h = kB_h/(constants[:k]*ustar)
+  Gb_h = 1/Rb_h
+  Gb_CO2 = Gb_h / (constants[:Sc_CO2]/constants[:Pr])^0.67
+  (;Rb_h, Gb_h, kB_h, Gb_CO2)
+end
+
+function Gb_Su!(df::AbstractDataFrame; Dl, fc=nothing, N=2, Cd=0.2, hs=0.01, 
+  z0m = nothing, zh, zr, d = 0.7*zh, LAI,
+  stab_formulation=Val(:Dyer_1970), constants=bigleaf_constants()
+  )
+  wind_zh = wind_profile(df, zh, d, z0m; zh, zr, stab_formulation, constants)
   if isnothing(fc)
     isnothing(LAI) && error("one of 'fc' or 'LAI' must be provided")
     fc = (1-exp(-LAI/2)) 
   end
-  error("not yet implemented, need windo profile") 
-#   if (isnothing(z0m))
-#     estimate_z0m = true
-#     z0m = nothing
-# else 
-#     estimate_z0m = false
-# end
-  
-#   wind_zh = wind_profile(data=df,z=zh,Tair=Tair,pressure=pressure,ustar=ustar,H=H,
-#                           zr=zr,estimate_z0m=estimate_z0m,zh=zh,d=d,z0m=z0m,frac_{z0m}=nothing,
-#                           stab_correction=true,stab_formulation=stab_formulation)
-  
-#   v   = kinematic_viscosity(Tair,pressure,constants)
-#   Re  = Reynolds_Number(Tair,pressure,ustar,hs,constants)
-#   kBs = 2.46 * (Re)^0.25 - log(7.4)
-#   Reh = Dl * wind_zh / v
-#   Ct  = 1*constants[:Pr]^-0.6667*Reh^-0.5*N
-  
-#   kB_h = (constants[:k]*Cd)/(4*Ct*ustar/wind_zh)*fc^2 + kBs*(1 - fc)^2
-#   Rb_h = kB_h/(constants[:k]*ustar)
-#   Gb_h = 1/Rb_h
-  
-#   if (!isnothing(Sc) | !isnothing(Sc_name))
-#     if (length(Sc) != length(Sc_name))
-#       stop("arguments 'Sc' and 'Sc_name' must have the same length")
-# end
-#     if (!is_numeric(Sc))
-#       stop("argument 'Sc' must be numeric")
-# end
-# end
-  
-#   Sc   = c(constants[:Sc_CO2],Sc)
-#   Gb_x = DataFrame(lapply(Sc,function(x) Gb_h / (x/constants[:Pr])^0.67))
-#   colnames(Gb_x) = paste0("Gb_",c("CO2",Sc_name))
-  
-#   return(DataFrame(Gb_h,Rb_h,kB_h,Gb_x))
+  inputcols = SA[:Tair,:pressure,:ustar]
+  # Broadcasting does not work over keyword arguments, need to pass as positional
+  fwind(wind_zh, args...; kwargs...) = Gb_Su(args...; wind_zh, kwargs...)
+  ft(args...) = fwind.(wind_zh, args...; zh, Dl, fc, N=2, Cd=0.2, hs=0.01, constants)
+  transform!(df, inputcols => ft => AsTable)
 end

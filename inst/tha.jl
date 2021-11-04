@@ -37,7 +37,7 @@ function tmpf()
     
 end
 
-# tha48 and tha_heights see runtests.jl
+# tha48 and thal see runtests.jl
 
 
 show(thaf.wind[1:48])

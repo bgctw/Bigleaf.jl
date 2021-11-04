@@ -29,11 +29,12 @@ export potential_ET, potential_ET!, equilibrium_imposed_ET, equilibrium_imposed_
 export setinvalid_range!, setinvalid_qualityflag!, 
     setinvalid_nongrowingseason!, get_growingseason, setinvalid_afterprecip!
 export decoupling, surface_conductance, aerodynamic_conductance
-export compute_Gb, compute_Gb!, add_Gb, Gb_Thom
+export compute_Gb, compute_Gb!, add_Gb, add_Gb!, Gb_Thom, Gb_Choudhury, Gb_Su
 export wind_profile
 export Monin_Obukhov_length, Monin_Obukhov_length!, stability_parameter, 
     stability_parameter!, stability_correction, stability_correction!,
-    roughness_parameters, Reynolds_Number
+    roughness_parameters, Reynolds_Number 
+
 
 include("util.jl")    
 include("bigleaf_constants.jl")
@@ -45,6 +46,6 @@ include("evapotranspiration.jl")
 include("filter_data.jl")
 include("stability_correction.jl")
 include("surface_roughness.jl")
-#include("boundary_layer_conductance.jl")
+include("boundary_layer_conductance.jl")
 
 end
