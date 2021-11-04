@@ -118,6 +118,7 @@ a NamedTuple with the following components:
 [`wind_profile`](@ref)
     
 ```jldoctest; output = false
+using DataFrames
 # estimate d and z0m from canopy height for a dense (LAI=5) and open (LAI=2) canopy
 zh = 25.0
 roughness_parameters(Val(:canopy_height_LAI),zh,5)
@@ -230,6 +231,7 @@ wind speed at given height `z`.
 [`roughness_parameters`](@ref)
 
 ```jldoctest; output = false
+using DataFrames
 heights = 18:2:40  # heights above ground for which to calculate wind speed
 df = DataFrame(Tair=25,pressure=100,wind=[3,4,5],ustar=[0.5,0.6,0.65],H=[200,230,250]) 
 zr=40;zh=25;d=16

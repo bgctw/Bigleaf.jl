@@ -318,6 +318,20 @@ The following figure compares them at absole scale and as difference to the
 
 ![](fig/Esat_rel.svg)
 
+## Boundary layer conductance for trace gases
+
+By default, the function `aerodynamic_conductance` (calling `compute_Gb!`) returns the 
+(quasi-laminar) canopy boundary layer ($G_{b}$) for heat and water vapor 
+(which are assumed to be equal in the `Bigleaf.jl`), as well as for CO$_2$. 
+Functin `add_Gb` calculates $G_b$ for other trace gases, provided that the respective Schmidt 
+number is known. 
+
+```@example doc
+compute_Gb!(thaf, Val(:Thom_1972)) # adds/modifies column Gb_h and Gb_CO2
+add_Gb!(thaf, :Gb_O2 => 0.84, :Gb_CH4 => 0.99) # adds Gb_O2 and Gb_CH4
+select(first(thaf,3), r"Gb_")
+```
+
 ## Wind profile
 
 The 'big-leaf' framework assumes that wind speed is zero at height d + $z_{0m}$ 

@@ -94,6 +94,7 @@ be estimated from the function [`roughness_parameters`](@ref).
 The mutating variant modifies or adds column [`:zeta`].
 
 ```jldoctest; output = false
+using DataFrames
 df = DataFrame(Tair=25, pressure=100, ustar=0.2:0.1:1.0, H=40:20:200)
 zeta = stability_parameter(df;zr=40,d=15)
 all(zeta .< 0)
@@ -175,6 +176,7 @@ a NamedTuple with the following columns:
 
 # Examples  
 ```jldoctest; output = false
+using DataFrames
 zeta = -2:0.5:0.5
 df2 = DataFrame(stability_correction.(zeta; stab_formulation=Val(:Businger_1971)))                         
 propertynames(df2) == [:psi_h, :psi_m]

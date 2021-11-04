@@ -28,6 +28,7 @@ makedocs(;
         hide("metorological_variables.md"),
         hide("stability_correction.md"),
         hide("surface_roughness.md"),
+        hide("boundary_layer_conductance.md"),
         hide("surface_conductance.md"),
         hide("evapotranspiration.md"),
         hide("global_radiation.md"),

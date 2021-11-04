@@ -23,6 +23,11 @@ Pages = ["stability_correction.md",]
 Pages = ["surface_roughness.md",]
 ```
 
+## Boundary Layer Conductance
+```@index
+Pages = ["boundary_layer_conductance.md",]
+```
+
 ## Evapotranspiration
 ```@index
 Pages = ["evapotranspiration.md",]

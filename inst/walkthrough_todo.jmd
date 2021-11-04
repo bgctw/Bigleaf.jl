@@ -440,14 +440,17 @@ We see that in this case, small changes in k have an effect on the calculated va
 
 ## Boundary layer conductance for trace gases
 
-By default, the function `aerodynamic_conductance` returns the (quasi-laminar) canopy boundary layer ($G_{b}$) for heat and water vapor (which are assumed to be equal in the `Bigleaf.jl` package), as well as for CO$_2$. The function further provides the possibility to calculate $G_b$ for other trace gases, provided that the respective Schmidt number is known. Further, if we are only interested in $G_b$ (or the kB$^{-1}$ parameter) we can use one of the following functions: `Gb_Thom`, `Gb_Choudhury`, `Gb_Su`. These functions are integrated in the main function `aerodynamic_conductance`, but the modular design of the package allows them to be called separately. We can demonstrate the calculation of $G_b$ for methane (CH$_4$) with a simple example:
+By default, the functions `aerodynamic_conductance` (calling `compute_Gb!`) returns the 
+(quasi-laminar) canopy boundary layer ($G_{b}$) for heat and water vapor 
+(which are assumed to be equal in the `Bigleaf.jl` package), as well as for CO$_2$. 
+Functin `add_Gb` calculates $G_b$ for other trace gases, provided that the respective Schmidt 
+number is known. 
 
-```julia
-summary(Gb_Thom(thaf$ustar))
-summary(Gb_Thom(thaf$ustar,Sc=0.99,Sc_name="CH4"))
+```@example doc
+compute_Gb!(thaf, Val(:Thom_1972)) # adds/modifies column Gb_h and Gb_CO2
+add_Gb!(thaf, :Gb_O2 => 0.84, :Gb_CH4 => 0.99) # adds Gb_O2 and Gb_CH4
+select(first(thaf,3), r"Gb_")
 ```
-
-In the first line we get the standard output of the function, whereas in the second line we get in addition the $G_b$ for methane.  
 
 
 ## Dealing with uncertainties
