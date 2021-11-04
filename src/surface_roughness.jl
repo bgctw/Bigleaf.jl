@@ -37,7 +37,7 @@ end
 
 
 """
-    roughness_parameters(::Val{:canopy_height},     zh; frac_d=0.7, frac_{z0m}=0.1)
+    roughness_parameters(::Val{:canopy_height},     zh; frac_d=0.7, frac_z0m=0.1)
     roughness_parameters(::Val{:canopy_height_LAI}, zh, LAI; cd=0.2, hs=0.01)
     roughness_parameters(::Val{:wind_profile},      df, zh, zr;
       d = 0.7*zh, psi_m = nothing, constants=bigleaf_constants())
@@ -51,7 +51,7 @@ and roughness length for momentum (z0m).
 
 By canopy height:
 - `frac_d`    : Fraction of displacement height on canopy height (-)
-- `frac_{z0m}`  : Fraction of roughness length on canopy height (-)
+- `frac_z0m`  : Fraction of roughness length on canopy height (-)
 
 By canopy height and LAI
 - `LAI`       : Leaf area index (-) 
@@ -62,10 +62,10 @@ By wind profile
 - `df`        : DataFrame or matrix containing all required variables
   - `wind`      : Wind speed at height zr (m s-1)
   - `ustar`     : Friction velocity (m s-1)
-  - further variables required by [`stability_correction!`](@ref) if `psi_m` is not given
+  - further variables required by [`stability_correction`](@ref) if `psi_m` is not given
 - `zr`        : Instrument (reference) height (m)
 - `d`         : Zero-plane displacement height (m)
-- `psi_m`     : value of the stability function for heat, see [`stability_correction!`](@ref)
+- `psi_m`     : value of the stability function for heat, see [`stability_correction`](@ref)
   Pass `psi_m = 0.0` to neglect stability correction.
 - `z0m`       : Roughness length for momentum (m)
                  
@@ -134,9 +134,9 @@ rp = roughness_parameters(Val(:wind_profile),df,zh,40;d=0.8*zh)
 true
 ``` 
 """                                 
-function roughness_parameters(::Val{:canopy_height}, zh; frac_d=0.7, frac_{z0m}=0.1)
+function roughness_parameters(::Val{:canopy_height}, zh; frac_d=0.7, frac_z0m=0.1)
   d      = frac_d*zh
-  z0m    = frac_{z0m}*zh
+  z0m    = frac_z0m*zh
   z0m_se = missing
   (;d, z0m, z0m_se)
 end
@@ -158,7 +158,8 @@ function roughness_parameters(::Val{:wind_profile}, df, zh, zr;
     psi_m = stability_correction!(copy(df, copycols=false), zr, d; constants).psi_m
   end
   z0m_all = allowmissing(@. (zr - d) * exp(-constants[:k]*df.wind / df.ustar - psi_m))
-  z0m_all[(z0m_all .> zh)] .= missing
+  #z0m_all[(z0m_all .> zh)] .= missing # problems with missings
+  replace!(x -> !ismissing(x) && x > zh ? missing : x, z0m_all)
   nval = sum(.!ismissing.(z0m_all))
   z0m    = median(skipmissing(z0m_all))
   z0m_se = constants[:se_median] * (std(skipmissing(z0m_all)) / sqrt(nval))
@@ -184,14 +185,14 @@ measurements of wind speed.
 For DataFrame variant with supplying stability_parameter
 - `df`:         : DataFrame with columns 
   - `ustar`     : Friction velocity (m s-1)
-- `psi_m`     : value of the stability function for heat, see [`stability_correction!`](@ref)
+- `psi_m`     : value of the stability function for heat, see [`stability_correction`](@ref)
   Pass `psi_m = 0.0` to neglect stability correction.
 For DataFrame varinat where psi_m and z0m are to be estimated
 - `zh`        : canopy height (m)
 - `zr`        : Instrument (reference) height (m)
 - `df`:       : DataFrame with columns 
   - `ustar`     : Friction velocity (m s-1)
-  - `Tair`, `pressure`, `H` : see [`stability_correction!`](@ref)
+  - `Tair`, `pressure`, `H` : see [`stability_correction`](@ref)
   - `wind` : see [`roughness_parameters(Val(:wind_profile), ...)`]
 
 # Details
@@ -243,7 +244,6 @@ plot!(heights, getindex.(ws, 2))
 plot!(heights, getindex.(ws, 3))
 nothing
 # output
-nothing
 ``` 
 """  
 function wind_profile(z::Number, ustar, d, z0m, psi_m = zero(z); constants=bigleaf_constants())

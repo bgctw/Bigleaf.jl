@@ -58,10 +58,12 @@ For more information on the site see e.g. Grünwald & Bernhofer 2007.
 In addition, we will need some ancillary data for this site throughout this tutorial. To ensure consistency, we define them here at the beginning:
 
 ```@example doc
-LAI = 7.6   # leaf area index
-zh  = 26.5  # average vegetation height (m)
-zr  = 42    # sensor height (m)
-Dl  = 0.01  # leaf characteristic dimension (m)
+thal = (
+     LAI = 7.6,   # leaf area index
+     zh  = 26.5,  # average vegetation height (m)
+     zr  = 42,    # sensor height (m)
+     Dl  = 0.01,  # leaf characteristic dimension (m)
+)
 nothing # hide
 ```
 
@@ -316,6 +318,49 @@ The following figure compares them at absole scale and as difference to the
 
 ![](fig/Esat_rel.svg)
 
+## Wind profile
+
+The 'big-leaf' framework assumes that wind speed is zero at height d + $z_{0m}$ 
+(where $z_{0m}$ is the roughness length for momentum) and then increases exponentially with 
+height. The shape of the wind profile further depends on the stability conditions of the 
+air above the canopy.
+In `Bigleaf.jl`, a wind profile can be calculated assuming an exponential increase with 
+height, which is affected by atmospheric stability. Here, we calculate wind speed at 
+heights of 22-60m in steps of 2m. As expected, the gradient in wind speed is strongest 
+close to the surface and weaker at greater heights:
+
+```@example doc
+using Statistics
+wind_heights = 22:2:60.0
+d = 0.7 * thal.zh
+#psi_m = stability_correction!(copy(tha, copycols=false), thal.zr, d).psi_m
+#z0m = roughness_parameters(Val(:wind_profile), tha, thal.zh, thal.zr; psi_m).z0m
+wp = map(wind_heights) do z
+  wind_profile(tha,z,d; zh=thal.zh, zr=thal.zr)
+end
+nothing # hide
+```
+```@setup doc
+wp_means = map(x -> mean(skipmissing(x)), wp)
+wp_sd    = map(x -> std(skipmissing(x)), wp)
+wr_mean = mean(skipmissing(tha.wind)) # measurements at reference height
+wr_sd    = std(skipmissing(tha.wind))
+using Plots # plot wind profiles for the three rows in df
+plot(wp_means, wind_heights, ylab = "height (m)", xlab = "wind speed (m/s)", xerror=wp_sd, 
+  label=nothing)
+scatter!(wp_means, wind_heights, label = nothing)
+```
+```@example doc
+scatter!([wr_mean], [thal.zr], xerror = [wr_sd], markerstrokecolor=:blue, #hide
+  markerstrokewidth=2, label = nothing) # hide
+```
+
+Here, the points denote the mean wind speed and the bars denote the standard deviation
+across time. The blue point/bar represent the values that were measured at zr = 42m. 
+In this case we see that the wind speed as "back-calculated" from the wind profile agrees 
+well with the actual measurements.
+
+
 ## Potential evapotranspiration
 
 For many hydrological applications, it is relevant to get an estimate on the potential 
@@ -354,7 +399,8 @@ lat,long = 51.0, 13.6 # Dresden Germany
 doy = 160
 datetimes = DateTime(2021) .+Day(doy-1) .+ Hour.(hours) #.- Second(round(long*deg2second))
 res3 = @pipe calc_sun_position_hor.(datetimes, lat, long) |> DataFrame(_)
-@df res3 scatter(datetimes, cols([:altitude,:azimuth]), legend = :topleft, xlab="Date and Time", ylab = "rad", xrotation=6)
+@df res3 scatter(datetimes, cols([:altitude,:azimuth]), legend = :topleft, # hide
+  xlab="Date and Time", ylab = "rad", xrotation=6) # hide
 ```
 
 The hour-angle at noon represents the difference to

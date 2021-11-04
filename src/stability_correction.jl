@@ -1,14 +1,16 @@
 """
-Monin-Obukhov Length
+    Monin_Obukhov_length(Tair, pressure, ustar, H; constants)
+    Monin_Obukhov_length!(df;constants=bigleaf_constants())
+    Monin_Obukhov_length(df;constants=bigleaf_constants())
 
 calculates the Monin-Obukhov length.
 
 # Arguments
-- `Tair`      Air temperature (degC)
-- `pressure`  Atmospheric pressure (kPa)
-- `ustar`     Friction velocity (m s-1)
-- `H`         Sensible heat flux (W m-2)
-- df        DataFrame containing all required variables
+- `Tair`      : Air temperature (degC)
+- `pressure`  : Atmospheric pressure (kPa)
+- `ustar`     : Friction velocity (m s-1)
+- `H`         : Sensible heat flux (W m-2)
+- `df`        : DataFrame containing the above variables
 optional
 - `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with entries 
   - `Kelvin` - conversion degree Celsius to Kelvin 
@@ -23,22 +25,26 @@ The Monin-Obukhov length (L) is given by:
  
 where ``\\rho`` is air density (kg m-3).
 
-# Value
-Monin-Obukhov length L (m)
-
 # Note
 Note that L gets very small for very low ustar values with implications
 for subsequent functions using L as input. It is recommended to filter
 data and exclude low ustar values (ustar < ~0.2) beforehand. 
 
-#References
+# Value
+Monin-Obukhov length L (m). The non-mutating DataFrame variant returns a vector,
+the mutating variant add or modifies column `:MOL`.
+
+
+# References
 Foken, T, 2008: Micrometeorology. Springer, Berlin, Germany. 
 
-#See also
+# See also
 [`stability_parameter`](@ref)
 
 ```@example; output = false
-Monin_Obukhov_length(Tair=25,pressure=100,ustar=seq(0.2,1,0.1),H=seq(40,200,20))
+Monin_Obukhov_length(
+  Tair=25,pressure=100,
+  ustar=seq(0.2,1,0.1),H=seq(40,200,20))
 ``` 
 """
 function Monin_Obukhov_length(Tair, pressure, ustar, H; constants=bigleaf_constants())
@@ -56,52 +62,56 @@ function Monin_Obukhov_length(df;constants=bigleaf_constants())
 end
 
 """
-Stability Parameter "zeta"
+    stability_parameter(zr,d,MOL)
+    stability_parameter!(df::AbstractDataFrame; zr,d, MOL=nothing, constants)
+    stability_parameter(df::AbstractDataFrame; zr,d, MOL=nothing, constants)
 
 calculates stability parameter "zeta", a parameter characterizing stratification in the 
 lower atmosphere.
 
 # Arguments             
-- `df`      DataFrame or matrix containing all required variables
-- `Tair`      Air temperature (degC)
-- `pressure`  Atmospheric pressure (kPa)
-- `ustar`     Friction velocity (m s-1)
-- `H`         Sensible heat flux (W m-2)
-- `zr`        Instrument (reference) height (m)
-- `d`         Zero-plane displacement height (m)
-- `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with entries 
-  - `Kelvin` - conversion degree Celsius to Kelvin 
-  - `cp` - specific heat of air for constant pressure (J K-1 1) 
-  - `k` - von Karman constant (-) 
-  - `g` - gravitational acceleration (m s-2)
+- `zr`  : Instrument (reference) height (m)
+- `d`   : Zero-plane displacement height (m)
+- `MOL` : Monin-Obukhov-length L (m)
+- `df`  : DataFrame containting the variables required by [`Monin_Obukhov_length`](@ref)
+optional
+- `constants=`[`bigleaf_constants`](@ref)`()`
+
+If `MOL=nothing` in the DataFrame variants, it is computed by 
+[`Monin_Obukhov_length`](@ref) using `df` and `constants`.
 
 # Details
 The stability parameter ``\\zeta`` is given by:
 
-  ``\\zeta = (zr - d) / L``
+``\\zeta = (zr - d) / L``
 
 where L is the Monin-Obukhov length (m), calculated from the ction
 [`Monin_Obukhov_length`](@ref). The displacement height can 
 be estimated from the function [`roughness_parameters`](@ref).
          
 # Value
- - ``\\zeta`` - : stability parameter (-)
+``\\zeta``: stability parameter (-). The nonmutainting DataFrame variant returns a vector.
+The mutating variant modifies or adds column [`:zeta`].
 
-```@example; output = false
-df = DataFrame(Tair=25,pressure=100,ustar=seq(0.2,1,0.1),H=seq(40,200,20))
-stability_parameter(df,zr=40,d=15)
+```jldoctest; output = false
+df = DataFrame(Tair=25, pressure=100, ustar=0.2:0.1:1.0, H=40:20:200)
+zeta = stability_parameter(df;zr=40,d=15)
+all(zeta .< 0)
+# output
+true
 ``` 
 """ 
 function stability_parameter(zr,d,MOL)
   zeta = (zr - d) / MOL
 end
-function stability_parameter!(df::AbstractDataFrame; zr,d,
-  MOL = Monin_Obukhov_length(df))
-  df[!,:zeta] .= stability_parameter(df; zr,d,MOL)
+function stability_parameter!(df::AbstractDataFrame; zr,d, MOL=nothing,
+  constants=bigleaf_constants())
+  df[!,:zeta] .= stability_parameter(df; zr,d,MOL,constants)
   df
 end
-function stability_parameter(df::AbstractDataFrame; zr,d,
-  MOL = Monin_Obukhov_length(df))
+function stability_parameter(df::AbstractDataFrame; zr,d, MOL=nothing,
+  constants=bigleaf_constants())
+  if isnothing(MOL) MOL = Monin_Obukhov_length(df; constants); end
   stability_parameter.(zr,d,MOL)
 end
 
@@ -110,14 +120,20 @@ end
       stab_formulation=Val(:Dyer_1970))
     stability_correction(Tair,pressure,ustar,H, z,d; constants,
       stab_formulation=Val(:Dyer_1970))
+    stability_correction!(df, z, d; 
+      stab_formulation=Val(:Dyer_1970), constants = bigleaf_constants())
     
 Integrated Stability Correction Functions for Heat and Momentum
 
 # Arguments
 - `zeta`             : Stability parameter zeta (-)
 - `stab_formulation` : Formulation for the stability function. Either 
-  `Val(:Dyer_1970)`, or `Val(:Businger_1971)` or `Val(:no_stability_correction)`
-In the alternative form computes `zeta` by [`stability_parameter`](@ref) and
+            `Val(:Dyer_1970)`, or `Val(:Businger_1971)` or `Val(:no_stability_correction)`
+- `Tair`,`pressure`,`ustar`,`H` : see [`Monin_Obukhov_length`](@ref)
+- `z`,`d`            : see [`stability_parameter`](@ref)
+- `df`  : DataFrame containting the variables required by [`Monin_Obukhov_length`](@ref)
+
+In the second and third form computes `zeta` by [`stability_parameter`](@ref) and
 [`Monin_Obukhov_length`](@ref) and requires respective arguments.
 
 # Details

@@ -12,6 +12,12 @@ Pages = ["index.md",]
 ```@index
 Pages = ["metorological_variables.md",]
 ```
+
+## Stability correction
+```@index
+Pages = ["stability_correction.md",]
+```
+
 ## Surface roughness
 ```@index
 Pages = ["surface_roughness.md",]

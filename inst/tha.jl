@@ -1,3 +1,5 @@
+using Bigleaf
+
 using DataFrames, Pipe, Missings
 using Dates, TimeZones
 using Statistics
@@ -31,6 +33,9 @@ setinvalid_range!(thaf,
 setinvalid_nongrowingseason!(thaf, 0.4)      
 setinvalid_afterprecip!(thaf; min_precip=0.02, hours_after=24)
 
+function tmpf()
+    
+end
 
 # tha48 and tha_heights see runtests.jl
 
