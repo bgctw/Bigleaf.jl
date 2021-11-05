@@ -22,6 +22,24 @@
     @test df2.Gb_N20[1] == Gb.Gb_N20
 end
 
+@testset "compute_Gb Gb_constant_kB1" begin
+    kB_h = 1.18
+    Gb = Gb_constant_kB1(0.1, kB_h)
+    @test keys(Gb) == (:Rb_h, :Gb_h, :kB_h, :Gb_CO2)
+    @test all(isapprox.(values(Gb), values((Rb_h = 28.8, Gb_h = 0.0347, kB_h = 1.18, Gb_CO2 = 0.0264)), rtol = 1e-2))
+    Gb = Gb_constant_kB1(missing, kB_h)
+    @test keys(Gb) == (:Rb_h, :Gb_h, :kB_h, :Gb_CO2)
+    @test Gb.kB_h == kB_h
+    @test all(ismissing.(values(Gb[SA[:Rb_h, :Gb_h, :Gb_CO2]])))
+    #
+    # DataFrame variant
+    dfo = DataFrame(ustar = SA[0.1,missing,0.3])
+    df = copy(dfo)
+    compute_Gb!(df, Val(:constant_kB1); kB_h)
+    @test propertynames(df) == [:ustar, :Rb_h, :Gb_h, :kB_h, :Gb_CO2]
+    @test all(isapprox.(values(df[1,2:end]), values((Rb_h = 28.8, Gb_h = 0.0347, kB_h = 1.18, Gb_CO2 = 0.0264)), rtol = 1e-2))
+end
+
 @testset "compute_Gb Gb_Thom" begin
     Gb = Gb_Thom(0.1)
     @test keys(Gb) == (:Rb_h, :Gb_h, :kB_h, :Gb_CO2)

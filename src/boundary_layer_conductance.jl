@@ -10,6 +10,7 @@ For `Val(:Thom_1972)`
   - `Val(:Thom_1972)`: see [`Gb_Thom`](@ref)
   - `Val(:Choudhury_1988)`: see [`Gb_Choudhury`](@ref)
   - `Val(:Su_2001)`: see [`Gb_Su`](@ref)
+  - `Val(:constant_kB1)`: see [`Gb_constant_kB1`](@ref)
  
 The different approaches required different variables present in `df` and
 different keyword arguments.
@@ -42,6 +43,9 @@ true
 function compute_Gb!(df::AbstractDataFrame, approach::Val{:Thom_1972}; kwargs...)
   compute_Gb_!(df, approach, :ustar; kwargs...) # inputcols
 end
+function compute_Gb!(df::AbstractDataFrame, approach::Val{:constant_kB1}; kwargs...)
+  compute_Gb_!(df, approach, :ustar; kwargs...) # inputcols
+end
 function compute_Gb!(df::AbstractDataFrame, approach::Val{:Choudhury_1988}; kwargs...)
   Gb_Choudhury!(df; kwargs...)
 end
@@ -56,6 +60,7 @@ function compute_Gb_!(df::AbstractDataFrame, approach, inputcols;
   transform!(df, :ustar => ByRow(fGb) => SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2])
 end
 compute_Gb(::Val{:Thom_1972}, args...; kwargs...) = Gb_Thom(args...; kwargs...)
+compute_Gb(::Val{:constant_kB1}, args...; kB_h) = Gb_constant_kB1(args..., kB_h)
 
 """
     add_Gb(Gb_h::Union{Missing,Number}, Sc::Vararg{Pair,N}; constants)
@@ -150,6 +155,25 @@ function Gb_Thom(ustar::Union{Missing,Number}; constants=bigleaf_constants())
   (;Rb_h, Gb_h, kB_h, Gb_CO2)
 end
 
+"""
+    Gb_constant_kB1(ustar; constants)
+    compute_Gb!(df, Val{:Thom_1972})
+
+Boundary Layer Conductance using constant XX
+
+# Arguments  
+- `kB_h`    : kB-1 value for heat transfer
+- `constants=`[`bigleaf_constants`](@ref)`()`
+ 
+# Details
+Rb_h computed by ``kB_h/(k * ustar)``, where k is the von Karman constant.
+"""
+function Gb_constant_kB1(ustar, kB_h; constants=bigleaf_constants())
+  Rb_h = kB_h/(constants[:k] * ustar)
+  Gb_h = 1/Rb_h
+  Gb_CO2 = Gb_h / (constants[:Sc_CO2]/constants[:Pr])^0.67
+  (;Rb_h, Gb_h, kB_h, Gb_CO2)
+end
   
 """
     Gb_Choudhury(ustar; leafwidth, LAI, wind_zh, constants)

@@ -29,7 +29,8 @@ export potential_ET, potential_ET!, equilibrium_imposed_ET, equilibrium_imposed_
 export setinvalid_range!, setinvalid_qualityflag!, 
     setinvalid_nongrowingseason!, get_growingseason, setinvalid_afterprecip!
 export decoupling, surface_conductance, aerodynamic_conductance
-export compute_Gb, compute_Gb!, add_Gb, add_Gb!, Gb_Thom, Gb_Choudhury, Gb_Su
+export compute_Gb, compute_Gb!, add_Gb, add_Gb!, 
+    Gb_Thom, Gb_Choudhury, Gb_Su, Gb_constant_kB1
 export wind_profile
 export Monin_Obukhov_length, Monin_Obukhov_length!, stability_parameter, 
     stability_parameter!, stability_correction, stability_correction!,
