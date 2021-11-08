@@ -167,7 +167,10 @@ from the function `roughness_parameters` within `wind_profile` if `wind_profile 
 and/or `Rb_model` = `Val(:Su_2001)` or `Val(:Choudhury_1988)` The `roughness_parameters`
 function estimates a single `z0m` value for the entire time period! If a varying `z0m` value 
 (e.g. across seasons or years) is required, `z0m` should be provided as input argument.
-      
+     
+
+TODO
+For adding aerodynamic conductance for other species see [`add_Ga!`](@ref).
         
 # References
 - Verma, S., 1989: Aerodynamic resistances to transfers of heat, mass and momentum.
@@ -196,105 +199,102 @@ function estimates a single `z0m` value for the entire time period! If a varying
 # aerodynamic_conductance(df,Rb_model=Val(:Su_2001),zr=40,zh=25,d=17.5,Dl=0.05,N=2,fc=0.8)
 ``` 
 """
-function aerodynamic_conductance(df;
-  zr,zh,d,z0m=nothing,Dl,N=2,fc=nothing,LAI,Cd=0.2,hs=0.01,wind_profile=false,
-  stab_correction=true,stab_formulation=Val(:Dyer_1970),
-  Rb_model=c(Val(:Thom_1972),Val(:Choudhury_1988),Val(:Su_2001),Val(:constant_kB1)),
-  kB_h=nothing,Sc=nothing,Sc_name=nothing,constants=bigleaf_constants()
+function aerodynamic_conductance!(df, Rb_model = Val(:Thom_1972);
+  zr,zh=nothing,d = 0.7*zh ,z0m=nothing,Dl=nothing,N=2,fc=nothing,LAI=nothing,Cd=0.2,hs=0.01,
+  leafwidth=nothing,
+  wind_profile=false,
+  stab_formulation=Val(:Dyer_1970),
+  kB_h=nothing,constants=bigleaf_constants()
   )
-
-  ## calculate canopy boundary layer conductance (Gb)
-  # if Rb_model in SA[Val(:Thom_1972),Val(:Choudhury_1988),Val(:Su_2001)]
-  #   if Rb_model == Val(:Thom_1972)
-  #     Gb_mod = Gb_Thom(ustar=ustar,Sc=Sc,Sc_name=Sc_name,constants=constants)
-  #   elseif Rb_model == Val(:Choudhury_1988)
-  #     Gb_mod = Gb_Choudhury(df,Tair=Tair,pressure=pressure,wind=wind,ustar=ustar,
-  #                            H=H,leafwidth=Dl,LAI=LAI,zh=zh,zr=zr,d=d,z0m=z0m,
-  #                            stab_formulation=stab_formulation,Sc=Sc,Sc_name=Sc_name,
-  #                            constants=constants)
-  #   elseif Rb_model == Val(:Su_2001)
-  #     Gb_mod = Gb_Su(data=df,Tair=Tair,pressure=pressure,ustar=ustar,wind=wind,
-  #                     H=H,zh=zh,zr=zr,d=d,z0m=z0m,Dl=Dl,N=N,fc=fc,LAI=LAI,Cd=Cd,hs=hs,
-  #                     stab_formulation=stab_formulation,Sc=Sc,Sc_name=Sc_name,
-  #                     constants=constants)  
-  #   end
-  #   kB_h = Gb_mod.kB_h
-  #   Rb_h = Gb_mod.Rb_h
-  #   Gb_h = Gb_mod.Gb_h
-  #   # TODO
-  #   # Gb_x = DataFrame(Gb_mod[,grep(names(Gb_mod),pattern="Gb_")[-1]])
-  #   # colnames(Gb_x) = grep(colnames(Gb_mod),pattern="Gb_",value=true)[-1]
-  # elseif Rb_model == Val(:constant_kB1)
-  #   isnothing(kB_h) && error(
-  #     "value of kB-1 has to be specified if Rb_model is set to 'constant_kB-1'!")
-  #   Rb_h = kB_h/(constants[:k] * ustar)
-  #   Gb_h = 1/Rb_h
-  #   if (!isnothing(Sc) || !isnothing(Sc_name))
-  #     length(Sc) != length(Sc_name) && error(
-  #       "arguments 'Sc' and 'Sc_name' must have the same length")
-  #     !is_numeric(Sc) && error("argument 'Sc' must be numeric")
-  #     Sc   = SA[constants[:Sc_CO2], Sc]
-  #     Gb_x = DataFrame(lapply(Sc,function(x) Gb_h / (x/constants[:Pr])^0.67))
-  #     colnames(Gb_x) = paste0("Gb_",c("CO2",Sc_name))
-  #   end
-  # end 
-  
-#   ## calculate aerodynamic conductance for momentum (Ga_m)
-#   if (wind_profile)
-#     if (isnothing(z0m) & Rb_model in c(Val(:constant_kB1),Val(:Thom_1972)))
-#       stop("z0m must be provided if wind_profile=true!")
-# elseif (isnothing(z0m) & Rb_model in c(Val(:Choudhury_1988),Val(:Su_2001)))
-#       # z0m estimated as in Choudhury_1988 or Su_2001
-#       z0m = roughness_parameters(method=Val(:wind_profile),zh=zh,zr=zr,d=d,data=df,
-#                                   Tair=Tair,pressure=pressure,wind=wind,ustar=ustar,H=H,
-#                                   stab_roughness=true,stab_formulation=stab_formulation,
-#                                   constants=constants)[,"z0m"]
-# end
-    
-#     if (stab_correction)
-      
-#       zeta  =  stability_parameter(data=df,Tair=Tair,pressure=pressure,ustar=ustar,
-#                                     H=H,zr=zr,d=d,constants=constants)
-      
-#       if (stab_formulation in c(Val(:Dyer_1970),Val(:Businger_1971)))
-        
-#         psi_h = stability_correction(zeta,formulation=stab_formulation)[,"psi_h"]
-        
-# else 
-#         stop("'stab_formulation' has to be one of 'Dyer_1970' or 'Businger_1971'.
-#              Choose 'stab_correction = false' if no stability correction should be applied.")
-# end
-      
-#       Ra_m  = pmax((log((zr - d)/z0m) - psi_h),0) / (constants[:k]*ustar)
-      
-# else 
-        
-#         Ra_m  = pmax((log((zr - d)/z0m)),0) / (constants[:k]*ustar)
-#         zeta = psi_h = rep(NA_integer_,length=length(Ra_m))
-        
-# end
-    
-# else 
-    
-#     if ((!missing(zr) | !missing(d) | !missing(z0m)) & Rb_model in c(Val(:constant_kB1),Val(:Thom_1972)))
-#       @warn"Provided roughness length parameters (zr,d,z0m) are not used if 'wind_profile = false' (the default). Ra_m is calculated as wind / ustar^2")
-# end
-    
-#     Ra_m = wind / ustar^2
-#     zeta = psi_h = rep(NA_integer_,length=length(Ra_m))
-    
-# end
-  
-#   Ga_m   = 1/Ra_m
-#   Ra_h   = Ra_m + Rb_h
-#   Ga_h   = 1/Ra_h
-#   Ga_x   = 1/(Ra_m + 1/Gb_x)
-#   Ra_CO2 = 1/Ga_x[,1]
-#   colnames(Ga_x) = paste0("Ga_",c("CO2",Sc_name))
-  
-#   Gab_x = cbind(Ga_x,Gb_x)
-#   Gab_x = Gab_x[rep(c(1,ncol(Gab_x)-(ncol(Gab_x)/2-1)),ncol(Gab_x)/2) + sort(rep(0:(ncol(Gab_x)/2-1),2))] # reorder columns
-
+  # add zeta, psi_h and compute z0m
+  if !(stab_formulation isa Val{:no_stability_correction})
+    stability_parameter!(df::AbstractDataFrame; zr,d, constants)
+  else
+    df[!,:zeta] .= missing
+  end
+  # adds columns psi_m and psi_h, (:no_stability_correction: just add 0s without using zeta)
+  stability_correction!(df; stab_formulation, constants)
+  if isnothing(z0m)
+    z0m = roughness_parameters(Val(:wind_profile), df, zh, zr; psi_m = df.psi_m).z0m
+  end
+  # calculate canopy boundary layer conductance (Gb)
+  Rb_model isa Val{:Thom_1972} && compute_Gb!(df, Rb_model; constants)
+  Rb_model isa Val{:constant_kB1} && compute_Gb!(df, Rb_model; kB_h, constants)
+  Rb_model isa Val{:Choudhury_1988} && compute_Gb!(df, Rb_model; 
+    leafwidth, LAI, zh, zr, d, z0m, stab_formulation, constants)
+  Rb_model isa Val{:Su_2001} && compute_Gb!(df, Rb_model; 
+    Dl, fc, N, Cd, hs, z0m, zh, zr, d, LAI, stab_formulation, constants)
+  # calculate aerodynamic conductance for momentum (Ga_m)
+  # TODO factor out to own function
+  df[!,:Ra_m] .= @. max((log((zr - d)/z0m) - df.psi_h),0) / (constants[:k]*ustar)
+  df[!,:Ga_m] .= 1/df.Ra_m
+  df[!,:Ra_h] .= df.Ra_m + df.Rb_h
+  df[!,:Ga_h] .= 1/df.Ra_h
+  df[!,:GA_CO2] .=  1/(df.Ra_m + 1/df.Gb_CO2)
+  df[!,:Ra_CO2] = 1/df.Ga_CO2
+  # TODO add Ga for other species:
+  # Ga_x   <- 1/(Ra_m + 1/Gb_x)
+  df
 #   return(DataFrame(Ga_m,Ra_m,Ga_h,Ra_h,Gb_h,Rb_h,kB_h,zeta,psi_h,Ra_CO2,Gab_x))
 end
+
+"""
+    add_Ga(Gb_h, Ga_m, Sc::Vararg{Pair,N}; constants)
+    add_Ga!(df::AbstractDataFrame, Sc; Gb_h = df.Gb_h, Ga_m = df.Ga.m, kwargs...) 
+
+compute additional aerodynamic conductance quantities for given Schmidt-numbers
+
+# Arguments  
+- `Gb_h`     : Boundary layer conductance for heat transfer (m s-1)
+- `Ga_m`     : Aerodynamic conductance for momentum (m s-1)
+- `Sc`       : several `Pair{Symbol,Number}` Output name and Schmidt number of 
+               additional conductances to be calculated
+- `df`       : DataFrame to add output columns               
+optional
+- `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with entries 
+  - `Pr` - Prandtl number 
+
+# Details
+Aerodynamic conductance is calculated as
+
+``Ga_x = 1/(1/Ga_m + 1/Gb_x)``
+
+where Gb_x is the Boundary layer conductance for other quantities x is calculated 
+based on boundary layer for heat transfer, Schmidt-Number, and  Prantl number,
+as documented in [`add_Gb`](@ref).
+
+# Value
+a NameTuple or `df` with keys `Ga_x` where `x` are the keys in `Sc` and 
+corresponding aerodynamic conductances (m s-1).
+
+# Examples
+```jldoctest; output=false
+using DataFrames
+df = DataFrame(Gb_h=[0.02, missing, 0.055], Ga_m = [0.03, 0.03, 0.03])
+add_Ga!(df, :O2 => 0.84, :CH4 => 0.99)
+propertynames(df)[3:4] == [:Ga_O2, :Ga_CH4]
+# output
+true
+```
+"""
+function add_Ga(Gb_h::Union{Missing,Number}, Ga_m::Union{Missing,Number}, 
+  Sc::Vararg{Pair,N}; kwargs...) where N
+  Scn, Scv = get_names_and_values("Ga_", Sc...)
+  add_Ga_(Gb_h, Ga_m, Scn, Scv; kwargs...)
+end
+function add_Ga_(Gb_h::Union{Missing,Number}, Ga_m::Union{Missing,Number}, 
+  Scn::NTuple{N,Symbol}, Scv::NTuple{N};  constants=bigleaf_constants()) where N 
+  Gbx = add_Gb_(Gb_h, Scn, Scv; constants)
+  Gaxv = ntuple(i -> 1/(1/Ga_m + 1/Gbx[i]), length(Gbx))
+  Gax = NamedTuple{Scn}(Gaxv)
+end
+function add_Ga!(df::AbstractDataFrame, Sc::Vararg{Pair,N}; Gb_h = df.Gb_h, Ga_m = df.Ga_m, kwargs...) where N
+  N == 0 && return(df)
+  Scn, Scv = get_names_and_values("Ga_", Sc...)
+  ft() = add_Ga_.(Gb_h, Ga_m, Ref(Scn), Ref(Scv); kwargs...)
+  transform!(df, [] => ft => AsTable)
+end
+
+
+
 

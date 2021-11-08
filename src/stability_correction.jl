@@ -218,6 +218,7 @@ function get_stability_coefs_unstable(::Val{:Dyer_1970}, zeta)
   (;y_h, y_m)
 end
 
+#TODO z or zr here?
 function stability_correction(Tair,pressure,ustar,H, z,d; 
   stab_formulation=Val(:Dyer_1970), constants = bigleaf_constants())
   stab_formulation isa Val{:no_stability_correction} && return(
@@ -225,6 +226,18 @@ function stability_correction(Tair,pressure,ustar,H, z,d;
   MOL = Monin_Obukhov_length(Tair,pressure,ustar,H; constants)
   zeta  = stability_parameter(z,d,MOL)
   stability_correction(zeta; stab_formulation)
+end
+
+function stability_correction!(df; zeta=df.zeta, 
+  stab_formulation=Val(:Dyer_1970), constants = bigleaf_constants())
+  # cannot dispatch on keyword argument, hence need if-clause
+  if stab_formulation isa Val{:no_stability_correction}
+    df[!,:psi_h] .= 0.0
+    df[!,:psi_m] .= 0.0
+    return(df)
+  end
+  ft() = stability_correction.(zeta; stab_formulation)
+  transform!(df, [] => ft => AsTable)
 end
 
 function stability_correction!(df, z, d; 

@@ -42,6 +42,26 @@ end
     @test resm == (psi_h = 0.0, psi_m = 0.0)
 end
 
+@testset "stability_correction DataFrame variant" begin
+    zr=40;d=15
+    dfo = DataFrame(Tair=25, pressure=100, ustar=0.2:0.1:1.0, H=40:20:200)
+    df = copy(dfo)
+    stability_correction!(df, zr, d)
+    propertynames(df)[(end-1):end] == SA[:psi_h, :psi_m]
+    #
+    dfm = copy(dfo)
+    stability_correction!(dfm, zr, d; stab_formulation = Val(:no_stability_correction))
+    propertynames(dfm)[(end-1):end] == SA[:psi_h, :psi_m]
+    @test all(iszero.(dfm.psi_h))
+    @test all(iszero.(dfm.psi_m))
+    #
+    df2 = copy(dfo)
+    stability_parameter!(df2; zr, d) # adds zeta
+    stability_correction!(df2)
+    @test df2.psi_h == df.psi_h
+    @test df2.psi_m == df.psi_m
+end
+
 @testset "stability_correction from raw" begin
     datetime, ustar, Tair, pressure, H = values(tha48[24,1:5])
     z=40.0;d=15.0

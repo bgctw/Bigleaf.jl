@@ -153,10 +153,12 @@ end
 # docu: supply psi_m = 0 for no stability correction, default method
 # if psi_m is given df only needs wind and ustar
 function roughness_parameters(::Val{:wind_profile}, df, zh, zr;
-  d = 0.7*zh, psi_m = nothing, constants=bigleaf_constants()
+  d = 0.7*zh, psi_m = nothing, stab_formulation=Val(:Dyer_1970), 
+  constants=bigleaf_constants()
   )
   if isnothing(psi_m)
-    psi_m = stability_correction!(copy(df, copycols=false), zr, d; constants).psi_m
+    psi_m = stability_correction!(copy(df, copycols=false), zr, d; 
+      stab_formulation, constants).psi_m
   end
   z0m_all = allowmissing(@. (zr - d) * exp(-constants[:k]*df.wind / df.ustar - psi_m))
   #z0m_all[(z0m_all .> zh)] .= missing # problems with missings
@@ -265,6 +267,7 @@ function wind_profile(df::AbstractDataFrame, z, d, z0m = nothing;
   zh = nothing, zr = nothing, 
   stab_formulation = Val(:Dyer_1970), constants = bigleaf_constants()
   )
+  # TODO providingn z or zr to stabiity correction?
   psi_m = stability_correction!(
     copy(df, copycols=false), z, d; stab_formulation, constants).psi_m
   if isnothing(z0m)

@@ -60,7 +60,7 @@ function compute_Gb_!(df::AbstractDataFrame, approach, inputcols;
   transform!(df, :ustar => ByRow(fGb) => SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2])
 end
 compute_Gb(::Val{:Thom_1972}, args...; kwargs...) = Gb_Thom(args...; kwargs...)
-compute_Gb(::Val{:constant_kB1}, args...; kB_h) = Gb_constant_kB1(args..., kB_h)
+compute_Gb(::Val{:constant_kB1}, args...; kB_h, constants) = Gb_constant_kB1(args..., kB_h; constants)
 
 """
     add_Gb(Gb_h::Union{Missing,Number}, Sc::Vararg{Pair,N}; constants)
@@ -86,29 +86,38 @@ based on boundary layer for heat transfer as (Hicks et al. 1987):
 where `Sc_x` is the Schmidt number of quantity x, and Pr is the Prandtl number (0.71).
 
 # Value
-a NameTuple or `df` with keys as in `Sc` and corresponding conductances (m s-1)
+a NameTuple or `df` with keys `Gb_x` where `x` are the keys in `Sc` and 
+corresponding boundary layer conductances (m s-1).
 
 # Examples
 ```jldoctest; output=false
 using DataFrames
 df = DataFrame(Gb_h=[0.02, missing, 0.055])
-add_Gb!(df, :Gb_O2 => 0.84, :Gb_CH4 => 0.99)
+add_Gb!(df, :O2 => 0.84, :CH4 => 0.99)
 propertynames(df)[2:3] == [:Gb_O2, :Gb_CH4]
 # output
 true
 ```
 """
-function add_Gb(Gb_h::Union{Missing,Number}, Sc::Vararg{Pair,N}; 
-  constants=bigleaf_constants()) where N
-   Scn = ntuple(i -> Sc[i].first, N)
-   Scv = ntuple(i -> Sc[i].second, N)
-   Gbxv = @. Gb_h / (Scv/constants[:Pr])^0.67
-   Gbx = NamedTuple{Scn}(Gbxv)
+function add_Gb(Gb_h::Union{Missing,Number}, Sc::Vararg{Pair,N}; kwargs...) where N
+  Scn, Scv = get_names_and_values("Gb_", Sc...)
+  add_Gb_(Gb_h, Scn, Scv; kwargs...)
+end
+function add_Gb_(Gb_h::Union{Missing,Number}, Scn::NTuple{N,Symbol}, Scv::NTuple{N}; 
+  constants=bigleaf_constants()) where N 
+  Gbxv = @. Gb_h / (Scv/constants[:Pr])^0.67
+  Gbx = NamedTuple{Scn}(Gbxv)
 end
 function add_Gb!(df::AbstractDataFrame, Sc::Vararg{Pair,N}; Gb_h = df.Gb_h, kwargs...) where N
   N == 0 && return(df)
-  ft(Gb_h) = add_Gb(Gb_h, Sc...; kwargs...)
-  transform!(df, :Gb_h => ByRow(ft) => AsTable)
+  Scn, Scv = get_names_and_values("Gb_", Sc...)
+  ft() = add_Gb_.(Gb_h, Ref(Scn), Ref(Scv); kwargs...)
+  transform!(df, [] => ft => AsTable)
+end
+function get_names_and_values(prefix::AbstractString, Sc::Vararg{Pair,N}) where N
+  Scn = ntuple(i -> Symbol(prefix * string(Sc[i].first)), N)
+  Scv = ntuple(i -> Sc[i].second, N)
+  Scn, Scv
 end
 
 """
@@ -381,6 +390,8 @@ function Gb_Su!(df::AbstractDataFrame; wind_zh=nothing, Dl, fc=nothing,
     isnothing(LAI) && error("one of 'fc' or 'LAI' must be provided")
     fc = (1-exp(-LAI/2)) 
   end
+  isnothing(Dl) && error(
+    "need to provide keyword argument Dl with :Su_2001 method")
   inputcols = SA[:Tair,:pressure,:ustar]
   # Broadcasting does not work over keyword arguments, need to pass as positional
   fwind(wind_zh, args...; kwargs...) = Gb_Su(args...; wind_zh, kwargs...)

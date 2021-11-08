@@ -1,6 +1,7 @@
 using Bigleaf
 using Test, StableRNGs
-using Pipe, DataFrames, Dates, TimeZones
+using Pipe: @pipe 
+using DataFrames, Dates, TimeZones
 using StaticArrays
 using Statistics, StatsBase
 

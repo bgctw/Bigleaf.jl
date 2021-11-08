@@ -34,8 +34,8 @@ export compute_Gb, compute_Gb!, add_Gb, add_Gb!,
 export wind_profile
 export Monin_Obukhov_length, Monin_Obukhov_length!, stability_parameter, 
     stability_parameter!, stability_correction, stability_correction!,
-    roughness_parameters, Reynolds_Number 
-
+    roughness_parameters, Reynolds_Number
+export aerodynamic_conductance!, add_Ga, add_Ga!  
 
 include("util.jl")    
 include("bigleaf_constants.jl")
@@ -48,5 +48,6 @@ include("filter_data.jl")
 include("stability_correction.jl")
 include("surface_roughness.jl")
 include("boundary_layer_conductance.jl")
+include("aerodynamic_conductance.jl")
 
 end

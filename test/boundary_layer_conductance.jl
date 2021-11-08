@@ -2,12 +2,12 @@
     Gb_h = 0.0347
     @test add_Gb(Gb_h) == NamedTuple()
     #
-    Gb = add_Gb(Gb_h, :Gb_N20 => 2, :Gb_CH4 => 4)
+    Gb = add_Gb(Gb_h, :N20 => 2, :CH4 => 4)
     @test keys(Gb) == (:Gb_N20, :Gb_CH4)
     @test ≈(Gb.Gb_N20, 0.0173, rtol = 1/100)
     @test ≈(Gb.Gb_CH4, 0.0109, rtol = 1/100)
     #
-    Gbm = add_Gb(missing, :Gb_N20 => 2, :Gb_CH4 => 4)
+    Gbm = add_Gb(missing, :N20 => 2, :CH4 => 4)
     @test keys(Gbm) == (:Gb_N20, :Gb_CH4)
     @test all(ismissing.(values(Gbm)))
     # 
@@ -16,7 +16,7 @@
     df = copy(dfo)
     df2 = add_Gb!(df)
     @test isequal(df2, dfo)
-    df2 = add_Gb!(df, :Gb_N20 => 2, :Gb_CH4 => 4)
+    df2 = add_Gb!(df, :N20 => 2, :CH4 => 4)
     @test df2 === df # mutating
     @test propertynames(df2)[end-1:end] == [:Gb_N20, :Gb_CH4]
     @test df2.Gb_N20[1] == Gb.Gb_N20
