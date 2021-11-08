@@ -251,11 +251,10 @@ setinvalid_afterprecip!(thaf; min_precip=0.02, hours_after=24)
 sum(.!thaf.valid) # some more invalids
 ```
 
+In this walkthrough we use the data as filtered above:
 ```@example doc
 thas = subset(thaf, :valid)
 ```
-
-
 
 
 ## Meteorological variables
@@ -384,9 +383,9 @@ Functin `add_Gb` calculates $G_b$ for other trace gases, provided that the respe
 number is known. 
 
 ```@example doc
-compute_Gb!(thaf, Val(:Thom_1972)) # adds/modifies column Gb_h and Gb_CO2
-add_Gb!(thaf, :Gb_O2 => 0.84, :Gb_CH4 => 0.99) # adds Gb_O2 and Gb_CH4
-select(first(thaf,3), r"Gb_")
+compute_Gb!(thas, Val(:Thom_1972)) # adds/modifies column Gb_h and Gb_CO2
+add_Gb!(thas, :Gb_O2 => 0.84, :Gb_CH4 => 0.99) # adds Gb_O2 and Gb_CH4
+select(first(thas,3), r"Gb_")
 ```
 
 ## Wind profile
@@ -404,18 +403,17 @@ close to the surface and weaker at greater heights:
 using Statistics
 wind_heights = 22:2:60.0
 d = 0.7 * thal.zh
-#psi_m = stability_correction!(copy(tha, copycols=false), thal.zr, d).psi_m
-#z0m = roughness_parameters(Val(:wind_profile), tha, thal.zh, thal.zr; psi_m).z0m
+z0m = roughness_parameters(Val(:wind_profile), thas, thal.zh, thal.zr).z0m
 wp = map(wind_heights) do z
-  wind_profile(tha,z,d; zh=thal.zh, zr=thal.zr)
+  wind_profile(thas,z,d, z0m; zh=thal.zh, zr=thal.zr)
 end
 nothing # hide
 ```
 ```@setup doc
 wp_means = map(x -> mean(skipmissing(x)), wp)
 wp_sd    = map(x -> std(skipmissing(x)), wp)
-wr_mean = mean(skipmissing(tha.wind)) # measurements at reference height
-wr_sd    = std(skipmissing(tha.wind))
+wr_mean = mean(skipmissing(thas.wind)) # measurements at reference height
+wr_sd    = std(skipmissing(thas.wind))
 using Plots # plot wind profiles for the three rows in df
 plot(wp_means, wind_heights, ylab = "height (m)", xlab = "wind speed (m/s)", xerror=wp_sd, 
   label=nothing)
@@ -439,11 +437,11 @@ evapotranspiration (PET). At the moment, the `Bigleaf.jl` contains two formulati
 for the estimate of PET: the Priestley-Taylor equation, and the Penman-Monteith equation:
 
 ```@example doc
-potential_ET!(thaf, Val(:PriestleyTaylor); G = thaf.G, infoGS = false)
+potential_ET!(thas, Val(:PriestleyTaylor); G = thas.G, infoGS = false)
 # TODO need aerodynamci and surface conductance to compute Ga and Gs_mol before
-# potential_ET!(thaf, Val(:PenmanMonteith);  G = thaf.G, 
-#        Gs_pot=quantile(skipmissing(thaf.Gs_mol),0.95))
-select(thaf[24:26,:], :datetime, :ET_pot, :LE_pot)
+# potential_ET!(thas, Val(:PenmanMonteith);  G = thas.G, 
+#        Gs_pot=quantile(skipmissing(thas.Gs_mol),0.95))
+select(thas[24:26,:], :datetime, :ET_pot, :LE_pot)
 ```
 
 In the second calculation it is important to provide an estimate of aerodynamic 

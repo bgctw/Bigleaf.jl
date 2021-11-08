@@ -268,14 +268,16 @@ function wind_profile(df::AbstractDataFrame, z, d, z0m = nothing;
   stab_formulation = Val(:Dyer_1970), constants = bigleaf_constants()
   )
   # TODO providingn z or zr to stabiity correction?
-  psi_m = stability_correction!(
-    copy(df, copycols=false), z, d; stab_formulation, constants).psi_m
   if isnothing(z0m)
     (isnothing(zh) || isnothing(zr)) && error(
       "wind_profile: If 'z0m' is not given, must specify both 'zh' and 'zr' optional " *
       "arguments to estimate 'z0m' from 'df.wind' and 'df.ustar' measured at height zr.")
-    z0m = roughness_parameters(Val(:wind_profile), df, zh, zr; psi_m = psi_m).z0m
+    # uses psi_m at zr
+    z0m = roughness_parameters(Val(:wind_profile), df, zh, zr).z0m
   end
+  psi_m = stability_correction!(
+    copy(df, copycols=false), z, d; stab_formulation, constants).psi_m
+  #wind_profile(df, z, d, z0m, psi_m; constants)
   wind_profile(df, z, d, z0m, psi_m; constants)
 end
 
