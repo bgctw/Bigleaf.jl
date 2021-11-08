@@ -35,7 +35,7 @@ df = DataFrame(Tair=25,pressure=100,wind=[3,4,5],
   ustar=[0.5,0.6,0.65],H=[200,230,250]) 
 leafwidth=0.01;LAI=5;zh=25;zr=40
 compute_Gb!(df, Val(:Choudhury_1988); leafwidth, LAI, zh, zr)
-≈(df.Gb_h[1], 0.329, rtol=1e-3)
+≈(df.Gb_h[1], 0.379, rtol=1e-3)
 # output
 true
 ``` 
@@ -360,7 +360,7 @@ compute_Gb!(df,Val(:Su_2001), zh=25,zr=40,Dl=0.01,LAI=5)
 compute_Gb!(df,Val(:Su_2001), zh=25,zr=40,Dl=0.1,LAI=5)
 # same conditions, large leaves, and sparse canopy cover (LAI = 1.5)
 compute_Gb!(df,Val(:Su_2001), zh=25,zr=40,Dl=0.1,LAI=1.5)
-≈(df.Gb_h[1], 0.0746, rtol=1e-3)
+≈(df.Gb_h[1], 0.0638, rtol=1e-3)
 # output
 true
 ``` 
