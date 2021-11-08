@@ -30,6 +30,7 @@ makedocs(;
         hide("surface_roughness.md"),
         hide("boundary_layer_conductance.md"),
         hide("surface_conductance.md"),
+        hide("aerodynamic_conductance.md"),
         hide("evapotranspiration.md"),
         hide("global_radiation.md"),
         hide("unit_conversions.md"),

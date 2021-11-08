@@ -89,7 +89,7 @@
 #' 
 #' # calculate Gs from the the inverted PM equation (now Rn, and Ga are needed),
 #' # using a simple estimate of Ga based on Thom 1972
-#' Ga = aerodynamic_conductance(DE_Tha_Jun_2014_2,Rb_model=Val(:Thom_1972))[,"Ga_h"]
+#' Ga = aerodynamic_conductance(DE_Tha_Jun_2014_2,Gb_model=Val(:Thom_1972))[,"Ga_h"]
 #' 
 #' # if G and/or S are available, don't forget to indicate (they are ignored by default).
 #' # Note that Ga is not added to the DataFrame 'DE_Tha_Jun_2014'

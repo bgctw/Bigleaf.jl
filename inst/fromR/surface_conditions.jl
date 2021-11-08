@@ -51,8 +51,8 @@
 #'          Note that Ga is assumed to be equal for water vapor and sensible heat.
 #'          Ga is further assumed to be the inverse of the sum of the turbulent part
 #'          and the canopy boundary layer conductance (1/Ga = 1/Ga_m + 1/Gb; 
-#'          see [`aerodynamic_conductance`](@ref)). Ga_CO2, the aerodynamic conductance
-#'          for CO2 is also calculated by [`aerodynamic_conductance`](@ref).
+#'          see [`aerodynamic_conductance!`](@ref)). Ga_CO2, the aerodynamic conductance
+#'          for CO2 is also calculated by [`aerodynamic_conductance!`](@ref).
 #'          If Ga is replaced by Ga_m (i.e. only the turbulent conductance part), 
 #'          the results of the functions represent conditions outside the canopy
 #'          boundary layer, i.e. in the canopy airspace.

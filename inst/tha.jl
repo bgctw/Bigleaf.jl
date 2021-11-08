@@ -22,16 +22,20 @@ nothing
 tha = DE_Tha_Jun_2014
 set_datetime_ydh!(tha)
 
-thaf = copy(tha)
-setinvalid_qualityflag!(thaf)
+thaf = copy(tha);
+setinvalid_qualityflag!(thaf);
 setinvalid_range!(thaf, 
      :PPFD => (200, Inf), 
      :ustar => (0.2, Inf), 
      :LE =>(0, Inf), 
      :VPD => (0.01, Inf)
-     )
-setinvalid_nongrowingseason!(thaf, 0.4)      
-setinvalid_afterprecip!(thaf; min_precip=0.02, hours_after=24)
+     );
+setinvalid_nongrowingseason!(thaf, 0.4);
+setinvalid_afterprecip!(thaf; min_precip=0.02, hours_after=24);
+
+thas = subset(thaf, :valid)
+
+
 
 function tmpf()
     

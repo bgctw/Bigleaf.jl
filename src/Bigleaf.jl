@@ -35,7 +35,7 @@ export wind_profile
 export Monin_Obukhov_length, Monin_Obukhov_length!, stability_parameter, 
     stability_parameter!, stability_correction, stability_correction!,
     roughness_parameters, Reynolds_Number
-export aerodynamic_conductance!, add_Ga, add_Ga!  
+export aerodynamic_conductance!, add_Ga, add_Ga!, compute_Ram, compute_Ram!, roughness_z0h
 
 include("util.jl")    
 include("bigleaf_constants.jl")

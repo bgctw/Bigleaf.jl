@@ -137,6 +137,10 @@ The timestamps in the DataFrame must be sorted in increasing order.
 setinvalid_afterprecip!(thaf; min_precip=0.02, hours_after=24)
 sum(.!thaf.valid) # some more invalids
 ```
+```julia
+thas = subset(thaf, :valid)
+```
+
 
 
 When looking at the function output we see that we these settings, we exclude in total 1013 data points (70.35% of the data). In total, 29.65% of all data remained. The output of the `filter_data` function is another DataFrame (thaf), in which all filtered timesteps are set to missing. (Note that this is the default case. If we add `filtered_data_to_NA=true`, the data are left untouched, but an additional column "valid" is added to the DataFrame that specifies whether the time points fulfull the criteria or not). In the following examples we will work mostly with the filtered DataFrame `thaf`.
@@ -152,29 +156,49 @@ When looking at the function output we see that we these settings, we exclude in
 
 ## Aerodynamic conductance
 
-An important metric for many calculations in the `Bigleaf.jl` package is the aerodynamic conductance ($G_a$) between the land surface and the measurement height. $G_a$ characterizes how efficiently mass and energy is transferred between the land surface and the atmosphere. $G_a$ consists of two parts: $G_{am}$, the aerodynamic conductance for momentum, and $G_b$, the canopy boundary layer (or quasi-laminar) conductance. $G_a$ can be defined as $G_a = 1/(1/G_{am} + 1/G_b)$. In this tutorial we will focus on how to use the function `aerodynamic_conductance`. For further details on the equations, the reader is directed to the publication of the Bigleaf package (Knauer et al. 2018) and the references therein. A good overview is provided by e.g. Verma 1989.
+An important metric for many calculations in the `Bigleaf.jl` package is the aerodynamic 
+conductance ($G_a$) between the land surface and the measurement height. $G_a$ 
+characterizes how efficiently mass and energy is transferred between the land surface 
+and the atmosphere. $G_a$ consists of two parts: $G_{a_m}$, the aerodynamic conductance 
+for momentum, and $G_b$, the canopy boundary layer (or quasi-laminar) conductance. 
+$G_a$ can be defined as $G_a = 1/(1/G_{a_m} + 1/G_b)$. In this tutorial we will focus on 
+how to use the function [`aerodynamic_conductance!`](@ref). 
+For further details on the equations, 
+the reader is directed to the publication of the Bigleaf package (Knauer et al. 2018) and 
+the references therein. A good overview is provided by e.g. Verma 1989.
 
-$G_a$ and in particular $G_b$ can be calculated with varying degrees of complexity. We start with the simplest version, in which $G_b$ is calculated empirically based on the friction velocity ($u_*$) according to Thom 1972:
+$G_a$ and in particular $G_b$ can be calculated with varying degrees of complexity. 
+We start with the simplest version, in which $G_b$ is calculated empirically based on 
+the friction velocity ($u_*$) according to Thom 1972:
 
 ```julia
-summary(aerodynamic_conductance(thaf))
+aerodynamic_conductance!(thas)
+thas[1:6, Cols(:datetime,Between(:zeta,:Ga_CO2))]
 ```
 
-Note that by not providing additional arguments, the default values are taken (type ?aerodynamic_conductance to see default values of the function arguments). We also do not need most of the arguments that can be provided to the function in this case (i.e. if `Rb_model=Val(:Thom_1972)`). These are only required if we use a more complex formulation of $G_b$.
-The output of the function is another DataFrame which contains separate columns for conductances and resistances of different scalars (momentum, heat, and CO$_2$ by default).
-For comparison, we now calculate a second estimate of $G_a$, where the calculation of $G_b$ is more physically-based (Su et al. 2001), and which requires more input variables compared to the first version. In particular, we now need LAI, the leaf characteristic dimension ($D_l$, assumed to be 1cm here), and information on sensor and canopy height ($z_r$ and $z_h$), as well as the displacement height (assumed to be 0.7*$z_h$):
+Note that by not providing additional arguments, the default values are taken.
+We also do not need most of the arguments that can be provided to the function in this case 
+(i.e. with `Gb_model=Val(:Thom_1972)`). These are only required if we use a more complex 
+formulation of $G_b$.
+The output of the function is another DataFrame which contains separate columns for 
+conductances and resistances of different scalars (momentum, heat, and $CO_2$ by default).
+
+For comparison, we now calculate a second estimate of $G_a$, where the calculation of 
+$G_b$ is more physically-based (Su et al. 2001), and which requires more input variables 
+compared to the first version. In particular, we now need LAI, the leaf characteristic 
+dimension ($D_l$, assumed to be 1cm here), and information on sensor and canopy height 
+($z_r$ and $z_h$), as well as the displacement height (assumed to be 0.7*$z_h$):
 
 
 ```julia
-Ga_Su = aerodynamic_conductance(thaf,Rb_model=Val(:Su_2001),LAI=thal.zh,zh= thal.zh,d=0.7*zh,
-                                 zr= thal.zr,Dl=thal.Dl)
-summary(Ga_Su)
-thaf = cbind(thaf,Ga_Su)
+aerodynamic_conductance!(thas;Gb_model=Val(:Su_2001),
+     LAI=thal.zh, zh=thal.zh, d=0.7*thal.zh, zr=thal.zr,Dl=thal.Dl)
+thas[1:6, Cols(:datetime,Between(:zeta,:Ga_CO2))]
 ```
 
-We add the output of this function (`Ga_Su`) to our dataframe `thaf`. We see that the values are different compared to the first, empirical estimate. This is because this formulation takes additional aerodynamically relevant properties (LAI, $D_l$) into account that were not considered by the simple empirical formulation.
-
-
+We see that the values are different compared to the first, empirical estimate. 
+This is because this formulation takes additional aerodynamically relevant properties 
+(LAI, $D_l$) into account that were not considered by the simple empirical formulation.
 
 
 ## Surface conditions
@@ -531,7 +555,7 @@ unc_all = mapply(aerodynamic_conductance,Dl=Dl_sample,z0m=z0m_sample,LAI=LAI_sam
                         MoreArgs=list(data=thaf,zr=42,zh=26.5,d=0.7*26.5,
                                       N=2,stab_correction=T,
                                       stab_formulation=Val(:Dyer_1970),
-                                      Rb_model=Val(:Su_2001))
+                                      Gb_model=Val(:Su_2001))
                   )
 
 # select "Ga_h" output variable and convert to matrix

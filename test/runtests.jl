@@ -56,6 +56,9 @@ thal = (
     @testset "boundary_layer_conductance" begin
         include("boundary_layer_conductance.jl")
     end
+    @testset "aerodynamic_conductance" begin
+        include("aerodynamic_conductance.jl")
+    end
     @testset "evapotranspiration" begin
         include("evapotranspiration.jl")
     end

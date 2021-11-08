@@ -59,7 +59,7 @@
 #'             vegetation and the atmosphere. Agricultural and Forest Meteorology 49, 45-53.
 #' 
 #' #See also
-#' [`aerodynamic_conductance`](@ref), [`surface_conductance`](@ref),
+#' [`aerodynamic_conductance!`](@ref), [`surface_conductance`](@ref),
 #'          [`equilibrium_imposed_ET`](@ref)
 #' 
 #' ```@example; output = false

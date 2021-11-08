@@ -269,7 +269,7 @@ end
 #'                                  tprecip=0.1,precip_hours=24,records_per_hour=2)
 #' 
 #' # calculate Ga
-#' Ga = aerodynamic_conductance(DE_Tha_Jun_2014_2,Rb_model=Val(:Thom_1972))[,"Ga_h"]
+#' Ga = aerodynamic_conductance(DE_Tha_Jun_2014_2,Gb_model=Val(:Thom_1972))[,"Ga_h"]
 #' 
 #' # calculate Gs from the the inverted PM equation
 #' Gs_PM = surface_conductance(DE_Tha_Jun_2014_2,Tair="Tair",pressure="pressure",
@@ -569,7 +569,7 @@ end
 #'                                  tprecip=0.1,precip_hours=24,records_per_hour=2)
 #' 
 #' # calculate Gs from the the inverted PM equation
-#' Ga = aerodynamic_conductance(DE_Tha_Jun_2014_2,Rb_model=Val(:Thom_1972))[,"Ga_h"]
+#' Ga = aerodynamic_conductance(DE_Tha_Jun_2014_2,Gb_model=Val(:Thom_1972))[,"Ga_h"]
 #' 
 #' # if G and/or S are available, don't forget to indicate (they are ignored by default).
 #' Gs_PM = surface_conductance(DE_Tha_Jun_2014_2,Tair="Tair",pressure="pressure",

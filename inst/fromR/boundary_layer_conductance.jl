@@ -45,7 +45,7 @@
 #'             from measured quantities. Water, Air, and Soil Pollution 36, 311-330.
 #' 
 #' #See also
-#' [`Gb_Choudhury`](@ref), [`Gb_Su`](@ref), [`aerodynamic_conductance`](@ref)
+#' [`Gb_Choudhury`](@ref), [`Gb_Su`](@ref), [`aerodynamic_conductance!`](@ref)
 #' 
 #' ```@example; output = false
 #' ``` 
@@ -159,7 +159,7 @@ end
 #'             from measured quantities. Water, Air, and Soil Pollution 36, 311-330.
 #'             
 #' #See also
-#' [`Gb_Thom`](@ref), [`Gb_Su`](@ref), [`aerodynamic_conductance`](@ref)
+#' [`Gb_Thom`](@ref), [`Gb_Su`](@ref), [`aerodynamic_conductance!`](@ref)
 #'    
 #' ```@example; output = false
 #' ``` 
@@ -316,7 +316,7 @@ end
 #'             from measured quantities. Water, Air, and Soil Pollution 36, 311-330.
 #' 
 #' #See also
-#' [`Gb_Thom`](@ref), [`Gb_Choudhury`](@ref), [`aerodynamic_conductance`](@ref)
+#' [`Gb_Thom`](@ref), [`Gb_Choudhury`](@ref), [`aerodynamic_conductance!`](@ref)
 #' 
 #' ```@example; output = false
 #' ``` 

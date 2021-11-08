@@ -233,7 +233,7 @@ end
 #' 
 #' # Note
 #' Surface conductance (Gs) can be calculated with [`surface_conductance`](@ref).
-#'       Aerodynamic conductance (Ga) can be calculated using [`aerodynamic_conductance`](@ref).
+#'       Aerodynamic conductance (Ga) can be calculated using [`aerodynamic_conductance!`](@ref).
 #'       
 #' # Value
  A DataFrame with the following columns:

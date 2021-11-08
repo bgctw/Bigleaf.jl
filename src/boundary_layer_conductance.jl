@@ -23,11 +23,11 @@ updated DataFrame `df` with the following columns:
 - `Gb_CO2`: Boundary layer conductance for CO2 (m s-1). 
 
 To subsequently compute conductances for other species with different 
-Schmidt numbers see [`add_Gb`](@ref).
+Schmidt numbers see [`add_Gb!`](@ref).
 
 # See also
 [`Gb_Thom`](@ref), `Gb_Choudhury`](@ref), [`Gb_Su`](@ref), `Gb_Choudhury`](@ref), 
-[`aerodynamic_conductance`](@ref)
+[`aerodynamic_conductance!`](@ref)
 
 ```jldoctest; output = false
 using DataFrames
@@ -60,7 +60,7 @@ function compute_Gb_!(df::AbstractDataFrame, approach, inputcols;
   transform!(df, :ustar => ByRow(fGb) => SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2])
 end
 compute_Gb(::Val{:Thom_1972}, args...; kwargs...) = Gb_Thom(args...; kwargs...)
-compute_Gb(::Val{:constant_kB1}, args...; kB_h, constants) = Gb_constant_kB1(args..., kB_h; constants)
+compute_Gb(::Val{:constant_kB1}, args...; kB_h, kwargs...) = Gb_constant_kB1(args..., kB_h; kwargs...)
 
 """
     add_Gb(Gb_h::Union{Missing,Number}, Sc::Vararg{Pair,N}; constants)
@@ -99,6 +99,12 @@ propertynames(df)[2:3] == [:Gb_O2, :Gb_CH4]
 true
 ```
 """
+function add_Gb!(df::AbstractDataFrame, Sc::Vararg{Pair,N}; Gb_h = df.Gb_h, kwargs...) where N
+  N == 0 && return(df)
+  Scn, Scv = get_names_and_values("Gb_", Sc...)
+  ft() = add_Gb_.(Gb_h, Ref(Scn), Ref(Scv); kwargs...)
+  transform!(df, [] => ft => AsTable)
+end
 function add_Gb(Gb_h::Union{Missing,Number}, Sc::Vararg{Pair,N}; kwargs...) where N
   Scn, Scv = get_names_and_values("Gb_", Sc...)
   add_Gb_(Gb_h, Scn, Scv; kwargs...)
@@ -107,12 +113,6 @@ function add_Gb_(Gb_h::Union{Missing,Number}, Scn::NTuple{N,Symbol}, Scv::NTuple
   constants=bigleaf_constants()) where N 
   Gbxv = @. Gb_h / (Scv/constants[:Pr])^0.67
   Gbx = NamedTuple{Scn}(Gbxv)
-end
-function add_Gb!(df::AbstractDataFrame, Sc::Vararg{Pair,N}; Gb_h = df.Gb_h, kwargs...) where N
-  N == 0 && return(df)
-  Scn, Scv = get_names_and_values("Gb_", Sc...)
-  ft() = add_Gb_.(Gb_h, Ref(Scn), Ref(Scv); kwargs...)
-  transform!(df, [] => ft => AsTable)
 end
 function get_names_and_values(prefix::AbstractString, Sc::Vararg{Pair,N}) where N
   Scn = ntuple(i -> Symbol(prefix * string(Sc[i].first)), N)
@@ -165,13 +165,15 @@ function Gb_Thom(ustar::Union{Missing,Number}; constants=bigleaf_constants())
 end
 
 """
-    Gb_constant_kB1(ustar; constants)
-    compute_Gb!(df, Val{:Thom_1972})
+    Gb_constant_kB1(ustar, kB_h; constants)
+    compute_Gb!(df, Val{:constant_kB1})
 
-Boundary Layer Conductance using constant XX
+Boundary Layer Conductance using constant kB-1 value for heat transfer.
 
 # Arguments  
-- `kB_h`    : kB-1 value for heat transfer
+- `ustar`     : Friction velocity (m s-1)
+- `df`        : DataFrame with above variables
+- `kB_h`      : kB-1 value for heat transfer
 - `constants=`[`bigleaf_constants`](@ref)`()`
  
 # Details

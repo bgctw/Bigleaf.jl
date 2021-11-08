@@ -251,6 +251,12 @@ setinvalid_afterprecip!(thaf; min_precip=0.02, hours_after=24)
 sum(.!thaf.valid) # some more invalids
 ```
 
+```@example doc
+thas = subset(thaf, :valid)
+```
+
+
+
 
 ## Meteorological variables
 
@@ -317,6 +323,57 @@ The following figure compares them at absole scale and as difference to the
 ![](fig/Esat_abs.svg)
 
 ![](fig/Esat_rel.svg)
+
+## Aerodynamic conductance
+
+An important metric for many calculations in the `Bigleaf.jl` package is the aerodynamic 
+conductance ($G_a$) between the land surface and the measurement height. $G_a$ 
+characterizes how efficiently mass and energy is transferred between the land surface 
+and the atmosphere. $G_a$ consists of two parts: $G_{a_m}$, the aerodynamic conductance 
+for momentum, and $G_b$, the canopy boundary layer (or quasi-laminar) conductance. 
+$G_a$ can be defined as 
+
+  $G_a = 1/(1/G_{a_m} + 1/G_b)$. 
+
+In this tutorial we will focus on 
+how to use the function [`aerodynamic_conductance!`](@ref). 
+For further details on the equations, 
+the reader is directed to the publication of the Bigleaf package (Knauer et al. 2018) and 
+the references therein. A good overview is provided by e.g. Verma 1989.
+
+  $G_a$ and in particular $G_b$ can be calculated with varying degrees of complexity. 
+We start with the simplest version, in which $G_b$ is calculated empirically based on 
+the friction velocity ($u_*$) according to Thom 1972:
+
+```@example doc
+aerodynamic_conductance!(thas)
+thas[1:3, Cols(:datetime,Between(:zeta,:Ga_CO2))]
+```
+
+Note that by not providing additional arguments, the default values are taken.
+We also do not need most of the arguments that can be provided to the function in this case 
+(i.e. with `Gb_model=Val(:Thom_1972)`). These are only required if we use a more complex 
+formulation of $G_b$.
+The output of the function is another DataFrame which contains separate columns for 
+conductances and resistances of different scalars (momentum, heat, and $CO_2$ by default).
+
+For comparison, we now calculate a second estimate of $G_a$, where the calculation of 
+$G_b$ is more physically-based (Su et al. 2001), and which requires more input variables 
+compared to the first version. In particular, we now need LAI, the leaf characteristic 
+dimension ($D_l$, assumed to be 1cm here), and information on sensor and canopy height 
+($z_r$ and $z_h$), as well as the displacement height (assumed to be 0.7*$z_h$):
+
+
+```@example doc
+aerodynamic_conductance!(thas;Gb_model=Val(:Su_2001),
+     LAI=thal.zh, zh=thal.zh, d=0.7*thal.zh, zr=thal.zr,Dl=thal.Dl)
+thas[1:3, Cols(:datetime,Between(:zeta,:Ga_CO2))]
+```
+
+We see that the values are different compared to the first, empirical estimate. 
+This is because this formulation takes additional aerodynamically relevant properties 
+(LAI, $D_l$) into account that were not considered by the simple empirical formulation.
+
 
 ## Boundary layer conductance for trace gases
 
