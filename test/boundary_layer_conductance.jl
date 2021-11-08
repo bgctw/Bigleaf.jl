@@ -30,7 +30,7 @@ end
     Gb = Gb_constant_kB1(missing, kB_h)
     @test keys(Gb) == (:Rb_h, :Gb_h, :kB_h, :Gb_CO2)
     @test Gb.kB_h == kB_h
-    @test all(ismissing.(values(Gb[SA[:Rb_h, :Gb_h, :Gb_CO2]])))
+    @test all(ismissing.(values(getindex.(Ref(Gb), SA[:Rb_h, :Gb_h, :Gb_CO2]))))
     #
     # DataFrame variant
     dfo = DataFrame(ustar = SA[0.1,missing,0.3])
