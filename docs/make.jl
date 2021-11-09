@@ -32,6 +32,7 @@ makedocs(;
         hide("surface_conductance.md"),
         hide("aerodynamic_conductance.md"),
         hide("evapotranspiration.md"),
+        hide("surface_conductance.md"),
         hide("global_radiation.md"),
         hide("unit_conversions.md"),
         hide("bigleaf_constants.md"),
