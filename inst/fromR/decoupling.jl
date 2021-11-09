@@ -6,7 +6,7 @@
 #' 
 #' The canopy-atmosphere decoupling coefficient 'Omega'. 
 #' 
-#' - data        Data_frame or matrix containing all required input variables
+#' - data        DataFrame or matrix containing all required input variables
 #' - Tair        Air temperature (deg C)
 #' - pressure    Atmospheric pressure (kPa)
 #' - Ga          Aerodynamic conductance to heat/water vapor (m s-1)
@@ -59,7 +59,7 @@
 #'             vegetation and the atmosphere. Agricultural and Forest Meteorology 49, 45-53.
 #' 
 #' #See also
-#' [`aerodynamic_conductance`](@ref), [`surface_conductance`](@ref),
+#' [`aerodynamic_conductance!`](@ref), [`surface_conductance`](@ref),
 #'          [`equilibrium_imposed_ET`](@ref)
 #' 
 #' ```@example; output = false
@@ -92,9 +92,9 @@ function decoupling(data,Tair="Tair",pressure="pressure",Ga="Ga_h",Gs="Gs_ms",
     
     Omega = (epsilon + 1) / (epsilon + 1 + Ga/Gs)
     
-else if (approach == "Martin_1989") 
+elseif (approach == "Martin_1989") 
     
-    if (is_null(LAI))
+    if (isnothing(LAI))
       
       stop("LAI is not provided!")
       

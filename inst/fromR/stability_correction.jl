@@ -6,7 +6,7 @@
 #' 
 #' calculates the Monin-Obukhov length.
 #' 
-#' - data      Data_frame or matrix containing all required variables
+#' - data      DataFrame or matrix containing all required variables
 #' - Tair      Air temperature (deg C)
 #' - pressure  Atmospheric pressure (kPa)
 #' - ustar     Friction velocity (m s-1)
@@ -62,7 +62,7 @@ end
 #' calculates "zeta", a parameter characterizing stratification in 
 #'              the lower atmosphere.
 #' 
-#' - data      Data_frame or matrix containing all required variables
+#' - data      DataFrame or matrix containing all required variables
 #' - Tair      Air temperature (degC)
 #' - pressure  Atmospheric pressure (kPa)
 #' - ustar     Friction velocity (m s-1)
@@ -75,16 +75,16 @@ end
 #'                  g - gravitational acceleration (m s-2)
 #' 
 #' # Details
- The stability parameter ``\zeta`` is given by:
+ The stability parameter ``\\zeta`` is given by:
 #' 
-#'            ``\zeta = (zr - d) / L``
+#'            ``\\zeta = (zr - d) / L``
 #'          
 #'          where L is the Monin-Obukhov length (m), calculated from the function
 #'          [`Monin_Obukhov_length`](@ref). The displacement height d can 
 #'          be estimated from the function [`roughness_parameters`](@ref).
 #'          
 #' # Value
- - ``\zeta`` - : stability parameter (-)
+ - ``\\zeta`` - : stability parameter (-)
 #' 
 #' ```@example; output = false
 #' ``` 
@@ -112,22 +112,22 @@ end
 #'              from the exponential wind profile under non-neutral conditions.
 #'              
 #' - zeta         Stability parameter zeta (-)
-#' - formulation  Formulation for the stability function. Either `"Dyer_1970"`, 
-#'                     or `"Businger_1971"`
+#' - formulation  Formulation for the stability function. Either `Val(:Dyer_1970)`, 
+#'                     or `Val(:Businger_1971)`
 #'
 #' # Details
  The functions give the integrated form of the universal functions. They
-#'          depend on the value of the stability parameter ``\zeta``,
+#'          depend on the value of the stability parameter ``\\zeta``,
 #'          which can be calculated from the function [`stability_parameter`](@ref).
 #'          The integration of the universal functions is:
 #'          
-#'            ``\psi = -x * zeta`` 
+#'            ``\\psi = -x * zeta`` 
 #'          
-#'          for stable atmospheric conditions (``\zeta`` >= 0), and
+#'          for stable atmospheric conditions (``\\zeta`` >= 0), and
 #'          
-#'            ``\psi = 2 * log( (1 + y) / 2) ``
+#'            ``\\psi = 2 * log( (1 + y) / 2) ``
 #'          
-#'          for unstable atmospheric conditions (``\zeta`` < 0).
+#'          for unstable atmospheric conditions (``\\zeta`` < 0).
 #'          
 #'          The different formulations differ in their value of x and y.
 #'   
@@ -157,24 +157,24 @@ end
 #' ``` 
 #' zeta = seq(-2,0.5,0.05)
 #' stability_correction(zeta)
-#' stability_correction(zeta,formulation="Businger_1971")                          
+#' stability_correction(zeta,formulation=Val(:Businger_1971))                          
 #'             
 #' @export   
-function stability_correction(zeta,formulation=c("Dyer_1970","Businger_1971"))
+function stability_correction(zeta,formulation=c(Val(:Dyer_1970),Val(:Businger_1971)))
   
   formulation  = match_arg(formulation)
   
-  check_input(NULL,zeta)
+  check_input(nothing,zeta)
   
   psi_h = psi_m = numeric()
   
   # universal functions
-  if (formulation == "Businger_1971")
+  if (formulation == Val(:Businger_1971))
     x_h = -7.8
     x_m = -6
     y_h = 0.95 * ( 1 - 11.6 * zeta)^0.5
     y_m = (1 - 19.3*zeta)^0.25
-else if (formulation == "Dyer_1970")
+elseif (formulation == Val(:Dyer_1970))
     x_h = x_m = -5
     y_h       = (1 - 16 * zeta)^0.5
     y_m       = (1 - 16 * zeta)^0.25
@@ -182,11 +182,11 @@ end
   
   # integration of universal functions (after Paulson_1970 and Foken 2008)
   # stable
-  stable = zeta >= 0 | is_na(zeta)
+  stable = zeta >= 0 | ismissing(zeta)
   psi_h[stable] = x_h * zeta[stable]
   psi_m[stable] = x_m * zeta[stable]
   # unstable
-  unstable = zeta < 0 | is_na(zeta)
+  unstable = zeta < 0 | ismissing(zeta)
   psi_h[unstable] = 2 * log( (1 + y_h[unstable] ) / 2)
   psi_m[unstable] = 2 * log( (1 + y_m[unstable] ) / 2) +
                      log( ( 1 + y_m[unstable]^2 ) / 2)

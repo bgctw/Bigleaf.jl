@@ -13,7 +13,7 @@ the Penman-Monteith equation with a prescribed surface conductance.
 - `Rn`:        Net radiation (W m-2)
 - `VPD`:       Vapor pressure deficit (kPa)
 - `Ga`:        Aerodynamic conductance to heat/water vapor (m s-1)
-- `df`:      Data_frame or matrix containing all required variables; optional
+- `df`:      DataFrame or matrix containing all required variables; optional
 - `approach`:  Approach used. 
   Either `Val(:PriestleyTaylor)` (default), or `Val(:PenmanMonteith)`.
 optional:
@@ -312,7 +312,7 @@ function equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn;
   G=zero(Tair),S=zero(Tair), kwargs...)
 # # Note
 # Surface conductance (Gs) can be calculated with [`surface_conductance`](@ref)      
-# Aerodynamic conductance (Ga) can be calculated using [`aerodynamic_conductance`](@ref).
+# Aerodynamic conductance (Ga) can be calculated using [`aerodynamic_conductance!`](@ref).
   equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn, G, S; kwargs...)
 end
 function equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn, G, S;
@@ -369,15 +369,6 @@ end
 This stub is there to satisfy links im Help-pages.
 """
 function surface_conductance()
-  error("not yet implemented.")
-end
-
-"""
-    TODO; implement aerodynamic_conductance.
-
-This stub is there to satisfy links im Help-pages.
-"""
-function aerodynamic_conductance()
   error("not yet implemented.")
 end
 

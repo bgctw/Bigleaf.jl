@@ -81,11 +81,11 @@ end
 #' pressure_from_elevation(500,Tair=25,VPD=1)
 #' 
 #' @export                           
-function pressure_from_elevation(elev,Tair,VPD=NULL,constants=bigleaf_constants())
+function pressure_from_elevation(elev,Tair,VPD=nothing,constants=bigleaf_constants())
   
   Tair     = Tair + constants[:Kelvin]
   
-  if(is_null(VPD))
+  if(isnothing(VPD))
     
     pressure = constants[:pressure0] / exp(constants[:g] * elev / (constants[:Rd]*Tair))
     
@@ -169,11 +169,11 @@ function Esat_slope(Tair,formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
     a = 611.2
     b = 17.62
     c = 243.12
-else if (formula == "Alduchov_1996")
+elseif (formula == "Alduchov_1996")
     a = 610.94
     b = 17.625
     c = 243.04
-else if (formula == "Allen_1998")
+elseif (formula == "Allen_1998")
     a = 610.8
     b = 17.27
     c = 237.3
@@ -351,8 +351,8 @@ end
 end
   
   # determine number of digits to print
-  ndigits = as_numeric(strsplit(format(accuracy,scientific = TRUE),"-")[[1]][2])
-  ndigits = ifelse(is_na(ndigits),0,ndigits)
+  ndigits = as_numeric(strsplit(format(accuracy,scientific = true),"-")[[1]][2])
+  ndigits = ifelse(ismissing(ndigits),0,ndigits)
   
   
   gamma  = psychrometric_constant(Tair,pressure)
@@ -448,8 +448,8 @@ end
 end
   
   # determine number of digits to print
-  ndigits = as_numeric(strsplit(format(accuracy,scientific = TRUE),"-")[[1]][2])
-  ndigits = ifelse(is_na(ndigits),0,ndigits)
+  ndigits = as_numeric(strsplit(format(accuracy,scientific = true),"-")[[1]][2])
+  ndigits = ifelse(ismissing(ndigits),0,ndigits)
   
   ea = VPD_to_e(VPD,Tair,Esat_formula)
   Td = sapply(seq_along(ea),function(i) round(dew_point_solver(ea[i],accuracy=accuracy,

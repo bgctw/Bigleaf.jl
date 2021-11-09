@@ -7,7 +7,7 @@
 #' Calculates surface conductance to water vapor from the inverted Penman-Monteith
 #'              equation (by default) or from a simple flux-gradient approach.
 #' 
-#' - data      Data_frame or matrix containing all required input variables
+#' - data      DataFrame or matrix containing all required input variables
 #' - Tair      Air temperature (deg C)
 #' - pressure  Atmospheric pressure (kPa)
 #' - Rn        Net radiation (W m-2)
@@ -16,9 +16,9 @@
 #' - LE        Latent heat flux (W m-2)
 #' - VPD       Vapor pressure deficit (kPa)
 #' - Ga        Aerodynamic conductance to heat/water vapor (m s-1)
-#' - missing_G_as_NA  if `TRUE`, missing G are treated as `NA`s, otherwise they are set to 0.
+#' - missing_G_as_NA  if `true`, missing G are treated as `missing`s, otherwise they are set to 0.
 #'                         Only used if `formulation = Val(:PenmanMonteith)`.
-#' - missing_S_as_NA  if `TRUE`, missing S are treated as `NA`s, otherwise they are set to 0. 
+#' - missing_S_as_NA  if `true`, missing S are treated as `missing`s, otherwise they are set to 0. 
 #'                          Only used if `formulation = Val(:PenmanMonteith)`.
 #' - formulation Formulation used. Either `Val(:PenmanMonteith)` (the default) 
 #'                    using the inverted Penman-Monteith equation, or `"Flux-Gradient"`,
@@ -45,8 +45,8 @@
 #'  saturation vapor pressure curve (kPa K-1), and ``\\rho`` is air density (kg m-3).
 #'  Available energy (A) is defined as A = Rn - G - S. If G and/or S are not provided, A = Rn.
 #'  
-#'  By default, any missing data in G and S are set to 0. If `missing_S_as_NA = TRUE`
-#'  or `missing_S_as_NA = TRUE`, Gs will give `NA` for these timesteps.
+#'  By default, any missing data in G and S are set to 0. If `missing_S_as_NA = true`
+#'  or `missing_S_as_NA = true`, Gs will give `missing` for these timesteps.
 #'  
 #'  If `formulation="Flux-Gradient"`, Gs (in mol m-2 s-1) is calculated from VPD and ET only:
 #'  
@@ -73,12 +73,12 @@
 #' ## filter data to ensure that Gs is a meaningful proxy to canopy conductance (Gc)
 #' DE_Tha_Jun_2014_2 = filter_data(DE_Tha_Jun_2014,quality_control=false,
 #'                                  vars_qc=c("Tair","precip","VPD","H","LE"),
-#'                                  filter_growseas=false,filter_precip=TRUE,
+#'                                  filter_growseas=false,filter_precip=true,
 #'                                  filter_vars=c("Tair","PPFD","ustar","LE"),
 #'                                  filter_vals_min=c(5,200,0.2,0),
-#'                                  filter_vals_max=c(NA,NA,NA,NA),NA_as_invalid=TRUE,
+#'                                  filter_vals_max=c(missing,missing,missing,missing),NA_as_invalid=true,
 #'                                  quality_ext="_qc",good_quality=c(0,1),
-#'                                  missing_qc_as_bad=TRUE,GPP="GPP",doy="doy",
+#'                                  missing_qc_as_bad=true,GPP="GPP",doy="doy",
 #'                                  year="year",tGPP=0.5,ws=15,min_int=5,precip="precip",
 #'                                  tprecip=0.1,precip_hours=24,records_per_hour=2)
 #' 
@@ -89,12 +89,12 @@
 #' 
 #' # calculate Gs from the the inverted PM equation (now Rn, and Ga are needed),
 #' # using a simple estimate of Ga based on Thom 1972
-#' Ga = aerodynamic_conductance(DE_Tha_Jun_2014_2,Rb_model="Thom_1972")[,"Ga_h"]
+#' Ga = aerodynamic_conductance(DE_Tha_Jun_2014_2,Gb_model=Val(:Thom_1972))[,"Ga_h"]
 #' 
 #' # if G and/or S are available, don't forget to indicate (they are ignored by default).
 #' # Note that Ga is not added to the DataFrame 'DE_Tha_Jun_2014'
 #' Gs_PM = surface_conductance(DE_Tha_Jun_2014_2,Tair="Tair",pressure="pressure",
-#'                              Rn="Rn",G="G",S=NULL,VPD="VPD",Ga=Ga,
+#'                              Rn="Rn",G="G",S=nothing,VPD="VPD",Ga=Ga,
 #'                              formulation=Val(:PenmanMonteith))
 #' summary(Gs_PM)
 #' 
@@ -102,7 +102,7 @@
 #' # now add Ga to the DataFrame 'DE_Tha_Jun_2014' and repeat
 #' DE_Tha_Jun_2014_2$Ga = Ga
 #' Gs_PM2 = surface_conductance(DE_Tha_Jun_2014_2,Tair="Tair",pressure="pressure",
-#'                               Rn="Rn",G="G",S=NULL,VPD="VPD",Ga="Ga",
+#'                               Rn="Rn",G="G",S=nothing,VPD="VPD",Ga="Ga",
 #'                               formulation=Val(:PenmanMonteith))
 #' # note the difference to the previous version (Ga="Ga")
 #' summary(Gs_PM2)
@@ -118,7 +118,7 @@
 #'             
 """
 """
-function surface_conductance(data,Tair="Tair",pressure="pressure",Rn="Rn",G=NULL,S=NULL,
+function surface_conductance(data,Tair="Tair",pressure="pressure",Rn="Rn",G=nothing,S=nothing,
                                 VPD="VPD",LE="LE",Ga="Ga_h",missing_G_as_NA=false,missing_S_as_NA=false,
                                 formulation=c(Val(:PenmanMonteith),"Flux-Gradient"),
                                 Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
@@ -133,21 +133,21 @@ function surface_conductance(data,Tair="Tair",pressure="pressure",Rn="Rn",G=NULL
     Gs_mol = (LE_to_ET(LE,Tair)/constants[:Mw]) * pressure / VPD
     Gs_ms  = mol_to_ms(Gs_mol,Tair,pressure)
     
-else if (formulation == Val(:PenmanMonteith))
+elseif (formulation == Val(:PenmanMonteith))
     
     check_input(data,list(Tair,pressure,VPD,LE,Rn,Ga,G,S))
     
-    if(!is_null(G))
-      if (!missing_G_as_NA){G[is_na(G)] = 0}
+    if(!isnothing(G))
+      if (!missing_G_as_NA){G[ismissing(G)] = 0}
 else 
-      cat("Ground heat flux G is not provided and set to 0.",fill=TRUE)
+      cat("Ground heat flux G is not provided and set to 0.",fill=true)
       G = 0
 end
     
-    if(!is_null(S))
-      if(!missing_S_as_NA){S[is_na(S)] = 0 }
+    if(!isnothing(S))
+      if(!missing_S_as_NA){S[ismissing(S)] = 0 }
 else 
-      cat("Energy storage fluxes S are not provided and set to 0.",fill=TRUE)
+      cat("Energy storage fluxes S are not provided and set to 0.",fill=true)
       S = 0
 end
     

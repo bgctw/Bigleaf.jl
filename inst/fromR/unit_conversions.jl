@@ -154,8 +154,8 @@ end
 function rH_to_VPD(rH,Tair,Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
                       constants=bigleaf_constants())
 
-  if(any(rH > 1 & !is_na(rH)))
-    warning("relative humidity (rH) has to be between 0 and 1.")
+  if(any(rH > 1 & !ismissing(rH)))
+    @warn"relative humidity (rH) has to be between 0 and 1.")
 end
   
   esat = Esat_slope(Tair,Esat_formula,constants)[,"Esat"]
@@ -172,8 +172,8 @@ function e_to_rH(e,Tair,Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_199
   
   esat = Esat_slope(Tair,Esat_formula,constants)[,"Esat"]
   
-  if (any(e > esat + .Machine$double_eps^0.5 & !is_na(e)))
-    warning("Provided vapour pressure that was higher than saturation.
+  if (any(e > esat + .Machine$double_eps^0.5 & !ismissing(e)))
+    @warn"Provided vapour pressure that was higher than saturation.
              Returning rH=1 for those cases.")
 end
     

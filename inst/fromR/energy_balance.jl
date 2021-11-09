@@ -96,17 +96,17 @@ end
 #' Calculates the degree of the energy balance non-closure for the entire time span
 #'              based on the ratio of two sums (energy balance ratio), and ordinary least squares (OLS).
 #' 
-#' - data  Data_frame or matrix containing all required variables.
+#' - data  DataFrame or matrix containing all required variables.
 #' - Rn    Net radiation (W m-2)
 #' - G     Ground heat flux (W m-2); optional
 #' - S     Sum of all storage fluxes (W m-2); optional
 #' - LE    Latent heat flux (W m-2)
 #' - H     Sensible heat flux (W m-2)
 #' - instantaneous    should the energy balance be calculated at the time step 
-#'                         of the observations (`TRUE`), or over the entire time period
+#'                         of the observations (`true`), or over the entire time period
 #'                         provided as input (`false`)
-#' - missing_G_as_NA  if `TRUE`, missing G are treated as `NA`s ,otherwise set to 0. 
-#' - missing_S_as_NA  if `TRUE`, missing S are treated as `NA`s, otherwise set to 0.
+#' - missing_G_as_NA  if `true`, missing G are treated as `missing`s ,otherwise set to 0. 
+#' - missing_S_as_NA  if `true`, missing S are treated as `missing`s, otherwise set to 0.
 #' 
 #' 
 #' # Details
@@ -125,7 +125,7 @@ end
 #'         - r_squared: r^2 of the OLS regression
 #'         - EBR: energy balance ratio
 #'         
-#'         if `instantaneous = TRUE`, only `EBR` is returned.
+#'         if `instantaneous = true`, only `EBR` is returned.
 #' 
 #' #References
 #' Wilson K., et al. 2002: Energy balance closure at FLUXNET sites.
@@ -137,28 +137,28 @@ end
 #' energy_closure(DE_Tha_Jun_2014,instantaneous=false)
 #' 
 #' ## look at half-hourly closure 
-#' EBR_inst = energy_closure(DE_Tha_Jun_2014,instantaneous=TRUE)
+#' EBR_inst = energy_closure(DE_Tha_Jun_2014,instantaneous=true)
 #' summary(EBR_inst)
 #' 
 #' @importFrom stats complete_cases lm
 """
 """
-function energy_closure(data,Rn="Rn",G=NULL,S=NULL,LE="LE",H="H",instantaneous=false,
+function energy_closure(data,Rn="Rn",G=nothing,S=nothing,LE="LE",H="H",instantaneous=false,
                            missing_G_as_NA=false,missing_S_as_NA=false)
   
   check_input(data,list(Rn,LE,H,G,S))
   
-  if(!is_null(G))
-    if (!missing_G_as_NA){G[is_na(G)] = 0}
+  if(!isnothing(G))
+    if (!missing_G_as_NA){G[ismissing(G)] = 0}
 else 
-    cat("Ground heat flux G is not provided and set to 0.",fill=TRUE)
+    cat("Ground heat flux G is not provided and set to 0.",fill=true)
     G = rep(0,nrow(data))
 end
   
-  if(!is_null(S))
-    if(!missing_S_as_NA){S[is_na(S)] = 0 }
+  if(!isnothing(S))
+    if(!missing_S_as_NA){S[ismissing(S)] = 0 }
 else 
-    cat("Energy storage fluxes S are not provided and set to 0.",fill=TRUE)
+    cat("Energy storage fluxes S are not provided and set to 0.",fill=true)
     S = rep(0,nrow(data))
 end
   
@@ -191,7 +191,7 @@ end
 #'              that the surface would receive if it had the same temperature than
 #'              the air.
 #'              
-#' - data       Data_frame or matrix containing all required variables
+#' - data       DataFrame or matrix containing all required variables
 #' - Rn         Net radiation (W m-2)
 #' - Tair       Air temperature (degC)
 #' - Tsurf      Surface temperature (degC)

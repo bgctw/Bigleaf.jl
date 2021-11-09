@@ -13,7 +13,7 @@
 #' - GPP              Gross primary productivity (umol CO2 m-2 s-1)
 #' - Gs               Surface conductance to water vapor (mol m-2 s-1)
 #' - Rleaf            Ecosystem respiration stemming from leaves (umol CO2 m-2 s-1); defaults to 0          
-#' - missing_Rleaf_as_NA if Rleaf is provided, should missing values be treated as `NA` (`TRUE`)
+#' - missing_Rleaf_as_NA if Rleaf is provided, should missing values be treated as `missing` (`true`)
 #'                            or set to 0 (`false`, the default)?
 #' - constants        DwDc - Ratio of the molecular diffusivities for water vapor and CO2 (-)
 #' 
@@ -62,15 +62,15 @@
 #' 
 """
 """
-function intercellular_CO2(data,Ca="Ca",GPP="GPP",Gs="Gs_mol",Rleaf=NULL,
+function intercellular_CO2(data,Ca="Ca",GPP="GPP",Gs="Gs_mol",Rleaf=nothing,
                               missing_Rleaf_as_NA=false,constants=bigleaf_constants())
   
   check_input(data,list(Ca,GPP,Gs))
   
-  if(!is_null(Rleaf))
-    if(!missing_Rleaf_as_NA){Rleaf[is_na(Rleaf)] = 0 }
+  if(!isnothing(Rleaf))
+    if(!missing_Rleaf_as_NA){Rleaf[ismissing(Rleaf)] = 0 }
 else 
-    cat("Respiration from the leaves is ignored and set to 0.",fill=TRUE)
+    cat("Respiration from the leaves is ignored and set to 0.",fill=true)
     Rleaf = 0
 end
   
@@ -89,7 +89,7 @@ end
 #'              CO2 concentration using the Farquhar et al. 1980 model for C3 photosynthesis.
 #'           
 #' - data      Data_Frame or matrix with all required columns   
-#' - C3        C3 vegetation (`TRUE`, the default) or C4 vegetation (`false`)?              
+#' - C3        C3 vegetation (`true`, the default) or C4 vegetation (`false`)?              
 #' - Temp      Surface (or air) temperature (degC) 
 #' - GPP       Gross primary productivity (umol m-2 s-1)
 #' - Ci        Bulk canopy intercellular CO2 concentration (umol mol-1)
@@ -115,11 +115,11 @@ end
 #' - Jmax_dS   Entropy term for Jmax (kJ mol-1 K-1)
 #' - Theta     Curvature term in the light response function of J (-)
 #' - alpha_canopy Canopy absorptance (-)
-#' - missing_Rleaf_as_NA if Rleaf is provided, should missing values be treated as `NA` (`TRUE`)
+#' - missing_Rleaf_as_NA if Rleaf is provided, should missing values be treated as `missing` (`true`)
 #'                            or set to 0 (`false`, the default)?
 #' - Ci_C4        intercellular CO2 concentration below which photosynthesis
 #'                     is considered to be CO2-limited (umol mol-1), ignored
-#'                     if `C3 = TRUE`. 
+#'                     if `C3 = true`. 
 #' - constants    Kelvin - conversion degree Celsius to Kelvin 
 #'                     Rgas - universal gas constant (J mol-1 K-1) 
 #'                     kJ2J - conversion kilojoule (kJ) to joule (J) 
@@ -259,21 +259,21 @@ end
 #' ``` 
 #' DE_Tha_Jun_2014_2 = filter_data(DE_Tha_Jun_2014,quality_control=false,
 #'                                  vars_qc=c("Tair","precip","VPD","H","LE"),
-#'                                  filter_growseas=false,filter_precip=TRUE,
+#'                                  filter_growseas=false,filter_precip=true,
 #'                                  filter_vars=c("Tair","PPFD","ustar","LE"),
 #'                                  filter_vals_min=c(5,200,0.2,0),
-#'                                  filter_vals_max=c(NA,NA,NA,NA),NA_as_invalid=TRUE,
+#'                                  filter_vals_max=c(missing,missing,missing,missing),NA_as_invalid=true,
 #'                                  quality_ext="_qc",good_quality=c(0,1),
-#'                                  missing_qc_as_bad=TRUE,GPP="GPP",doy="doy",
+#'                                  missing_qc_as_bad=true,GPP="GPP",doy="doy",
 #'                                  year="year",tGPP=0.5,ws=15,min_int=5,precip="precip",
 #'                                  tprecip=0.1,precip_hours=24,records_per_hour=2)
 #' 
 #' # calculate Ga
-#' Ga = aerodynamic_conductance(DE_Tha_Jun_2014_2,Rb_model="Thom_1972")[,"Ga_h"]
+#' Ga = aerodynamic_conductance(DE_Tha_Jun_2014_2,Gb_model=Val(:Thom_1972))[,"Ga_h"]
 #' 
 #' # calculate Gs from the the inverted PM equation
 #' Gs_PM = surface_conductance(DE_Tha_Jun_2014_2,Tair="Tair",pressure="pressure",
-#'                              Rn="Rn",G="G",S=NULL,VPD="VPD",Ga=Ga,
+#'                              Rn="Rn",G="G",S=nothing,VPD="VPD",Ga=Ga,
 #'                              formulation=Val(:PenmanMonteith))[,"Gs_mol"]
 #' 
 #' # calculate Ci 
@@ -285,8 +285,8 @@ end
 #' @importFrom stats optimize
 #'                                                                        
 #' @export                  
-function photosynthetic_capacity(data,C3=TRUE,Temp,GPP="GPP",Ci,PPFD="PPFD",PPFD_j=c(200,500),PPFD_c=1000,
-                                    Rleaf=NULL,Oi=0.21,Kc25=404.9,Ko25=278.4,Gam25=42.75,
+function photosynthetic_capacity(data,C3=true,Temp,GPP="GPP",Ci,PPFD="PPFD",PPFD_j=c(200,500),PPFD_c=1000,
+                                    Rleaf=nothing,Oi=0.21,Kc25=404.9,Ko25=278.4,Gam25=42.75,
                                     Kc_Ha=79.43,Ko_Ha=36.38,Gam_Ha=37.83,Vcmax_Ha=65.33,Vcmax_Hd=200,
                                     Vcmax_dS=0.635,Jmax_Ha=43.9,Jmax_Hd=200,Jmax_dS=0.640,
                                     Theta=0.7,alpha_canopy=0.8,missing_Rleaf_as_NA=false,Ci_C4=100,
@@ -309,17 +309,17 @@ function photosynthetic_capacity(data,C3=TRUE,Temp,GPP="GPP",Ci,PPFD="PPFD",PPFD
     Ko  = Ko * constants[:J2kJ]
     
     # basic filtering on Ci 
-    Ci[Ci < 80 | is_na(Ci)] = NA
+    Ci[Ci < 80 | ismissing(Ci)] = missing
     
     # Presumed limitation states 
     GPPc = GPPj = GPP
-    GPPj[PPFD < PPFD_j[1] | PPFD > PPFD_j[2] | is_na(PPFD)] = NA
-    GPPc[PPFD < PPFD_c | is_na(PPFD)] = NA
+    GPPj[PPFD < PPFD_j[1] | PPFD > PPFD_j[2] | ismissing(PPFD)] = missing
+    GPPc[PPFD < PPFD_c | ismissing(PPFD)] = missing
     
-    if(!is_null(Rleaf))
-      if(!missing_Rleaf_as_NA){Rleaf[is_na(Rleaf)] = 0 }
+    if(!isnothing(Rleaf))
+      if(!missing_Rleaf_as_NA){Rleaf[ismissing(Rleaf)] = 0 }
 else 
-      cat("Respiration from the leaves is ignored and set to 0.",fill=TRUE)
+      cat("Respiration from the leaves is ignored and set to 0.",fill=true)
       Rleaf = 0
 end
     
@@ -332,8 +332,8 @@ else {  # C4 vegetation
     
     # Presumed limitation states (C4) 
     GPPc = GPPj = GPP
-    GPPj[PPFD < PPFD_j[1] | PPFD > PPFD_j[2] | is_na(PPFD) | Ci < 0] = NA
-    GPPc[PPFD < PPFD_c | Ci < Ci_C4 | is_na(PPFD)] = NA
+    GPPj[PPFD < PPFD_j[1] | PPFD > PPFD_j[2] | ismissing(PPFD) | Ci < 0] = missing
+    GPPc[PPFD < PPFD_c | Ci < Ci_C4 | ismissing(PPFD)] = missing
     
     Vcmax = GPPc
     J     = 3 * GPPj / (1 - 0.5)
@@ -351,12 +351,12 @@ end
                                                                                                  4.0 * Theta * APPFD_PSII[i] * Jmax)) /
                                                                                          (2.0 * Theta)))},
                                                            interval=c(0,1000),tol=1e-02)$minimum,
-                                                  error=function(err){NA}
+                                                  error=function(err){missing}
     )
     )
 else 
-    warning("Not enough observations to calculate Jmax!")
-    Jmax = NA
+    @warn"Not enough observations to calculate Jmax!")
+    Jmax = missing
 end
   
   # calculate Vcmax25 and Jmax25
@@ -368,10 +368,10 @@ end
   
   
   # calculate medians and standard errors of the median
-  Vcmax25_Median = median(Vcmax25,na_rm=TRUE)
-  Vcmax25_SE     = constants[:se_median] * sd(Vcmax25,na_rm=TRUE)/sqrt((sum(!is_na(Vcmax25))))
-  Jmax25_Median  = median(Jmax25,na_rm=TRUE)
-  Jmax25_SE      = constants[:se_median] * sd(Jmax25,na_rm=TRUE)/sqrt((sum(!is_na(Jmax25))))
+  Vcmax25_Median = median(Vcmax25,na_rm=true)
+  Vcmax25_SE     = constants[:se_median] * sd(Vcmax25,na_rm=true)/sqrt((sum(!ismissing(Vcmax25))))
+  Jmax25_Median  = median(Jmax25,na_rm=true)
+  Jmax25_SE      = constants[:se_median] * sd(Jmax25,na_rm=true)/sqrt((sum(!ismissing(Jmax25))))
   
   return(c("Vcmax25"=round(Vcmax25_Median,2),"Vcmax25_SE"=round(Vcmax25_SE,2),
            "Jmax25"=round(Jmax25_Median,2),"Jmax25_SE"=round(Jmax25_SE,2)))
@@ -437,21 +437,21 @@ function Arrhenius_temp_response(param,Temp,Ha,Hd,dS,constants=bigleaf_constants
   Temp = Temp + constants[:Kelvin]
   Tref = 25.0 + constants[:Kelvin]
   
-  Ha = ifelse(missing(Ha),NA,Ha*constants[:kJ2J])
-  Hd = ifelse(missing(Hd),NA,Hd*constants[:kJ2J])
-  dS = ifelse(missing(dS),NA,dS*constants[:kJ2J])
+  Ha = ifelse(missing(Ha),missing,Ha*constants[:kJ2J])
+  Hd = ifelse(missing(Hd),missing,Hd*constants[:kJ2J])
+  dS = ifelse(missing(dS),missing,dS*constants[:kJ2J])
   
-  if (is_na(Ha))
+  if (ismissing(Ha))
     
     stop("Activation energy (Ha) has to be provided!")
     
 end
   
-  if (is_na(Hd) & is_na(dS))
+  if (ismissing(Hd) & ismissing(dS))
     
     param25 = param / exp(Ha * (Temp - Tref) / (Tref*constants[:Rgas]*Temp))
   
-else if (!is_na(Hd) & !is_na(dS))
+elseif (!ismissing(Hd) & !ismissing(dS))
     
     param25 = param /
       ( exp(Ha * (Temp - Tref) / (Tref*constants[:Rgas]*Temp)) *
@@ -459,9 +459,9 @@ else if (!is_na(Hd) & !is_na(dS))
         (1 + exp((Temp*dS - Hd) / (Temp * constants[:Rgas])))
       )
     
-else if ((!is_na(Hd) & is_na(dS)) | (is_na(Hd) & !is_na(dS)) )
+elseif ((!ismissing(Hd) & ismissing(dS)) | (ismissing(Hd) & !ismissing(dS)) )
 
-    warning("Both Hd and dS have to be provided for a temperature response
+    @warn"Both Hd and dS have to be provided for a temperature response
              that considers a temperature optimum and a deactivation term!
              Continue considering activation energy (Ha) only...")
     
@@ -480,7 +480,7 @@ end
 #' Estimation of the intrinsic WUE metric "g1" (stomatal slope) 
 #'              from nonlinear regression.
 #' 
-#' - data       Data_frame or matrix containing all required columns
+#' - data       DataFrame or matrix containing all required columns
 #' - Tair       Air (or surface) temperature (deg C)
 #' - pressure   Atmospheric pressure (kPa)
 #' - GPP        Gross primary productivity (umol CO2 m-2 s-1)
@@ -492,17 +492,17 @@ end
 #' - robust_nls Use robust nonlinear regression (`\link[robustbase]{nlrob`})? Default is `false`.
 #' - nmin       Minimum number of data required to perform the fit; defaults to 40.
 #' - fitg0      Should g0 and g1 be fitted simultaneously? 
-#' - g0         Minimum stomatal conductance (mol m-2 s-1); ignored if `fitg0 = TRUE`.
-#' - fitD0      Should D0 be fitted along with g1 (and g0 if `fitg0 = TRUE`)?; only used if `model = "Leuning"`.
+#' - g0         Minimum stomatal conductance (mol m-2 s-1); ignored if `fitg0 = true`.
+#' - fitD0      Should D0 be fitted along with g1 (and g0 if `fitg0 = true`)?; only used if `model = "Leuning"`.
 #' - D0         Stomatal sensitivity parameter to VPD; only used if `model = "Leuning"` and `fitD0 = false`.
 #' - Gamma      Canopy CO2 compensation point (umol mol-1); only used if `model = "Leuning"`. 
 #'                   Can be a constant or a variable. Defaults to 50 umol mol-1.
 #' - constants  Kelvin - conversion degree Celsius to Kelvin 
 #'                   Rgas - universal gas constant (J mol-1 K-1) 
 #'                   DwDc - Ratio of the molecular diffusivities for water vapor and CO2
-#' - missing_Rleaf_as_NA if Rleaf is provided, should missing values be treated as `NA` (`TRUE`)
+#' - missing_Rleaf_as_NA if Rleaf is provided, should missing values be treated as `missing` (`true`)
 #'                            or set to 0 (`false`, the default)?
-#' - ...        Additional arguments to `\link[stats]{nls`} or `\link[robustbase]{nlrob`} if `robust_nls = TRUE`.
+#' - ...        Additional arguments to `\link[stats]{nls`} or `\link[robustbase]{nlrob`} if `robust_nls = true`.
 #' 
 #' # Details
  All stomatal models were developed at leaf-level, but its parameters 
@@ -525,7 +525,7 @@ end
 #'          The equations above are valid at leaf-level. At ecosystem level, An is replaced by GPP (or GPP - Rleaf,
 #'          where Rleaf is leaf respiration), and gs (stomatal conductance) by Gs (surface conductance). 
 #'          The parameters in the models are estimated using nonlinear regression (`\link[stats]{nls`}) if
-#'          `robust_nls = false` and weighted nonlinear regression if `robust_nls = TRUE`.
+#'          `robust_nls = false` and weighted nonlinear regression if `robust_nls = true`.
 #'          The weights are calculated from `\link[robustbase]{nlrob`}, and `\link[stats]{nls`}
 #'          is used for the actual fitting.
 #'          Alternatively to measured VPD and Ca (i.e. conditions at instrument height), conditions at 
@@ -559,21 +559,21 @@ end
 #' ## filter data to ensure that Gs is a meaningful proxy to canopy conductance (Gc)
 #' DE_Tha_Jun_2014_2 = filter_data(DE_Tha_Jun_2014,quality_control=false,
 #'                                  vars_qc=c("Tair","precip","VPD","H","LE"),
-#'                                  filter_growseas=false,filter_precip=TRUE,
+#'                                  filter_growseas=false,filter_precip=true,
 #'                                  filter_vars=c("Tair","PPFD","ustar","LE"),
 #'                                  filter_vals_min=c(5,200,0.2,0),
-#'                                  filter_vals_max=c(NA,NA,NA,NA),NA_as_invalid=TRUE,
+#'                                  filter_vals_max=c(missing,missing,missing,missing),NA_as_invalid=true,
 #'                                  quality_ext="_qc",good_quality=c(0,1),
-#'                                  missing_qc_as_bad=TRUE,GPP="GPP",doy="doy",
+#'                                  missing_qc_as_bad=true,GPP="GPP",doy="doy",
 #'                                  year="year",tGPP=0.5,ws=15,min_int=5,precip="precip",
 #'                                  tprecip=0.1,precip_hours=24,records_per_hour=2)
 #' 
 #' # calculate Gs from the the inverted PM equation
-#' Ga = aerodynamic_conductance(DE_Tha_Jun_2014_2,Rb_model="Thom_1972")[,"Ga_h"]
+#' Ga = aerodynamic_conductance(DE_Tha_Jun_2014_2,Gb_model=Val(:Thom_1972))[,"Ga_h"]
 #' 
 #' # if G and/or S are available, don't forget to indicate (they are ignored by default).
 #' Gs_PM = surface_conductance(DE_Tha_Jun_2014_2,Tair="Tair",pressure="pressure",
-#'                              Rn="Rn",G="G",S=NULL,VPD="VPD",Ga=Ga,
+#'                              Rn="Rn",G="G",S=nothing,VPD="VPD",Ga=Ga,
 #'                              formulation=Val(:PenmanMonteith))[,"Gs_mol"]
 #'                              
 #' ### Estimate the stomatal slope parameter g1 using the USO model
@@ -582,7 +582,7 @@ end
 #'                           
 #' ### Use robust regression to minimize influence of outliers in Gs                           
 #' mod_USO = stomatal_slope(DE_Tha_Jun_2014_2,model="USO",GPP="GPP",Gs=Gs_PM,
-#'                           robust_nls=TRUE,nmin=40,fitg0=false)
+#'                           robust_nls=true,nmin=40,fitg0=false)
 #' 
 #' ### Estimate the same parameter from the Ball&Berry model and prescribe g0
 #' mod_BB = stomatal_slope(DE_Tha_Jun_2014_2,model="Ball&Berry",GPP="GPP",
@@ -597,7 +597,7 @@ end
 #' 
 #' @export 
 function stomatal_slope(data,Tair="Tair",pressure="pressure",GPP="GPP",Gs="Gs_mol",
-                           VPD="VPD",Ca="Ca",Rleaf=NULL,model=c("USO","Ball&Berry","Leuning"),
+                           VPD="VPD",Ca="Ca",Rleaf=nothing,model=c("USO","Ball&Berry","Leuning"),
                            robust_nls=false,nmin=40,fitg0=false,g0=0,fitD0=false,
                            D0=1.5,Gamma=50,missing_Rleaf_as_NA=false,
                            constants=bigleaf_constants(),...)
@@ -617,10 +617,10 @@ end
   
   
   
-  if(!is_null(Rleaf))
-    if(!missing_Rleaf_as_NA){Rleaf[is_na(Rleaf)] = 0 }
+  if(!isnothing(Rleaf))
+    if(!missing_Rleaf_as_NA){Rleaf[ismissing(Rleaf)] = 0 }
 else 
-    cat("Respiration from the leaves is ignored and set to 0.",fill=TRUE)
+    cat("Respiration from the leaves is ignored and set to 0.",fill=true)
     Rleaf = 0
 end
   
@@ -628,9 +628,9 @@ end
   
   
   if (model == "Leuning")
-    nr_data = sum(!is_na(GPP) & !is_na(Gs) & !is_na(VPD) & !is_na(Ca) & !is_na(Gamma))
+    nr_data = sum(!ismissing(GPP) & !ismissing(Gs) & !ismissing(VPD) & !ismissing(Ca) & !ismissing(Gamma))
 else 
-    nr_data = sum(!is_na(GPP) & !is_na(Gs) & !is_na(VPD) & !is_na(Ca))
+    nr_data = sum(!ismissing(GPP) & !ismissing(Gs) & !ismissing(VPD) & !ismissing(Ca))
 end
   
   
@@ -661,7 +661,7 @@ else
 end
 end
       
-else if (model == "Leuning")
+elseif (model == "Leuning")
       
       if (fitg0)
         if (fitD0)
@@ -709,7 +709,7 @@ end
 end
 end
       
-else if (model == "Ball&Berry")
+elseif (model == "Ball&Berry")
       
       rH = VPD_to_rH(VPD,Tair)
       df$rH = rH
@@ -751,7 +751,7 @@ end
 #' calculates GPP_ref at a reference (usually saturating) PPFD and 
 #'              ecosystem quantum yield (alpha) using a rectangular light response curve.
 #' 
-#' - data      Data_frame or matrix containing all required columns
+#' - data      DataFrame or matrix containing all required columns
 #' - NEE       Net ecosystem exchange (umol CO2 m-2 s-1)
 #' - Reco      Ecosystem respiration (umol CO2 m-2 s-1)
 #' - PPFD      Photosynthetic photon flux density (umol m-2 s-1)
@@ -849,7 +849,7 @@ function light_use_efficiency(GPP,PPFD)
   
   comp = complete_cases(GPP,PPFD)
   
-  LUE = sum(GPP[comp],na_rm=TRUE)/sum(PPFD[comp],na_rm=TRUE)
+  LUE = sum(GPP[comp],na_rm=true)/sum(PPFD[comp],na_rm=true)
   
   return(c("LUE"=LUE))
 end
@@ -861,7 +861,7 @@ end
 #' 
 #' Sensitivity of surface conductance to vapor pressure deficit.
 #' 
-#' - data  Data_frame or matrix containing all required columns
+#' - data  DataFrame or matrix containing all required columns
 #' - Gs    Surface conductance to water vapor (mol m-2 s-1)
 #' - VPD   Vapor pressure deficit (kPa)
 #' - ...   Additional arguments to `\link[stats]{nls`}
@@ -896,14 +896,14 @@ end
 #' ```
 #' ## calculate Ga, Gs, and the stomatal sensitivity to VPD for the site FR-Pue in
 #' ## May 2012. Data are filtered for daytime, sufficiently high ustar, etc.
-#' FR_Pue_May_2012_2 = filter_data(FR_Pue_May_2012,quality_control=TRUE,
+#' FR_Pue_May_2012_2 = filter_data(FR_Pue_May_2012,quality_control=true,
 #'                                  vars_qc=c("Tair","precip","H","LE"),
-#'                                  filter_growseas=false,filter_precip=TRUE,
+#'                                  filter_growseas=false,filter_precip=true,
 #'                                  filter_vars=c("Tair","PPFD","ustar","VPD"),
 #'                                  filter_vals_min=c(5,200,0.2,0.3),
-#'                                  filter_vals_max=c(NA,NA,NA,NA),
-#'                                  NA_as_invalid=TRUE,quality_ext="_qc",
-#'                                  good_quality=c(0,1),missing_qc_as_bad=TRUE,
+#'                                  filter_vals_max=c(missing,missing,missing,missing),
+#'                                  NA_as_invalid=true,quality_ext="_qc",
+#'                                  good_quality=c(0,1),missing_qc_as_bad=true,
 #'                                  precip="precip",tprecip=0.1,precip_hours=24,
 #'                                  records_per_hour=2)
 #' Ga = aerodynamic_conductance(FR_Pue_May_2012_2)

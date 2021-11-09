@@ -7,7 +7,7 @@
 #' Bulk aerodynamic conductance, including options for the boundary layer conductance
 #'              formulation and stability correction functions.
 #' 
-#' - data              Data_frame or matrix containing all required variables
+#' - data              DataFrame or matrix containing all required variables
 #' - Tair              Air temperature (deg C)
 #' - pressure          Atmospheric pressure (kPa)
 #' - wind              Wind speed (m s-1)
@@ -17,23 +17,23 @@
 #' - zh                Canopy height (m)
 #' - d                 Zero-plane displacement height (m)
 #' - z0m               Roughness length for momentum (m), optional; if not provided, it is estimated from `roughness_parameters`
-#'                          (method="wind_profile"). Only used if `wind_profile = TRUE` and/or `Rb_model` = `"Su_2001"` or
-#'                          `"Choudhury_1988"`.
-#' - Dl                Characteristic leaf dimension (m) (if `Rb_model` = `"Su_2001"`) 
-#'                          or leaf width (if `Rb_model` = `"Choudhury_1988"`); ignored otherwise.
-#' - N                 Number of leaf sides participating in heat exchange (1 or 2); only used if `Rb_model = "Su_2001"`.
+#'                          (method=Val(:wind_profile)). Only used if `wind_profile = true` and/or `Gb_model` = `Val(:Su_2001)` or
+#'                          `Val(:Choudhury_1988)`.
+#' - Dl                Characteristic leaf dimension (m) (if `Gb_model` = `Val(:Su_2001)`) 
+#'                          or leaf width (if `Gb_model` = `Val(:Choudhury_1988)`); ignored otherwise.
+#' - N                 Number of leaf sides participating in heat exchange (1 or 2); only used if `Gb_model = Val(:Su_2001)`.
 #'                          Defaults to 2.
-#' - fc                Fractional vegetation cover (-); only used if `Rb_model = "Su_2001"`. See Details.
-#' - LAI               One-sided leaf area index (m2 m-2); only used if `Rb_model` = `"Choudhury_1988"` or `"Su_2001"`.
-#' - Cd                Foliage drag coefficient (-); only used if `Rb_model = "Su_2001"`. 
-#' - hs                Roughness length of bare soil (m); only used if `Rb_model = "Su_2001"`.
+#' - fc                Fractional vegetation cover (-); only used if `Gb_model = Val(:Su_2001)`. See Details.
+#' - LAI               One-sided leaf area index (m2 m-2); only used if `Gb_model` = `Val(:Choudhury_1988)` or `Val(:Su_2001)`.
+#' - Cd                Foliage drag coefficient (-); only used if `Gb_model = Val(:Su_2001)`. 
+#' - hs                Roughness length of bare soil (m); only used if `Gb_model = Val(:Su_2001)`.
 #' - wind_profile      Should Ga for momentum be calculated based on the logarithmic wind profile equation? 
 #'                          Defaults to `false`.
-#' - stab_correction   Should stability correction be applied? Defaults to `TRUE`. Ignored if `wind_profile = false`.                         
-#' - stab_formulation  Stability correction function. Either `"Dyer_1970"` (default) or
-#'                          `"Businger_1971"`. Ignored if `wind_profile = false` or if `stab_correction = false`.
-#' - Rb_model          Boundary layer resistance formulation. One of `"Thom_1972","Choudhury_1988","Su_2001","constant_kB-1"`.
-#' - kB_h              kB-1 value for heat transfer; only used if `Rb_model = "constant_kB-1"`
+#' - stab_correction   Should stability correction be applied? Defaults to `true`. Ignored if `wind_profile = false`.                         
+#' - stab_formulation  Stability correction function. Either `Val(:Dyer_1970)` (default) or
+#'                          `Val(:Businger_1971)`. Ignored if `wind_profile = false` or if `stab_correction = false`.
+#' - Gb_model          Boundary layer resistance formulation. One of `Val(:Thom_1972),Val(:Choudhury_1988),Val(:Su_2001),Val(:constant_kB1)`.
+#' - kB_h              kB-1 value for heat transfer; only used if `Gb_model = Val(:constant_kB1)`
 #' - Sc                Optional: Schmidt number of additional quantities to be calculated
 #' - Sc_name           Optional: Name of the additonal quantities, has to be of same length than 
 #'                          `Sc_name`
@@ -64,7 +64,7 @@
 #'  additional stability correction function. 
 #'  
 #'  An alternative method to calculate Ra_m is provided
-#'  (calculated if `wind_profile = TRUE`):
+#'  (calculated if `wind_profile = true`):
 #'  
 #'     ``Ra_m = (ln((zr - d)/z0m) - psi_h) / (k ustar)``
 #'  
@@ -75,18 +75,18 @@
 #'  where z = reference height, d the zero-plane displacement height, and L the Monin-Obukhov length, 
 #'  calculated with [`Monin_Obukhov_length`](@ref)
 #'  The stability correction function is chosen by the argument `stab_formulation`. Options are 
-#'  `"Dyer_1970"` and `"Businger_1971"`.
+#'  `Val(:Dyer_1970)` and `Val(:Businger_1971)`.
 #'  
 #'  The model used to determine the canopy boundary layer resistance for heat (Rb_h) is specified by 
-#'  the argument `Rb_model`. The following options are implemented:
-#'  `"Thom_1972"` is an empirical formulation based on the friction velocity (ustar) (Thom 1972):
+#'  the argument `Gb_model`. The following options are implemented:
+#'  `Val(:Thom_1972)` is an empirical formulation based on the friction velocity (ustar) (Thom 1972):
 #'  
 #'    ``Rb_h = 6.2ustar^-0.667``
 #'    
-#'  The model by Choudhury & Monteith 1988 (`Rb_model = "Choudhury_1988"`),
+#'  The model by Choudhury & Monteith 1988 (`Gb_model = Val(:Choudhury_1988)`),
 #'  calculates Rb_h based on leaf width, LAI and ustar (Note that function argument `Dl`
 #'  represents leaf width (w) and not characteristic leaf dimension (Dl)
-#'  if `Rb_model` = `"Choudhury_1988"`):
+#'  if `Gb_model` = `Val(:Choudhury_1988)`):
 #'   
 #'     ``Gb_h = LAI((0.02/\\alpha)*sqrt(u(zh)/w)*(1-exp(-\\alpha/2)))``
 #'     
@@ -94,7 +94,7 @@
 #'  u(zh) is wind speed at canopy height (calculated from [`wind_profile`](@ref)),
 #'  and w is leaf width (m). See [`Gb_Choudhury`](@ref) for further details.
 #'     
-#'  The option `Rb_model = "Su_2001"` calculates Rb_h based on the physically-based Rb model by Su et al. 2001,
+#'  The option `Gb_model = Val(:Su_2001)` calculates Rb_h based on the physically-based Rb model by Su et al. 2001,
 #'  a simplification of the model developed by Massman 1999:
 #'  
 #'     ``kB-1 = (k Cd fc^2) / (4Ct ustar/u(zh)) + kBs-1(1 - fc)^2``
@@ -125,8 +125,8 @@
 #'         - Gb_h: Canopy boundary layer conductance for heat transfer (m s-1)
 #'         - Rb_h: Canopy boundary layer resistance for heat transfer (s m-1)
 #'         - kB_h: kB-1 parameter for heat transfer
-#'         - zeta: Stability parameter 'zeta' (NA if `wind_profile = false`)
-#'         - psi_h: Integrated stability correction function (NA if `wind_profile = false`)
+#'         - zeta: Stability parameter 'zeta' (missing if `wind_profile = false`)
+#'         - psi_h: Integrated stability correction function (missing if `wind_profile = false`)
 #'         - Ra_CO2: Aerodynamic resistance for CO2 transfer (s m-1)
 #'         - Ga_CO2: Aerodynamic conductance for CO2 transfer (m s-1)
 #'         - Gb_CO2: Canopy boundary layer conductance for CO2 transfer (m s-1)
@@ -155,8 +155,8 @@
 #'       example in the function [`surface_conductance`](@ref).
 #'       
 #'       If the roughness length for momentum (`z0m`) is not provided as input, it is estimated 
-#'       from the function `roughness_parameters` within `wind_profile` if `wind_profile = TRUE` 
-#'       and/or `Rb_model` = `"Su_2001"` or `"Choudhury_1988"` The `roughness_parameters`
+#'       from the function `roughness_parameters` within `wind_profile` if `wind_profile = true` 
+#'       and/or `Gb_model` = `Val(:Su_2001)` or `Val(:Choudhury_1988)` The `roughness_parameters`
 #'       function estimates a single `z0m` value for the entire time period! If a varying `z0m` value 
 #'       (e.g. across seasons or years) is required, `z0m` should be provided as input argument.
 #'       
@@ -183,42 +183,42 @@
 #' df = DataFrame(Tair=25,pressure=100,wind=c(3,4,5),ustar=c(0.5,0.6,0.65),H=c(200,230,250))   
 #'  
 #' # simple calculation of Ga  
-#' aerodynamic_conductance(df,Rb_model="Thom_1972") 
+#' aerodynamic_conductance(df,Gb_model=Val(:Thom_1972)) 
 #' 
 #' # calculation of Ga using a model derived from the logarithmic wind profile
-#' aerodynamic_conductance(df,Rb_model="Thom_1972",zr=40,zh=25,d=17.5,z0m=2,wind_profile=TRUE) 
+#' aerodynamic_conductance(df,Gb_model=Val(:Thom_1972),zr=40,zh=25,d=17.5,z0m=2,wind_profile=true) 
 #' 
 #' # simple calculation of Ga, but a physically based canopy boundary layer model
-#' aerodynamic_conductance(df,Rb_model="Su_2001",zr=40,zh=25,d=17.5,Dl=0.05,N=2,fc=0.8)
+#' aerodynamic_conductance(df,Gb_model=Val(:Su_2001),zr=40,zh=25,d=17.5,Dl=0.05,N=2,fc=0.8)
 #' 
 """
 """
 function aerodynamic_conductance(data,Tair="Tair",pressure="pressure",wind="wind",ustar="ustar",H="H",
-                                    zr,zh,d,z0m=NULL,Dl,N=2,fc=NULL,LAI,Cd=0.2,hs=0.01,wind_profile=false,
-                                    stab_correction=TRUE,stab_formulation=c("Dyer_1970","Businger_1971"),
-                                    Rb_model=c("Thom_1972","Choudhury_1988","Su_2001","constant_kB-1"),
-                                    kB_h=NULL,Sc=NULL,Sc_name=NULL,constants=bigleaf_constants())
+                                    zr,zh,d,z0m=nothing,Dl,N=2,fc=nothing,LAI,Cd=0.2,hs=0.01,wind_profile=false,
+                                    stab_correction=true,stab_formulation=c(Val(:Dyer_1970),Val(:Businger_1971)),
+                                    Gb_model=c(Val(:Thom_1972),Val(:Choudhury_1988),Val(:Su_2001),Val(:constant_kB1)),
+                                    kB_h=nothing,Sc=nothing,Sc_name=nothing,constants=bigleaf_constants())
   
-  Rb_model         = match_arg(Rb_model)
+  Gb_model         = match_arg(Gb_model)
   stab_formulation = match_arg(stab_formulation)
   
   check_input(data,list(Tair,pressure,wind,ustar,H))
 
   ## calculate canopy boundary layer conductance (Gb)
-  if (Rb_model %in% c("Thom_1972","Choudhury_1988","Su_2001"))
+  if (Gb_model in c(Val(:Thom_1972),Val(:Choudhury_1988),Val(:Su_2001)))
     
-    if (Rb_model == "Thom_1972")
+    if (Gb_model == Val(:Thom_1972))
       
       Gb_mod = Gb_Thom(ustar=ustar,Sc=Sc,Sc_name=Sc_name,constants=constants)
       
-else if (Rb_model == "Choudhury_1988")
+elseif (Gb_model == Val(:Choudhury_1988))
       
       Gb_mod = Gb_Choudhury(data,Tair=Tair,pressure=pressure,wind=wind,ustar=ustar,
                              H=H,leafwidth=Dl,LAI=LAI,zh=zh,zr=zr,d=d,z0m=z0m,
                              stab_formulation=stab_formulation,Sc=Sc,Sc_name=Sc_name,
                              constants=constants)
       
-else if (Rb_model == "Su_2001")
+elseif (Gb_model == Val(:Su_2001))
       
       Gb_mod = Gb_Su(data=data,Tair=Tair,pressure=pressure,ustar=ustar,wind=wind,
                       H=H,zh=zh,zr=zr,d=d,z0m=z0m,Dl=Dl,N=N,fc=fc,LAI=LAI,Cd=Cd,hs=hs,
@@ -231,18 +231,18 @@ end
     Rb_h = Gb_mod[,"Rb_h"]
     Gb_h = Gb_mod[,"Gb_h"]
     Gb_x = DataFrame(Gb_mod[,grep(colnames(Gb_mod),pattern="Gb_")[-1]])
-    colnames(Gb_x) = grep(colnames(Gb_mod),pattern="Gb_",value=TRUE)[-1]
+    colnames(Gb_x) = grep(colnames(Gb_mod),pattern="Gb_",value=true)[-1]
 
     
-else if (Rb_model == "constant_kB-1")
+elseif (Gb_model == Val(:constant_kB1))
     
-    if(is_null(kB_h))
-      stop("value of kB-1 has to be specified if Rb_model is set to 'constant_kB-1'!")
+    if(isnothing(kB_h))
+      stop("value of kB-1 has to be specified if Gb_model is set to 'constant_kB-1'!")
 else 
       Rb_h = kB_h/(constants[:k] * ustar)
       Gb_h = 1/Rb_h
       
-      if (!is_null(Sc) | !is_null(Sc_name))
+      if (!isnothing(Sc) | !isnothing(Sc_name))
         if (length(Sc) != length(Sc_name))
           stop("arguments 'Sc' and 'Sc_name' must have the same length")
 end
@@ -262,13 +262,13 @@ end
   ## calculate aerodynamic conductance for momentum (Ga_m)
   if (wind_profile)
     
-    if (is_null(z0m) & Rb_model %in% c("constant_kB-1","Thom_1972"))
-      stop("z0m must be provided if wind_profile=TRUE!")
-else if (is_null(z0m) & Rb_model %in% c("Choudhury_1988","Su_2001"))
+    if (isnothing(z0m) & Gb_model in c(Val(:constant_kB1),Val(:Thom_1972)))
+      stop("z0m must be provided if wind_profile=true!")
+elseif (isnothing(z0m) & Gb_model in c(Val(:Choudhury_1988),Val(:Su_2001)))
       # z0m estimated as in Choudhury_1988 or Su_2001
-      z0m = roughness_parameters(method="wind_profile",zh=zh,zr=zr,d=d,data=data,
+      z0m = roughness_parameters(method=Val(:wind_profile),zh=zh,zr=zr,d=d,data=data,
                                   Tair=Tair,pressure=pressure,wind=wind,ustar=ustar,H=H,
-                                  stab_roughness=TRUE,stab_formulation=stab_formulation,
+                                  stab_roughness=true,stab_formulation=stab_formulation,
                                   constants=constants)[,"z0m"]
 end
     
@@ -277,7 +277,7 @@ end
       zeta  =  stability_parameter(data=data,Tair=Tair,pressure=pressure,ustar=ustar,
                                     H=H,zr=zr,d=d,constants=constants)
       
-      if (stab_formulation %in% c("Dyer_1970","Businger_1971"))
+      if (stab_formulation in c(Val(:Dyer_1970),Val(:Businger_1971)))
         
         psi_h = stability_correction(zeta,formulation=stab_formulation)[,"psi_h"]
         
@@ -297,8 +297,8 @@ end
     
 else 
     
-    if ((!missing(zr) | !missing(d) | !missing(z0m)) & Rb_model %in% c("constant_kB-1","Thom_1972"))
-      warning("Provided roughness length parameters (zr,d,z0m) are not used if 'wind_profile = false' (the default). Ra_m is calculated as wind / ustar^2")
+    if ((!missing(zr) | !missing(d) | !missing(z0m)) & Gb_model in c(Val(:constant_kB1),Val(:Thom_1972)))
+      @warn"Provided roughness length parameters (zr,d,z0m) are not used if 'wind_profile = false' (the default). Ra_m is calculated as wind / ustar^2")
 end
     
     Ra_m = wind / ustar^2

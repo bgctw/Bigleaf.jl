@@ -70,7 +70,7 @@ end
 #' @importFrom solartime computeSunPositionDoyHour
 """
 """
-function potential_radiation(doy, hour, latDeg, longDeg, timezone, useSolartime = TRUE)
+function potential_radiation(doy, hour, latDeg, longDeg, timezone, useSolartime = true)
   
   # Calculate potential radiation from solar elevation and extraterrestrial solar radiation
   solElevRad = computeSunPositionDoyHour(

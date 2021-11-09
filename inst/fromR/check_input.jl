@@ -22,22 +22,22 @@ function check_input(data,...)
   vars = check_length(list(...))
   
   if (missing(data))
-    data = NULL
+    data = nothing
 end
   
   varlist  = match_call()[-c(1:2)]
   varnames = c(unlist(sapply(varlist,as_character)))
-  varnames = varnames[!varnames %in% c("c","list")]
+  varnames = varnames[!varnames in c("c","list")]
 
   for (v in seq_along(vars))
     
     var     = vars[[v]]
-    varname = ifelse(varnames[v] %in% c("var","var_qc"),gsub("\"","",deparse(substitute(var))),varnames[v])
+    varname = ifelse(varnames[v] in c("var","var_qc"),gsub("\"","",deparse(substitute(var))),varnames[v])
    
     if (is_character(var))
-      if (!missing(data) & !is_null(data))
+      if (!missing(data) & !isnothing(data))
         if (length(var) == 1)
-          if (var %in% colnames(data))
+          if (var in colnames(data))
             var = data[,var]
             if (is_numeric(var))
               assign(varname,var,pos=sys_frame(-1))
@@ -51,8 +51,8 @@ else
           stop("name of variable '",varname,"' must have length 1",call.=false)
 end
 else 
-        if ("data" %in% names(formals(sys_function(which=-1))))
-          if (var %in% as_character(unlist(match_call(definition=sys_function(-1),call=sys_call(-1))[-1])))
+        if ("data" in names(formals(sys_function(which=-1))))
+          if (var in as_character(unlist(match_call(definition=sys_function(-1),call=sys_call(-1))[-1])))
             stop("variable '",var,"' is of type character and interpreted as a column name, but no input matrix/DataFrame is provided. Provide '",var,"' as a numeric vector, or an input matrix/DataFrame with a column named '",var,"'",call.=false)
 else 
             stop("variable '",var,"' is not provided",call.=false)
@@ -63,25 +63,25 @@ end
 end
 else 
       if (length(var) < 2)
-        if (is_null(var))
+        if (isnothing(var))
           assign(varname,var,pos=sys_frame(-1))
           next
-else if (is_na(var))
+elseif (ismissing(var))
           assign(varname,var,pos=sys_frame(-1))
           next
 end
 end
-      if (!missing(data) & !is_null(data))
+      if (!missing(data) & !isnothing(data))
         if (is_numeric(var) & length(var) == nrow(data))
           assign(varname,var,envir=sys_frame(-1))
-else if (is_numeric(var) & length(var) != nrow(data)) 
+elseif (is_numeric(var) & length(var) != nrow(data)) 
           if (length(var) == 1)
             var = rep(var,length=nrow(data))
             assign(varname,var,envir=sys_frame(-1))
 else 
             stop("variable '",varname,"' must have the same length as the input matrix/DataFrame or length 1. Do NOT provide an input matrix/DataFrame if none of its variables are used!",call.=false)
 end
-else if (!is_numeric(var))
+elseif (!is_numeric(var))
           stop("variable '",varname,"' must be numeric",call.=false)
 end
 else 

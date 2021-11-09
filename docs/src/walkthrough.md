@@ -58,10 +58,12 @@ For more information on the site see e.g. Grünwald & Bernhofer 2007.
 In addition, we will need some ancillary data for this site throughout this tutorial. To ensure consistency, we define them here at the beginning:
 
 ```@example doc
-LAI = 7.6   # leaf area index
-zh  = 26.5  # average vegetation height (m)
-zr  = 42    # sensor height (m)
-Dl  = 0.01  # leaf characteristic dimension (m)
+thal = (
+     LAI = 7.6,   # leaf area index
+     zh  = 26.5,  # average vegetation height (m)
+     zr  = 42,    # sensor height (m)
+     Dl  = 0.01,  # leaf characteristic dimension (m)
+)
 nothing # hide
 ```
 
@@ -175,7 +177,7 @@ below which the quality control to be considered as acceptable quality
 all `LE` values whose `LE_qc` variable is larger than 1 are set to `missing`. 
 The variable `missing_qc_as_bad` is required to decide what to do in 
 case of missing values in the quality control variable. By default this is (conservatively) 
-set to `TRUE`, i.e. all entries where the qc variable is missing is set invalid. 
+set to `true`, i.e. all entries where the qc variable is missing is set invalid. 
 
 ### `setinvalid_range!`
 
@@ -249,6 +251,11 @@ setinvalid_afterprecip!(thaf; min_precip=0.02, hours_after=24)
 sum(.!thaf.valid) # some more invalids
 ```
 
+In this walkthrough we use the data as filtered above:
+```@example doc
+thas = subset(thaf, :valid)
+```
+
 
 ## Meteorological variables
 
@@ -316,6 +323,113 @@ The following figure compares them at absole scale and as difference to the
 
 ![](fig/Esat_rel.svg)
 
+## Aerodynamic conductance
+
+An important metric for many calculations in the `Bigleaf.jl` package is the aerodynamic 
+conductance ($G_a$) between the land surface and the measurement height. $G_a$ 
+characterizes how efficiently mass and energy is transferred between the land surface 
+and the atmosphere. $G_a$ consists of two parts: $G_{a_m}$, the aerodynamic conductance 
+for momentum, and $G_b$, the canopy boundary layer (or quasi-laminar) conductance. 
+$G_a$ can be defined as 
+
+  $G_a = 1/(1/G_{a_m} + 1/G_b)$. 
+
+In this tutorial we will focus on 
+how to use the function [`aerodynamic_conductance!`](@ref). 
+For further details on the equations, 
+the reader is directed to the publication of the Bigleaf package (Knauer et al. 2018) and 
+the references therein. A good overview is provided by e.g. Verma 1989.
+
+  $G_a$ and in particular $G_b$ can be calculated with varying degrees of complexity. 
+We start with the simplest version, in which $G_b$ is calculated empirically based on 
+the friction velocity ($u_*$) according to Thom 1972:
+
+```@example doc
+aerodynamic_conductance!(thas)
+thas[1:3, Cols(:datetime,Between(:zeta,:Ga_CO2))]
+```
+
+Note that by not providing additional arguments, the default values are taken.
+We also do not need most of the arguments that can be provided to the function in this case 
+(i.e. with `Gb_model=Val(:Thom_1972)`). These are only required if we use a more complex 
+formulation of $G_b$.
+The output of the function is another DataFrame which contains separate columns for 
+conductances and resistances of different scalars (momentum, heat, and $CO_2$ by default).
+
+For comparison, we now calculate a second estimate of $G_a$, where the calculation of 
+$G_b$ is more physically-based (Su et al. 2001), and which requires more input variables 
+compared to the first version. In particular, we now need LAI, the leaf characteristic 
+dimension ($D_l$, assumed to be 1cm here), and information on sensor and canopy height 
+($z_r$ and $z_h$), as well as the displacement height (assumed to be 0.7*$z_h$):
+
+
+```@example doc
+aerodynamic_conductance!(thas;Gb_model=Val(:Su_2001),
+     LAI=thal.zh, zh=thal.zh, d=0.7*thal.zh, zr=thal.zr,Dl=thal.Dl)
+thas[1:3, Cols(:datetime,Between(:zeta,:Ga_CO2))]
+```
+
+We see that the values are different compared to the first, empirical estimate. 
+This is because this formulation takes additional aerodynamically relevant properties 
+(LAI, $D_l$) into account that were not considered by the simple empirical formulation.
+
+
+## Boundary layer conductance for trace gases
+
+By default, the function `aerodynamic_conductance` (calling `compute_Gb!`) returns the 
+(quasi-laminar) canopy boundary layer ($G_{b}$) for heat and water vapor 
+(which are assumed to be equal in the `Bigleaf.jl`), as well as for CO$_2$. 
+Functin `add_Gb` calculates $G_b$ for other trace gases, provided that the respective Schmidt 
+number is known. 
+
+```@example doc
+compute_Gb!(thas, Val(:Thom_1972)) # adds/modifies column Gb_h and Gb_CO2
+add_Gb!(thas, :Gb_O2 => 0.84, :Gb_CH4 => 0.99) # adds Gb_O2 and Gb_CH4
+select(first(thas,3), r"Gb_")
+```
+
+## Wind profile
+
+The 'big-leaf' framework assumes that wind speed is zero at height d + $z_{0m}$ 
+(where $z_{0m}$ is the roughness length for momentum) and then increases exponentially with 
+height. The shape of the wind profile further depends on the stability conditions of the 
+air above the canopy.
+In `Bigleaf.jl`, a wind profile can be calculated assuming an exponential increase with 
+height, which is affected by atmospheric stability. Here, we calculate wind speed at 
+heights of 22-60m in steps of 2m. As expected, the gradient in wind speed is strongest 
+close to the surface and weaker at greater heights:
+
+```@example doc
+using Statistics
+wind_heights = 22:2:60.0
+d = 0.7 * thal.zh
+z0m = roughness_parameters(Val(:wind_profile), thas, thal.zh, thal.zr).z0m
+wp = map(wind_heights) do z
+  wind_profile(thas,z,d, z0m; zh=thal.zh, zr=thal.zr)
+end
+nothing # hide
+```
+```@setup doc
+wp_means = map(x -> mean(skipmissing(x)), wp)
+wp_sd    = map(x -> std(skipmissing(x)), wp)
+wr_mean = mean(skipmissing(thas.wind)) # measurements at reference height
+wr_sd    = std(skipmissing(thas.wind))
+using Plots # plot wind profiles for the three rows in df
+plot(wp_means, wind_heights, ylab = "height (m)", xlab = "wind speed (m/s)", xerror=wp_sd, 
+  label=nothing)
+scatter!(wp_means, wind_heights, label = nothing)
+```
+```@example doc
+scatter!([wr_mean], [thal.zr], xerror = [wr_sd], markerstrokecolor=:blue, #hide
+  markerstrokewidth=2, label = nothing) # hide
+```
+
+Here, the points denote the mean wind speed and the bars denote the standard deviation
+across time. The blue point/bar represent the values that were measured at zr = 42m. 
+In this case we see that the wind speed as "back-calculated" from the wind profile agrees 
+well with the actual measurements.
+
+
 ## Potential evapotranspiration
 
 For many hydrological applications, it is relevant to get an estimate on the potential 
@@ -323,11 +437,11 @@ evapotranspiration (PET). At the moment, the `Bigleaf.jl` contains two formulati
 for the estimate of PET: the Priestley-Taylor equation, and the Penman-Monteith equation:
 
 ```@example doc
-potential_ET!(thaf, Val(:PriestleyTaylor); G = thaf.G, infoGS = false)
+potential_ET!(thas, Val(:PriestleyTaylor); G = thas.G, infoGS = false)
 # TODO need aerodynamci and surface conductance to compute Ga and Gs_mol before
-# potential_ET!(thaf, Val(:PenmanMonteith);  G = thaf.G, 
-#        Gs_pot=quantile(skipmissing(thaf.Gs_mol),0.95))
-select(thaf[24:26,:], :datetime, :ET_pot, :LE_pot)
+# potential_ET!(thas, Val(:PenmanMonteith);  G = thas.G, 
+#        Gs_pot=quantile(skipmissing(thas.Gs_mol),0.95))
+select(thas[24:26,:], :datetime, :ET_pot, :LE_pot)
 ```
 
 In the second calculation it is important to provide an estimate of aerodynamic 
@@ -354,7 +468,8 @@ lat,long = 51.0, 13.6 # Dresden Germany
 doy = 160
 datetimes = DateTime(2021) .+Day(doy-1) .+ Hour.(hours) #.- Second(round(long*deg2second))
 res3 = @pipe calc_sun_position_hor.(datetimes, lat, long) |> DataFrame(_)
-@df res3 scatter(datetimes, cols([:altitude,:azimuth]), legend = :topleft, xlab="Date and Time", ylab = "rad", xrotation=6)
+@df res3 scatter(datetimes, cols([:altitude,:azimuth]), legend = :topleft, # hide
+  xlab="Date and Time", ylab = "rad", xrotation=6) # hide
 ```
 
 The hour-angle at noon represents the difference to
