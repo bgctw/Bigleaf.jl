@@ -142,7 +142,8 @@ function roughness_parameters(::Val{:canopy_height}, zh; frac_d=0.7, frac_z0m=0.
   (;d, z0m, z0m_se)
 end
 
-function roughness_parameters(::Val{:canopy_height_LAI}, zh, LAI; cd=0.2, hs=0.01)
+function roughness_parameters(::Val{:canopy_height_LAI}, zh, LAI; 
+  cd=0.2, hs=0.01)
   X = cd * LAI
   d = 1.1 * zh * log(1 + X^(1/4))
   z0m = ifelse(0 <= X <= 0.2, hs + 0.3 * X^(1/2), 0.3 * zh * (1 - d/zh))
@@ -152,13 +153,12 @@ end
 
 # docu: supply psi_m = 0 for no stability correction, default method
 # if psi_m is given df only needs wind and ustar
-function roughness_parameters(::Val{:wind_profile}, df, zh, zr;
+function roughness_parameters(::Val{:wind_profile}, df::DFTable, zh, zr;
   d = 0.7*zh, psi_m = nothing, stab_formulation=Val(:Dyer_1970), 
   constants=bigleaf_constants()
   )
   if isnothing(psi_m)
-    psi_m = stability_correction!(copy(df, copycols=false), zr, d; 
-      stab_formulation, constants).psi_m
+    psi_m = stability_correction(df, zr, d; stab_formulation, constants).psi_m
   end
   z0m_all = allowmissing(@. (zr - d) * exp(-constants[:k]*df.wind / df.ustar - psi_m))
   #z0m_all[(z0m_all .> zh)] .= missing # problems with missings
@@ -263,7 +263,7 @@ function wind_profile(stab_formulation, z, ustar, Tair,pressure,H, d, z0m;
   wind_profile(z, ustar, d, z0m, psi_m)
 end
 
-function wind_profile(df::AbstractDataFrame, z, d, z0m = nothing; 
+function wind_profile(df::DFTable, z, d, z0m = nothing; 
   zh = nothing, zr = nothing, 
   stab_formulation = Val(:Dyer_1970), constants = bigleaf_constants()
   )
@@ -275,13 +275,12 @@ function wind_profile(df::AbstractDataFrame, z, d, z0m = nothing;
     # uses psi_m at zr
     z0m = roughness_parameters(Val(:wind_profile), df, zh, zr).z0m
   end
-  psi_m = stability_correction!(
-    copy(df, copycols=false), z, d; stab_formulation, constants).psi_m
+  psi_m = stability_correction(df, z, d; stab_formulation, constants).psi_m
   #wind_profile(df, z, d, z0m, psi_m; constants)
   wind_profile(df, z, d, z0m, psi_m; constants)
 end
 
-function wind_profile(df::AbstractDataFrame, z, d, z0m, psi_m::AbstractVector;
+function wind_profile(df::DFTable, z, d, z0m, psi_m::AbstractVector;
   constants = bigleaf_constants())
   # when psi_m is given, df is not used any more, but keep for consistency
   wind_profile.(z, df.ustar, d, z0m, psi_m; constants)

@@ -2,6 +2,7 @@ using Bigleaf
 using Test, StableRNGs
 using Pipe: @pipe 
 using DataFrames, Dates, TimeZones
+using Tables: columntable
 using StaticArrays
 using Statistics, StatsBase
 
