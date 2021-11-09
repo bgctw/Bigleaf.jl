@@ -242,6 +242,6 @@ end
 
 function stability_correction!(df, z, d; 
   stab_formulation=Val(:Dyer_1970), constants = bigleaf_constants())
-  ft(args...) = stability_correction(args..., z, d; stab_formulation, constants)
-  transform!(df, SA[:Tair,:pressure,:ustar,:H] => ByRow(ft) => AsTable)
+  ft(args...) = stability_correction.(args..., z, d; stab_formulation, constants)
+  transform!(df, SA[:Tair,:pressure,:ustar,:H] => ft => AsTable)
 end

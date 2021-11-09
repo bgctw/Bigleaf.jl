@@ -34,7 +34,7 @@ end
     @test Ram_r ≈ 6.31 rtol = 1/100 # TODO check with R
     Ram_p = compute_Ram(Val(:wind_profile), ustar; zr, d, z0m, psi_h = df.psi_h[24])
     @test Ram_p ≈ 5.41 rtol = 1/100 # TODO check with R
-
+    #
     #Gb_h, Gb_CO2 = compute_Gb!(df, Val(:Thom_1972))[24, [:Gb_h, :Gb_CO2]]
     compute_Ram!(df, Val(:wind_zr))
     #@test all(propertynames(df)[(end+1-length(Ram)):end] .== keys(Ram))
@@ -42,6 +42,14 @@ end
     @test df.Ra_m[24] == Ram_r
     compute_Ram!(df, Val(:wind_profile); zr, d, z0m)
     @test df.Ra_m[24] == Ram_p
+    Ram_skalar = df.Ra_m
+    #
+    # test zr as a vecttor
+    df[!,:zri] .= zr
+    df.zri[1] = zr/2
+    compute_Ram!(df, Val(:wind_profile); zr=df.zri, d, z0m)
+    @test df.Ra_m[2:end] == Ram_skalar[2:end]
+    @test df.Ra_m[1] != Ram_skalar[1]
 end
 
 @testset "aerodynamic_conductance! only ustar and wind" begin

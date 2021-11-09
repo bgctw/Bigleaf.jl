@@ -18,10 +18,17 @@ end
     #
     stability_parameter!(df;zr,d)
     @test df.zeta[24] == zeta
+    zeta_scalar = df.zeta
+    # 
+    # non-mutatingvariant
+    # also test zr as a vector
     df = copy(tha48)
-    zetas = stability_parameter(df;zr,d)
+    df[!,:zri] .= zr
+    df.zri[1] = zr/2
+    zetas = stability_parameter(df;zr=df.zri,d)
     @test df == tha48 # did not modify original df
-    @test zetas[24] == zeta
+    @test zetas[2:24] == zeta_scalar[2:24]
+    @test zetas[1] != zeta_scalar[1]
 end
 
 @testset "stability_correction" begin
@@ -42,7 +49,7 @@ end
     @test resm == (psi_h = 0.0, psi_m = 0.0)
 end
 
-@testset "stability_correction DataFrame variant" begin
+#@testset "stability_correction DataFrame variant" begin
     zr=40;d=15
     dfo = DataFrame(Tair=25, pressure=100, ustar=0.2:0.1:1.0, H=40:20:200)
     df = copy(dfo)
@@ -55,11 +62,20 @@ end
     @test all(iszero.(dfm.psi_h))
     @test all(iszero.(dfm.psi_m))
     #
+    # test computing zeta first
     df2 = copy(dfo)
     stability_parameter!(df2; zr, d) # adds zeta
     stability_correction!(df2)
     @test df2.psi_h == df.psi_h
     @test df2.psi_m == df.psi_m
+    #
+    # test specifying zr as a vector
+    df3 = copy(dfo)
+    df3[!,:zri] .= zr
+    df3.zri[1] = zr/2
+    stability_correction!(df3, df3.zri, d)
+    @test df3.psi_h[2:end] == df.psi_h[2:end]
+    @test df3.psi_h[1] != df.psi_h[1]
 end
 
 @testset "stability_correction from raw" begin
