@@ -61,14 +61,14 @@ end
     # TODO compare with R        
 end
 
-@testset "compute_Gb Gb_Thom" begin
+@testset "aerodynamic_conductance! Gb_Thom" begin
     df = copy(tha48)
     aerodynamic_conductance!(df; Gb_model=Val(:Thom_1972), zh = thal.zh, zr = thal.zr)
     @test propertynames(df)[(end-8):end] == 
         SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2]
 end
 
-@testset "constant_kB1" begin
+@testset "aerodynamic_conductance! constant_kB1" begin
     kB_h = 1.18
     # DataFrame variant
     df = copy(tha48)
@@ -77,7 +77,7 @@ end
         SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2]
 end
 
-@testset "compute_Gb Gb_Choudhury" begin
+@testset "aerodynamic_conductance! Gb_Choudhury" begin
     leafwidth=0.1
     df = copy(tha48)
     aerodynamic_conductance!(df; Gb_model=Val(:Choudhury_1988),
@@ -86,11 +86,17 @@ end
         SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2]
 end
 
-@testset "compute_Gb Gb_Su" begin
+@testset "aerodynamic_conductance! Gb_Su" begin
     Dl=0.01
     df = copy(tha48)
     aerodynamic_conductance!(df; Gb_model=Val(:Su_2001), Dl, LAI=thal.LAI, zh=thal.zh, zr=thal.zr)
     @test propertynames(df)[(end-8):end] == 
         SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2]
+end
+
+@testset "roughness_z0h" begin
+    z0m, kB_h = 1.2, 3.4
+    z0h = roughness_z0h(z0m, kB_h)
+    @test z0h ≈ 0.0400 rtol = 1e-2
 end
 
