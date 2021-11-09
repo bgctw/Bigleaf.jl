@@ -48,10 +48,10 @@ end
     d=0.7*thal.zh
     z0m= 2.65
     u30 = wind_profile(z, ustar, d, z0m)
-    @test ≈(u30, 1.93, rtol = 1/100 )
+    @test ≈(u30, 1.93, rtol = 1/100 ) # from R
     #
     u30c = wind_profile(Val(:Dyer_1970), z, ustar, Tair,pressure, H, d, z0m)
-    @test ≈(u30c, 2.31, rtol = 1/100 )
+    @test ≈(u30c, 2.31, rtol = 1/100 ) # from R
     #
     z0m=1.9 #2.14 #2.65
     u30 = wind_profile(z, ustar, d, z0m) # used below
@@ -71,9 +71,11 @@ end
     # estimate z0m
     # need to give zh and zr in addition to many variables in df
     @test_throws Exception wind_profile(df, z, d)    
-    windzc3 = wind_profile(df, z, d; zh=thal.zh, zr=thal.zr)    
+    windzc3 = wind_profile(df, z, d; zh=thal.zh, zr=thal.zr, 
+        stab_formulation = Val(:Dyer_1970))    
     # may have used slightly different estimated z0m
     #windzc3 - windzc
     @test all(isapprox.(windzc3, windzc, atol=0.1))
+    @test windzc3[1] ≈ 2.764203 rtol=1e-3 # from R
 end
 

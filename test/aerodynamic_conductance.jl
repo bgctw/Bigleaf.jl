@@ -58,40 +58,59 @@ end
     @test all(iszero.(df.psi_m))        
     @test propertynames(df)[(end-8):end] == 
         SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2]
-    # TODO compare with R        
+    # compare with R        
+    @test all(isapproxm.(df.Gb_h, (0.0347, missing, 0.0723), rtol = 1e-3))
+    @test all(isapproxm.(df.Ga_m, (0.00294, missing, 0.0273), rtol = 1e-3))
+    @test all(isapproxm.(df.Ga_h, (0.00271, missing, 0.0198), rtol = 1e-3))
 end
 
 @testset "aerodynamic_conductance! Gb_Thom" begin
     df = copy(tha48)
-    aerodynamic_conductance!(df; Gb_model=Val(:Thom_1972), zh = thal.zh, zr = thal.zr)
+    # test Ga_m by wind_profile
+    aerodynamic_conductance!(df; Gb_model=Val(:Thom_1972), Ram_model=Val(:wind_profile), 
+        zh = thal.zh, zr = thal.zr)
     @test propertynames(df)[(end-8):end] == 
         SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2]
 end
 
 @testset "aerodynamic_conductance! constant_kB1" begin
-    kB_h = 1.18
-    # DataFrame variant
+    # specify kB1 as a vecttor
     df = copy(tha48)
-    aerodynamic_conductance!(df; Gb_model=Val(:constant_kB1), kB_h, zh = thal.zh, zr = thal.zr)
+    df[!,:kB_hi] .= 1.18
+    df.kB_hi[1] = 1.18/2
+    aerodynamic_conductance!(df; Gb_model=Val(:constant_kB1), kB_h = df.kB_hi, 
+        zh = thal.zh, zr = thal.zr)
     @test propertynames(df)[(end-8):end] == 
         SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2]
+    @test all(isapproxm.(df.Gb_h[1:3], (0.375, 0.17, 0.167), rtol = 1e-2))
 end
 
 @testset "aerodynamic_conductance! Gb_Choudhury" begin
     leafwidth=0.1
     df = copy(tha48)
-    aerodynamic_conductance!(df; Gb_model=Val(:Choudhury_1988),
+    # test Ga_m by wind_profile
+    aerodynamic_conductance!(df; Gb_model=Val(:Choudhury_1988), Ram_model=Val(:wind_profile), 
         leafwidth, LAI=thal.LAI, zh = thal.zh, zr = thal.zr)
     @test propertynames(df)[(end-8):end] == 
         SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2]
+    # compare with R        
+    @test all(isapproxm.(df.Gb_h[1:3], (0.157, 0.15, 0.151), rtol = 1e-2))
+    @test all(isapproxm.(df.Ga_m[1:3], (0.0709, 0.0649, 0.0603), rtol = 1e-2))
 end
 
 @testset "aerodynamic_conductance! Gb_Su" begin
     Dl=0.01
     df = copy(tha48)
-    aerodynamic_conductance!(df; Gb_model=Val(:Su_2001), Dl, LAI=thal.LAI, zh=thal.zh, zr=thal.zr)
+    df[!,:LAI] .= thal.LAI
+    df.LAI[1] = thal.LAI/2
+    # test providing changing LAI
+    aerodynamic_conductance!(df; Gb_model=Val(:Su_2001), 
+        Dl, LAI=df.LAI, zh=thal.zh, zr=thal.zr);
     @test propertynames(df)[(end-8):end] == 
         SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2]
+    # compare with R
+    @test all(isapproxm.(df.Gb_h[1:3], (0.202, 0.177, 0.167), rtol = 1e-2))
+    @test all(isapproxm.(df.Ga_m[1:3], (0.0693, 0.0538, 0.0507), rtol = 1e-2))
 end
 
 @testset "roughness_z0h" begin

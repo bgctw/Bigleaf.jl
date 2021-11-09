@@ -41,10 +41,13 @@ true
 ``` 
 """
 function compute_Gb!(df::AbstractDataFrame, approach::Val{:Thom_1972}; kwargs...)
-  compute_Gb_!(df, approach, :ustar; kwargs...) # inputcols
+  ft(ustar) = Gb_Thom(ustar; kwargs...)
+  transform!(df, :ustar => ByRow(ft) => AsTable)
 end
-function compute_Gb!(df::AbstractDataFrame, approach::Val{:constant_kB1}; kwargs...)
-  compute_Gb_!(df, approach, :ustar; kwargs...) # inputcols
+function compute_Gb!(df::AbstractDataFrame, approach::Val{:constant_kB1}; kB_h, kwargs...)
+  # do not use ByRow because kb_H can be a vector
+  ft(ustar) = Gb_constant_kB1.(ustar, kB_h; kwargs...)
+  transform!(df, :ustar => ft => AsTable)
 end
 function compute_Gb!(df::AbstractDataFrame, approach::Val{:Choudhury_1988}; kwargs...)
   Gb_Choudhury!(df; kwargs...)
@@ -53,14 +56,6 @@ function compute_Gb!(df::AbstractDataFrame, approach::Val{:Su_2001}; kwargs...)
   Gb_Su!(df; kwargs...)
 end
 
-function compute_Gb_!(df::AbstractDataFrame, approach, inputcols; 
-  Sc::AbstractVector=SA[], kwargs...
-  )
-  fGb(args...) = compute_Gb(approach, args...; kwargs...)
-  transform!(df, :ustar => ByRow(fGb) => SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2])
-end
-compute_Gb(::Val{:Thom_1972}, args...; kwargs...) = Gb_Thom(args...; kwargs...)
-compute_Gb(::Val{:constant_kB1}, args...; kB_h, kwargs...) = Gb_constant_kB1(args..., kB_h; kwargs...)
 
 """
     add_Gb(Gb_h::Union{Missing,Number}, Sc::Vararg{Pair,N}; constants)
@@ -270,8 +265,8 @@ function Gb_Choudhury!(df::AbstractDataFrame; leafwidth, LAI, wind_zh=nothing,
     wind_zh = wind_profile(df, zh, d, z0m; zh, zr, stab_formulation, constants)
   end
   # Broadcasting does not work over keyword arguments, need to pass as positional
-  fwind(ustar, wind_zh; kwargs...) = Gb_Choudhury(ustar;wind_zh, kwargs...)
-  ft(ustar) = fwind.(ustar, wind_zh; leafwidth, LAI, constants)
+  fwind(ustar, wind_zh, leafwidth, LAI; kwargs...) = Gb_Choudhury(ustar;wind_zh, leafwidth, LAI, kwargs...)
+  ft(ustar) = fwind.(ustar, wind_zh, leafwidth, LAI; constants)
   transform!(df, :ustar => ft => AsTable)
 end
 
@@ -365,7 +360,7 @@ compute_Gb!(df,Val(:Su_2001), zh=25,zr=40,Dl=0.1,LAI=1.5)
 true
 ``` 
 """
-function Gb_Su(Tair,pressure,ustar; zh, wind_zh, Dl, fc, N=2, Cd=0.2, hs=0.01,
+function Gb_Su(Tair,pressure,ustar; wind_zh, Dl, fc, N=2, Cd=0.2, hs=0.01,
   constants=bigleaf_constants()
   )
   wind_zh = max(0.01,wind_zh) ## avoid zero windspeed
@@ -390,13 +385,13 @@ function Gb_Su!(df::AbstractDataFrame; wind_zh=nothing, Dl, fc=nothing,
   end
   if isnothing(fc)
     isnothing(LAI) && error("one of 'fc' or 'LAI' must be provided")
-    fc = (1-exp(-LAI/2)) 
+    fc = length(LAI) == 1 ? (1-exp(-LAI/2)) : @. (1-exp(-LAI/2))
   end
   isnothing(Dl) && error(
     "need to provide keyword argument Dl with :Su_2001 method")
   inputcols = SA[:Tair,:pressure,:ustar]
   # Broadcasting does not work over keyword arguments, need to pass as positional
-  fwind(wind_zh, args...; kwargs...) = Gb_Su(args...; wind_zh, kwargs...)
-  ft(args...) = fwind.(wind_zh, args...; zh, Dl, fc, N=2, Cd=0.2, hs=0.01, constants)
+  fwind(wind_zh, Dl, fc, N, Cd, hs, args...; kwargs...) = Gb_Su(args...; wind_zh, Dl, fc, N, Cd, hs, kwargs...)
+  ft(args...) = fwind.(wind_zh, Dl, fc, N, Cd, hs, args...; constants)
   transform!(df, inputcols => ft => AsTable)
 end

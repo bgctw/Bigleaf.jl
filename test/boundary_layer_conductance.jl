@@ -80,10 +80,10 @@ end
     Dl=0.01; leafwidth=0.1; fc = (1-exp(-LAI/2)) 
     wind_zh = 1.2
     Tair, pressure, ustar = values(tha48[24, SA[:Tair, :pressure, :ustar]])
-    Gb = Gb_Su(Tair, pressure, ustar; zh, wind_zh, Dl, fc)
+    Gb = Gb_Su(Tair, pressure, ustar; wind_zh, Dl, fc)
     @test keys(Gb) == (:Rb_h, :Gb_h, :kB_h, :Gb_CO2)
     @test Gb.Rb_h ≈ 1.221 rtol=1e-3 # regression to first implementation
-    Gb = Gb_Su(missing, pressure, ustar; zh, wind_zh, Dl, fc)
+    Gb = Gb_Su(missing, pressure, ustar; wind_zh, Dl, fc)
     @test keys(Gb) == (:Rb_h, :Gb_h, :kB_h, :Gb_CO2)
     @test all(ismissing.(values(Gb)))
     #
