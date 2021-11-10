@@ -166,7 +166,6 @@ Estimate bulk aerodynamic conductance.
 
 # Arguments
 - `ustar`          : Friction velocity (m s-1)
-- `wind`           : wind speed at measurement height (m s-1)
 - `df`             : DataFrame with above columns
 - `zr`             : Instrument (reference) height (m)
 - `d`              : Zero-plane displacement height (-), can be estimated using 

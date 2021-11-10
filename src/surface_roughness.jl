@@ -70,7 +70,7 @@ By wind profile
 - `d`         : Zero-plane displacement height (-)
 - `psi_m`     : value of the stability function for heat, see [`stability_correction`](@ref)
 
-Another wind profile varaint estimates of `psi_m` by [`stability_correction`](@ref), which
+Another variant estimates of `psi_m` by [`stability_correction`](@ref), which
 requires further input arguments.
 For convenience, these arguments can be provided using a DataFrame, however, the result
 then is not type stable.
@@ -132,10 +132,10 @@ roughness_parameters(Val(:canopy_height_LAI),zh,2)
    
 # fix d to 0.7*zh and estimate z0m from the wind profile
 df = DataFrame(Tair=[25,25,25],pressure=100,wind=[3,4,5],ustar=[0.5,0.6,0.65],H=200)
-roughness_parameters(Val(:wind_profile),df,zh,40;d=0.7*zh)
+roughness_parameters(Val(:wind_profile),df;zh,zr=40,d=0.7*zh)
 
 # assume d = 0.8*zh
-rp = roughness_parameters(Val(:wind_profile),df,zh,40;d=0.8*zh)
+rp = roughness_parameters(Val(:wind_profile),df;zh,zr=40,d=0.8*zh)
 ≈(rp.z0m, 0.55, rtol=0.1)
 # output
 true
