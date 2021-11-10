@@ -116,8 +116,8 @@ function stability_parameter!(df::AbstractDataFrame; z,d, MOL=nothing,
     ft(args...) = stability_parameter.(z,d,args...; constants)
     transform!(df, SA[:Tair, :pressure, :ustar, :H] => ft => :zeta)
   else
-    ft() = stability_parameter.(z,d,MOL)
-    transform!(df, SA[:Tair, :pressure, :ustar, :H] => ft => :zeta)
+    ft2() = stability_parameter.(z,d,MOL)
+    transform!(df, [] => ft2 => :zeta)
   end
 end
 # function stability_parameter(df::DFTable; z,d, MOL=nothing,

@@ -32,6 +32,12 @@ end
     zetas = stability_parameter!(df; z=df.zi, d).zeta
     @test zetas[2:24] == zeta_scalar[2:24]
     @test zetas[1] != zeta_scalar[1]
+    #
+    # specifyngn MOL directly
+    df4 = copy(tha48)
+    Monin_Obukhov_length!(df4) 
+    zetas2 = stability_parameter!(df4; z, d, MOL = df4.MOL./2).zeta
+    @test all(zetas2[2:end] .== zetas[2:end] .* 2)
 end
 
 @testset "stability_correction zeta" begin
