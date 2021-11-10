@@ -3,46 +3,38 @@
     MOL24 = @inferred Monin_Obukhov_length(Tair, pressure, ustar, H)
     MOL24 = @inferred Monin_Obukhov_length(Tair, pressure, ustar, H; constants = bigleaf_constants())
     @test ≈(MOL24, -104.3, rtol = 1/1000)
+    #
     df = copy(tha48)
     dfd = disallowmissing(df)
     dfm = allowmissing(df)
     @inferred Monin_Obukhov_length!(df)
     @test df.MOL[24] == MOL24
-    MOL = Monin_Obukhov_length(columntable(df); constants = bigleaf_constants()) 
-    @test MOL == df.MOL
-    # with non-missings types can be inferred, but with missings its not inferrable
-    #@code_warntype Monin_Obukhov_length(columntable(dfd); constants = bigleaf_constants()) 
-    MOL = @inferred Monin_Obukhov_length(columntable(dfd); constants = bigleaf_constants()) 
-    @test MOL == df.MOL
 end
 
 @testset "stability_parameter" begin
     df = copy(tha48)
-    dfd = allowmissing(df)
-    MOL24 = first(Monin_Obukhov_length(df[SA[24],:]))
-    zr=40;d=15
-    zeta = @inferred stability_parameter(zr,d,MOL24)
+    df24 = df[24,:]
+    MOL24 = Monin_Obukhov_length(df24.Tair, df24.pressure, df24.ustar, df24.H)
+    z=40;d=15
+    zeta = @inferred stability_parameter(z,d,MOL24)
     @test ≈(zeta , -0.240, rtol = 1/100)
+    zeta2 = @inferred stability_parameter(z,d,df24.Tair, df24.pressure, df24.ustar, df24.H)
+    @test zeta2 == zeta
     #
-    @inferred stability_parameter!(df;zr,d)
+    @inferred stability_parameter!(df;z,d)
     @test df.zeta[24] == zeta
     zeta_scalar = df.zeta
     # 
-    # non-mutatingvariant
     # also test zr as a vector
     df = copy(tha48)
-    df[!,:zri] .= zr
-    df.zri[1] = zr/2
-    df_bak = copy(df)
-    # again type-stable only with disallowmissing
-    #@code_warntype stability_parameter(columntable(disallowmissing(df));zr=df.zri,d) 
-    zetas = @inferred stability_parameter(columntable(disallowmissing(df));zr=df.zri,d) 
-    @test df == df_bak # did not modify original df
+    df[!,:zi] .= z
+    df.zi[1] = z/2
+    zetas = stability_parameter!(df; z=df.zi, d).zeta
     @test zetas[2:24] == zeta_scalar[2:24]
     @test zetas[1] != zeta_scalar[1]
 end
 
-@testset "stability_correction" begin
+@testset "stability_correction zeta" begin
     zeta = -2:0.5:0.5
     @inferred stability_correction(first(zeta))
     df2 = DataFrame(stability_correction.(zeta))
@@ -61,51 +53,50 @@ end
     @test resm == (psi_h = 0.0, psi_m = 0.0)
 end
 
+@testset "stability_correction metvars" begin
+    z=40;d=15
+    df = DataFrame(Tair=25, pressure=100, ustar=0.2:0.1:1.0, H=40:20:200)
+    df1 = df[1,:]
+    zeta1 = stability_parameter(z,d,df1.Tair, df1.pressure, df1.ustar, df1.H)
+    res1 = @inferred stability_correction(z,d, df1.Tair, df1.pressure, df1.ustar, df1.H) 
+    @test res1 == stability_correction(zeta1)
+end
+
 @testset "stability_correction DataFrame variant" begin
-    zr=40;d=15
+    z=40;d=15
     dfo = DataFrame(Tair=25, pressure=100, ustar=0.2:0.1:1.0, H=40:20:200)
     df = copy(dfo)
+    res = stability_correction(df; z, d)
     # for type stability, use columntable(df)
-    tmp = @inferred stability_correction(columntable(df), zr, d)
-    @inferred stability_correction!(df, zr, d)
+    stability_correction!(df; z, d)
     propertynames(df)[(end-1):end] == SA[:psi_h, :psi_m]
+    @test DataFrame(res) == df[!, (end-1):end]
     #
-    dfm = copy(dfo)
-    @inferred stability_correction!(dfm, zr, d; stab_formulation = Val(:no_stability_correction))
+    dfm = allowmissing(dfo)
+    dfm.ustar[1] = missing
+    res = stability_correction(
+        dfm; z, d, stab_formulation = Val(:no_stability_correction))
+    stability_correction!(
+        dfm; z, d, stab_formulation = Val(:no_stability_correction))
     propertynames(dfm)[(end-1):end] == SA[:psi_h, :psi_m]
     @test all(iszero.(dfm.psi_h))
     @test all(iszero.(dfm.psi_m))
+    @test DataFrame(res) == dfm[!, (end-1):end]
     #
-    # test computing zeta first
+    # test specifying zeta instead of z and d
     df2 = copy(dfo)
-    stability_parameter!(df2; zr, d) # adds zeta
-    stability_correction!(df2)
+    stability_parameter!(df2; z, d) # adds zeta
+    stability_correction!(df2, zeta=df2.zeta)
     @test df2.psi_h == df.psi_h
     @test df2.psi_m == df.psi_m
     #
     # test specifying zr as a vector
     df3 = copy(dfo)
-    df3[!,:zri] .= zr
-    df3.zri[1] = zr/2
-    @inferred stability_correction!(df3, df3.zri, d)
+    df3[!,:zi] .= z
+    df3.zi[1] = z/2
+    res = stability_correction(df3; z=df3.zi, d)
+    @inferred stability_correction!(df3; z=df3.zi, d)
     @test df3.psi_h[2:end] == df.psi_h[2:end]
     @test df3.psi_h[1] != df.psi_h[1]
-end
-
-@testset "stability_correction from raw" begin
-    datetime, ustar, Tair, pressure, H = values(tha48[24,1:5])
-    z=40.0;d=15.0
-    resm = @inferred stability_correction(Tair,pressure,ustar,H, z,d)
-    @test resm.psi_h ≈ 0.940 rtol=1/1000
-    @test resm.psi_m ≈ 0.902 rtol=1/1000
-    #
-    resm0 = @inferred stability_correction(Tair,pressure,ustar,H, z,d; 
-        stab_formulation = Val(:no_stability_correction))
-    @test resm0 == (psi_h = 0.0, psi_m = 0.0)
-    #
-    df = copy(tha48)
-    df.ustar[3] = missing
-    @inferred stability_correction!(df,z,d)
-    @test all(ismissing.((df.psi_h[3], df.psi_m[3])))
-    @test all(isapprox.((df.psi_h[24], df.psi_m[24]),values(resm)))
+    @test DataFrame(res) == df3[!, (end-1):end]
 end
