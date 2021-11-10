@@ -18,12 +18,10 @@ different keyword arguments.
 # Value
 updated DataFrame `df` with the following columns:
 - `Gb_h`: Boundary layer conductance for heat transfer (m s-1)
-- `Rb_h`: Boundary layer resistance for heat transfer (s m-1)
-- `kB_h`: kB-1 parameter for heat transfer
-- `Gb_CO2`: Boundary layer conductance for CO2 (m s-1). 
 
-To subsequently compute conductances for other species with different 
-Schmidt numbers see [`add_Gb!`](@ref).
+To subsequently derived quantities see
+- [`compute_Gb_quantities`](@ref) for Resistance, kB-1 constant, and CO2 conductance
+- [`add_Gb!`](@ref) for conductances of other species given their Schmidt numbers.
 
 # See also
 [`Gb_Thom`](@ref), `Gb_Choudhury`](@ref), [`Gb_Su`](@ref), `Gb_Choudhury`](@ref), 
@@ -42,18 +40,47 @@ true
 """
 function compute_Gb!(df::AbstractDataFrame, approach::Val{:Thom_1972}; kwargs...)
   ft(ustar) = Gb_Thom(ustar; kwargs...)
-  transform!(df, :ustar => ByRow(ft) => AsTable)
+  transform!(df, :ustar => ByRow(ft) => :Gb_h)
 end
 function compute_Gb!(df::AbstractDataFrame, approach::Val{:constant_kB1}; kB_h, kwargs...)
   # do not use ByRow because kb_H can be a vector
   ft(ustar) = Gb_constant_kB1.(ustar, kB_h; kwargs...)
-  transform!(df, :ustar => ft => AsTable)
+  transform!(df, :ustar => ft => :Gb_h)
 end
 function compute_Gb!(df::AbstractDataFrame, approach::Val{:Choudhury_1988}; kwargs...)
   Gb_Choudhury!(df; kwargs...)
 end
 function compute_Gb!(df::AbstractDataFrame, approach::Val{:Su_2001}; kwargs...)
   Gb_Su!(df; kwargs...)
+end
+
+"""
+    compute_Gb_quantities(Gb_h)
+    compute_Gb_quantities!(df:::AbstractDataFrame)
+
+Based on boundary layer conductance for heat, compute derived quantities.
+
+# Arguments
+- `Gb_h` : Boundary layer conductance for heat transfer (m s-1)
+- `df`   : DataFrame with above columns
+- `constants=`[`bigleaf_constants`](@ref)`()`: entries `Sc_CO2` and `Pr`
+
+# Value
+NamedTuple with entries
+- `Gb_h`: Boundary layer conductance for heat transfer (m s-1)
+- `Rb_h`: Boundary layer resistance for heat transfer (s m-1)
+- `kB_h`: kB-1 parameter for heat transfer
+- `Gb_CO2`: Boundary layer conductance for CO2 (m s-1). 
+"""
+function compute_Gb_quantities(Gb_h, ustar; constants=bigleaf_constants())
+  Rb_h = 1/Gb_h
+  kB_h = Rb_h*constants[:k]*ustar
+  Gb_CO2 = Gb_h / (constants[:Sc_CO2]/constants[:Pr])^0.67
+  (;Rb_h, Gb_h, kB_h, Gb_CO2)
+end
+function compute_Gb_quantities!(df::AbstractDataFrame; constants=bigleaf_constants())
+  ft(args...) = compute_Gb_quantities.(args...; constants)
+  transform!(df, SA[:Gb_h, :ustar] => ft => AsTable)
 end
 
 
@@ -115,6 +142,8 @@ function get_names_and_values(prefix::AbstractString, Sc::Vararg{Pair,N}) where 
   Scn, Scv
 end
 
+
+
 """
     Gb_Thom(ustar; constants)
     compute_Gb!(df, Val{:Thom_1972})
@@ -154,9 +183,6 @@ propertynames(df) == [:ustar, :Rb_h, :Gb_h, :kB_h, :Gb_CO2]
 function Gb_Thom(ustar::Union{Missing,Number}; constants=bigleaf_constants())
   Rb_h = 6.2*ustar^-0.667
   Gb_h = 1/Rb_h
-  kB_h = Rb_h*constants[:k]*ustar
-  Gb_CO2 = Gb_h / (constants[:Sc_CO2]/constants[:Pr])^0.67
-  (;Rb_h, Gb_h, kB_h, Gb_CO2)
 end
 
 """
@@ -177,8 +203,8 @@ Rb_h computed by ``kB_h/(k * ustar)``, where k is the von Karman constant.
 function Gb_constant_kB1(ustar, kB_h; constants=bigleaf_constants())
   Rb_h = kB_h/(constants[:k] * ustar)
   Gb_h = 1/Rb_h
-  Gb_CO2 = Gb_h / (constants[:Sc_CO2]/constants[:Pr])^0.67
-  (;Rb_h, Gb_h, kB_h, Gb_CO2)
+  # Gb_CO2 = Gb_h / (constants[:Sc_CO2]/constants[:Pr])^0.67
+  # (;Rb_h, Gb_h, kB_h, Gb_CO2)
 end
   
 """
@@ -245,29 +271,28 @@ where Sc_x is the Schmidt number of quantity x, and Pr is the Prandtl number (0.
   A preliminary multiple resistance routine for deriving dry deposition velocities
   from measured quantities. Water, Air, and Soil Pollution 36, 311-330.
 """
-function Gb_Choudhury(ustar; leafwidth, LAI, wind_zh, constants=bigleaf_constants())
+function Gb_Choudhury(; leafwidth, LAI, wind_zh, constants=bigleaf_constants())
   alpha   = 4.39 - 3.97*exp(-0.258*LAI)
   # (ismissing(wind_zh) || isnothing(wind_zh)) && return(
   #   (Rb_h=missing, Gb_h=missing, kB_h=missing, Gb_CO2=missing))
   wind_zh = max(0.01, wind_zh) ## avoid zero windspeed
   Gb_h = LAI*((0.02/alpha)*sqrt(wind_zh/leafwidth)*(1-exp(-alpha/2)))
-  # TODO facture out derving 3 others form Gb_h?
-  Rb_h = 1/Gb_h
-  kB_h = Rb_h*constants[:k]*ustar
-  Gb_CO2 = Gb_h / (constants[:Sc_CO2]/constants[:Pr])^0.67
-  (;Rb_h, Gb_h, kB_h, Gb_CO2)
+  # Rb_h = 1/Gb_h
+  # kB_h = Rb_h*constants[:k]*ustar
+  # Gb_CO2 = Gb_h / (constants[:Sc_CO2]/constants[:Pr])^0.67
+  # (;Rb_h, Gb_h, kB_h, Gb_CO2)
 end
-function Gb_Choudhury!(df::AbstractDataFrame; leafwidth, LAI, wind_zh=nothing, 
-  zh, zr, d=0.7*zh, z0m = nothing, stab_formulation=Val(:Dyer_1970),
+function Gb_Choudhury!(df::AbstractDataFrame; leafwidth, LAI, wind_zh, 
+  #zh, zr, d=0.7*zh, z0m = nothing, stab_formulation=Val(:Dyer_1970),
   constants=bigleaf_constants()
   )
-  if isnothing(wind_zh)
-    wind_zh = wind_profile(df, zh, d, z0m; zh, zr, stab_formulation, constants)
-  end
+  # if isnothing(wind_zh)
+  #   wind_zh = wind_profile(zh, df, d, z0m; zh, zr, stab_formulation, constants)
+  # end
   # Broadcasting does not work over keyword arguments, need to pass as positional
-  fwind(ustar, wind_zh, leafwidth, LAI; kwargs...) = Gb_Choudhury(ustar;wind_zh, leafwidth, LAI, kwargs...)
-  ft(ustar) = fwind.(ustar, wind_zh, leafwidth, LAI; constants)
-  transform!(df, :ustar => ft => AsTable)
+  fwind(wind_zh, leafwidth, LAI; kwargs...) = Gb_Choudhury(;wind_zh, leafwidth, LAI, kwargs...)
+  ft() = fwind.(wind_zh, leafwidth, LAI; constants)
+  transform!(df, [] => ft => :Gb_h)
 end
 
 """
@@ -373,16 +398,15 @@ function Gb_Su(Tair,pressure,ustar; wind_zh, Dl, fc, N=2, Cd=0.2, hs=0.01,
   kB_h = (constants[:k]*Cd)/(4*Ct*ustar/wind_zh)*fc^2 + kBs*(1 - fc)^2
   Rb_h = kB_h/(constants[:k]*ustar)
   Gb_h = 1/Rb_h
-  Gb_CO2 = Gb_h / (constants[:Sc_CO2]/constants[:Pr])^0.67
-  (;Rb_h, Gb_h, kB_h, Gb_CO2)
 end
-function Gb_Su!(df::AbstractDataFrame; wind_zh=nothing, Dl, fc=nothing, 
-  N=2, Cd=0.2, hs=0.01, z0m = nothing, zh, zr, d = 0.7*zh, LAI,
-  stab_formulation=Val(:Dyer_1970), constants=bigleaf_constants()
+function Gb_Su!(df::AbstractDataFrame; wind_zh, Dl, fc=nothing, 
+  N=2, Cd=0.2, hs=0.01, LAI,
+#  zh, zr, d = 0.7*zh, stab_formulation=Val(:Dyer_1970), 
+  constants=bigleaf_constants()
   )
-  if isnothing(wind_zh)
-    wind_zh = wind_profile(df, zh, d, z0m; zh, zr, stab_formulation, constants)
-  end
+  # if isnothing(wind_zh)
+  #   wind_zh = wind_profile(df, zh, d, z0m; zh, zr, stab_formulation, constants)
+  # end
   if isnothing(fc)
     isnothing(LAI) && error("one of 'fc' or 'LAI' must be provided")
     fc = length(LAI) == 1 ? (1-exp(-LAI/2)) : @. (1-exp(-LAI/2))
@@ -393,5 +417,5 @@ function Gb_Su!(df::AbstractDataFrame; wind_zh=nothing, Dl, fc=nothing,
   # Broadcasting does not work over keyword arguments, need to pass as positional
   fwind(wind_zh, Dl, fc, N, Cd, hs, args...; kwargs...) = Gb_Su(args...; wind_zh, Dl, fc, N, Cd, hs, kwargs...)
   ft(args...) = fwind.(wind_zh, Dl, fc, N, Cd, hs, args...; constants)
-  transform!(df, inputcols => ft => AsTable)
+  transform!(df, inputcols => ft => :Gb_h)
 end

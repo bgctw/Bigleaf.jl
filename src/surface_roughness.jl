@@ -181,8 +181,10 @@ function roughness_parameters(method::Val{:wind_profile},
 end
 
 function roughness_parameters(method::Val{:wind_profile}, df::DFTable; 
-  stab_formulation=Val(:Dyer_1970), kwargs...
+  psi_m = nothing, stab_formulation=Val(:Dyer_1970), kwargs...
   )
+  !isnothing(psi_m) && return(roughness_parameters(
+    method, df.ustar, df.wind, psi_m; kwargs...))
   if stab_formulation isa Val{:no_stability_correction}
     psi_m = 0.0
     roughness_parameters(method, df.ustar, df.wind, psi_m; kwargs...)
@@ -191,6 +193,7 @@ function roughness_parameters(method::Val{:wind_profile}, df::DFTable;
       stab_formulation, kwargs...)
   end
 end
+
 
 
 
