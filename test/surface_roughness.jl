@@ -26,7 +26,7 @@ end
     psi_m = (@inferred stability_correction(columntable(dfd), zr, d)).psi_m
     psi_m = stability_correction(df, zr, d).psi_m
     # note: must use columntable for type stability - but needs compilation timede
-    rp = @inferred roughness_parameters(Val(:wind_profile), columntable(df), zh, zr; psi_m)
+    rp = @inferred roughness_parameters(Val(:wind_profile), columntable(dfd), zh, zr; psi_m)
     #round.(values(rp); sigdigits = 4)
     @test keys(rp) == keys_exp
     #@test all(isapproxm.(values(rp), (18.55, 1.879, 0.3561), rtol=1e-3))
