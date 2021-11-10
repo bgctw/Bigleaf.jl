@@ -83,32 +83,37 @@ function aerodynamic_conductance!(df; Gb_model = Val(:Thom_1972), Ram_model = Va
   zr=nothing,zh=nothing, d = isnothing(zh) ? nothing : 0.7*zh ,
   z0m=nothing,Dl=nothing,N=2,fc=nothing,LAI=nothing,Cd=0.2,hs=0.01,
   leafwidth=nothing,
-  wind_profile=false,
   stab_formulation=Val(:Dyer_1970),
   kB_h=nothing,constants=bigleaf_constants()
   )
   # add zeta
   if !isnothing(zr) && !isnothing(d) && !(stab_formulation isa Val{:no_stability_correction})
-    stability_parameter!(df::AbstractDataFrame; zr,d, constants)
+    stability_parameter!(df::AbstractDataFrame; z=zr, d, constants)
   else
     df[!,:zeta] .= missing
   end
   # adds columns psi_m and psi_h, (:no_stability_correction: just add 0s without using zeta)
-  stability_correction!(df; stab_formulation, constants)
+  stability_correction!(df; zeta=df.zeta, stab_formulation, constants)
   # pre-estimate z0m to use it in both Gb and Ga
   needs_windprofile = 
     Gb_model isa Union{Val{:Choudhury_1988}, Val{:Su_2001}} || 
     Ram_model isa Val{:wind_profile}
-  if isnothing(z0m) && needs_windprofile
-    z0m = roughness_parameters(Val(:wind_profile), df, zh, zr; psi_m = df.psi_m).z0m
+  if needs_windprofile
+    if isnothing(z0m) 
+      z0m = roughness_parameters(Val(:wind_profile), df; zh, zr, psi_m = df.psi_m).z0m
+    end
+    wind_zh = wind_profile(zh, df, d, z0m; zh, zr, stab_formulation, constants)
   end
+  #
   # calculate canopy boundary layer conductance (Gb)
   Gb_model isa Val{:Thom_1972} && compute_Gb!(df, Gb_model; constants)
   Gb_model isa Val{:constant_kB1} && compute_Gb!(df, Gb_model; kB_h, constants)
-  Gb_model isa Val{:Choudhury_1988} && compute_Gb!(df, Gb_model; 
-    leafwidth, LAI, zh, zr, d, z0m, stab_formulation, constants)
-  Gb_model isa Val{:Su_2001} && compute_Gb!(df, Gb_model; 
-    Dl, fc, N, Cd, hs, z0m, zh, zr, d, LAI, stab_formulation, constants)
+  Gb_model isa Val{:Choudhury_1988} && compute_Gb!(
+    df, Gb_model; leafwidth, LAI, wind_zh, constants)
+  Gb_model isa Val{:Su_2001} && compute_Gb!(
+    df, Gb_model; wind_zh, Dl, fc, N, Cd, hs, LAI, constants)
+  compute_Gb_quantities!(df)
+  #
   # calculate aerodynamic risistance for momentum (Ra_m)
   Ram_model isa Val{:wind_profile} && compute_Ram!(df, Ram_model; zr, d, z0m, constants) 
   Ram_model isa Val{:wind_zr} && compute_Ram!(df, Ram_model) 
@@ -161,7 +166,6 @@ Estimate bulk aerodynamic conductance.
 
 # Arguments
 - `ustar`          : Friction velocity (m s-1)
-- `wind`           : wind speed at measurement height (m s-1)
 - `df`             : DataFrame with above columns
 - `zr`             : Instrument (reference) height (m)
 - `d`              : Zero-plane displacement height (-), can be estimated using 

@@ -29,12 +29,12 @@ end
     zr, zh, d = thal.zr, thal.zh, 0.7*thal.zh
     ustar, wind = tha48[24, [:ustar, :wind]]
     df = copy(tha48)
-    stability_parameter!(df; zr, d)
-    stability_correction!(df)
-    z0m = roughness_parameters(Val(:wind_profile), df, zh, zr; psi_m = df.psi_m).z0m
+    stability_correction!(df; z=zr, d)
+    z0m = roughness_parameters(Val(:wind_profile), df; zh, zr, psi_m = df.psi_m).z0m
     Ram_r = @inferred compute_Ram(Val(:wind_zr), ustar, wind)
     @test Ram_r ≈ 6.31 rtol = 1/100 # TODO check with R
-    Ram_p =  @inferred compute_Ram(Val(:wind_profile), ustar; zr, d, z0m, psi_h = df.psi_h[24])
+    Ram_p =  @inferred compute_Ram(
+        Val(:wind_profile), ustar; zr, d, z0m, psi_h = df.psi_h[24])
     @test Ram_p ≈ 5.41 rtol = 1/100 # TODO check with R
     #
     #Gb_h, Gb_CO2 = compute_Gb!(df, Val(:Thom_1972))[24, [:Gb_h, :Gb_CO2]]
@@ -62,12 +62,13 @@ end
     # missing due to missing zr
     @test all(ismissing.(df.psi_h))        
     @test all(ismissing.(df.psi_m))        
-    @inferred aerodynamic_conductance!(df; Gb_model=Val(:Thom_1972), zr = thal.zr, zh = thal.zh
-        ,stab_formulation = Val(:no_stability_correction))
+    @inferred aerodynamic_conductance!(
+        df; Gb_model=Val(:Thom_1972), zr = thal.zr, zh = thal.zh,
+        stab_formulation = Val(:no_stability_correction))
     @test all(iszero.(df.psi_h))        
     @test all(iszero.(df.psi_m))        
     @test propertynames(df)[(end-8):end] == 
-        SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2]
+        SA[:Gb_h, :Rb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2]
     # compare with R        
     @test all(isapproxm.(df.Gb_h, (0.0347, missing, 0.0723), rtol = 1e-3))
     @test all(isapproxm.(df.Ga_m, (0.00294, missing, 0.0273), rtol = 1e-3))
@@ -77,10 +78,11 @@ end
 @testset "aerodynamic_conductance! Gb_Thom" begin
     df = copy(tha48)
     # test Ga_m by wind_profile
-    @inferred aerodynamic_conductance!(df; Gb_model=Val(:Thom_1972), Ram_model=Val(:wind_profile), 
+    @inferred aerodynamic_conductance!(
+        df; Gb_model=Val(:Thom_1972), Ram_model=Val(:wind_profile), 
         zh = thal.zh, zr = thal.zr)
     @test propertynames(df)[(end-8):end] == 
-        SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2]
+        SA[:Gb_h, :Rb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2]
 end
 
 @testset "aerodynamic_conductance! constant_kB1" begin
@@ -91,7 +93,7 @@ end
     @inferred aerodynamic_conductance!(df; Gb_model=Val(:constant_kB1), kB_h = df.kB_hi, 
         zh = thal.zh, zr = thal.zr)
     @test propertynames(df)[(end-8):end] == 
-        SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2]
+        SA[:Gb_h, :Rb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2]
     @test all(isapproxm.(df.Gb_h[1:3], (0.375, 0.17, 0.167), rtol = 1e-2))
 end
 
@@ -99,10 +101,11 @@ end
     leafwidth=0.1
     df = copy(tha48)
     # test Ga_m by wind_profile
-    @inferred aerodynamic_conductance!(df; Gb_model=Val(:Choudhury_1988), Ram_model=Val(:wind_profile), 
+    @inferred aerodynamic_conductance!(
+        df; Gb_model=Val(:Choudhury_1988), Ram_model=Val(:wind_profile), 
         leafwidth, LAI=thal.LAI, zh = thal.zh, zr = thal.zr)
     @test propertynames(df)[(end-8):end] == 
-        SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2]
+        SA[:Gb_h, :Rb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2]
     # compare with R        
     @test all(isapproxm.(df.Gb_h[1:3], (0.157, 0.15, 0.151), rtol = 1e-2))
     @test all(isapproxm.(df.Ga_m[1:3], (0.0709, 0.0649, 0.0603), rtol = 1e-2))
@@ -117,7 +120,7 @@ end
     @inferred aerodynamic_conductance!(df; Gb_model=Val(:Su_2001), 
         Dl, LAI=df.LAI, zh=thal.zh, zr=thal.zr);
     @test propertynames(df)[(end-8):end] == 
-        SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2]
+        SA[:Gb_h, :Rb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2]
     # compare with R
     @test all(isapproxm.(df.Gb_h[1:3], (0.202, 0.177, 0.167), rtol = 1e-2))
     @test all(isapproxm.(df.Ga_m[1:3], (0.0693, 0.0538, 0.0507), rtol = 1e-2))

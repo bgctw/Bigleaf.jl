@@ -22,76 +22,73 @@
     @test df2.Gb_N20[1] == Gb.Gb_N20
 end
 
-@testset "compute_Gb Gb_constant_kB1" begin
+@testset "compute_Gb Gb_constant_kB1 and compute_Gb_quantities" begin
     kB_h = 1.18
-    Gb = @inferred Gb_constant_kB1(0.1, kB_h)
-    @test keys(Gb) == (:Rb_h, :Gb_h, :kB_h, :Gb_CO2)
-    @test all(isapprox.(values(Gb), values((Rb_h = 28.8, Gb_h = 0.0347, kB_h = 1.18, Gb_CO2 = 0.0264)), rtol = 1e-2))
+    ustar = 0.1
+    Gb = @inferred Gb_constant_kB1(ustar, kB_h)
+    @test Gb ≈ 0.0347 rtol = 1e-2
+    Gbq = compute_Gb_quantities(Gb, ustar)
+    @test keys(Gbq) == (:Rb_h, :Gb_h, :kB_h, :Gb_CO2)
+    @test all(isapprox.(values(Gbq), values(
+        (Rb_h = 28.8, Gb_h = 0.0347, kB_h = 1.18, Gb_CO2 = 0.0264)), rtol = 1e-2))
     Gb = @inferred Gb_constant_kB1(missing, kB_h)
-    @test keys(Gb) == (:Rb_h, :Gb_h, :kB_h, :Gb_CO2)
-    @test Gb.kB_h == kB_h
-    @test all(ismissing.(values(getindex.(Ref(Gb), SA[:Rb_h, :Gb_h, :Gb_CO2]))))
+    @test ismissing(Gb)
+    Gbq = compute_Gb_quantities(Gb, ustar)
+    @test keys(Gbq) == (:Rb_h, :Gb_h, :kB_h, :Gb_CO2)
+    @test all(ismissing.(values(getindex.(Ref(Gbq), SA[:Rb_h, :Gb_h, :Gb_CO2]))))
     #
     # DataFrame variant
     dfo = DataFrame(ustar = SA[0.1,missing,0.3])
     df = copy(dfo)
     @inferred compute_Gb!(df, Val(:constant_kB1); kB_h)
-    @test propertynames(df) == [:ustar, :Rb_h, :Gb_h, :kB_h, :Gb_CO2]
-    @test all(isapprox.(values(df[1,2:end]), values((Rb_h = 28.8, Gb_h = 0.0347, kB_h = 1.18, Gb_CO2 = 0.0264)), rtol = 1e-2))
+    @test propertynames(df) == [:ustar, :Gb_h]
+    compute_Gb_quantities!(df)
+    @test propertynames(df) == [:ustar, :Gb_h, :Rb_h, :kB_h, :Gb_CO2]
+    @test all(isapprox.(values(df[1,2:end]), values(
+        (Gb_h = 0.0347, Rb_h = 28.8, kB_h = 1.18, Gb_CO2 = 0.0264)), rtol = 1e-2))
 end
 
 @testset "compute_Gb Gb_Thom" begin
-    Gb = @inferred Gb_Thom(0.1)
-    @test keys(Gb) == (:Rb_h, :Gb_h, :kB_h, :Gb_CO2)
-    @test all(isapprox.(values(Gb), values((Rb_h = 28.8, Gb_h = 0.0347, kB_h = 1.18, Gb_CO2 = 0.0264)), rtol = 1e-2))
-    Gb = Gb_Thom(missing)
-    @test keys(Gb) == (:Rb_h, :Gb_h, :kB_h, :Gb_CO2)
-    @test all(ismissing.(values(Gb)))
+    ustar = 0.1
+    Gb1 = @inferred Gb_Thom(ustar)
+    @test Gb1 ≈ 0.0347 rtol = 1e-2
+    Gbm = Gb_Thom(missing)
+    @test ismissing(Gbm)
     #
     # DataFrame variant
-    dfo = DataFrame(ustar = SA[0.1,missing,0.3])
+    dfo = DataFrame(ustar = SA[ustar,missing,0.3])
     df = copy(dfo)
     @inferred compute_Gb!(df, Val(:Thom_1972))
-    @test propertynames(df) == [:ustar, :Rb_h, :Gb_h, :kB_h, :Gb_CO2]
-    @test all(isapprox.(values(df[1,2:end]), values((Rb_h = 28.8, Gb_h = 0.0347, kB_h = 1.18, Gb_CO2 = 0.0264)), rtol = 1e-2))
+    @test propertynames(df) == [:ustar, :Gb_h]
+    @test df.Gb_h[1] == Gb1
 end
 
-@testset "compute_Gb Gb_Choudhury" begin
+@testset "compute_Gb Gb_Choudhury and Gb_Su" begin
     zh, zr, LAI = thal.zh, thal.zr, thal.LAI
     leafwidth=0.1
-    wind_zh = 1.2
-    Gb = @inferred Gb_Choudhury(tha48.ustar[24]; leafwidth, LAI, wind_zh)
-    @test keys(Gb) == (:Rb_h, :Gb_h, :kB_h, :Gb_CO2)
-    @test Gb.Rb_h ≈ 8.533 rtol=1e-3 # regression to first implementation
-    Gbm = @inferred Gb_Choudhury(missing; leafwidth, LAI, wind_zh)
-    @test keys(Gb) == (:Rb_h, :Gb_h, :kB_h, :Gb_CO2)
-    @test Gbm.Rb_h == Gb.Rb_h
+    wind_zh = 2.1662688
+    Gb_Choud = @inferred Gb_Choudhury(; leafwidth, LAI, wind_zh)
+    @test Gb_Choud ≈ 0.157 rtol=1e-2 # from R
+    Gbm = @inferred Gb_Choudhury(; leafwidth, LAI, wind_zh=missing)
+    @test ismissing(Gbm)
+    #
+    Tair, pressure, ustar = values(tha48[1, SA[:Tair, :pressure, :ustar]])
+    Dl=0.01; fc = (1-exp(-LAI/2)) 
+    Gb_S = @inferred Gb_Su(Tair, pressure, ustar; wind_zh, Dl, fc)
+    @test Gb_S ≈ 0.185 rtol=1e-2 # from R
+    Gbm = @inferred Gb_Su(missing, pressure, ustar; wind_zh, Dl, fc)
+    @test ismissing(Gbm)
     #
     # DataFrame variant
     df = copy(tha48)
-    @inferred compute_Gb!(df, Val(:Choudhury_1988); leafwidth, LAI, zh, zr)
-    @test propertynames(df)[(end-3):end] == SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2]
-    all(isapprox.(values(df[24,SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2]]), 
-        (7.534, 0.1327, 2.255, 0.1008), rtol=1e-3))
-end
-
-@testset "compute_Gb Gb_Su" begin
-    zh, zr, LAI = thal.zh, thal.zr, thal.LAI
-    Dl=0.01; leafwidth=0.1; fc = (1-exp(-LAI/2)) 
-    wind_zh = 1.2
-    Tair, pressure, ustar = values(tha48[24, SA[:Tair, :pressure, :ustar]])
-    Gb = @inferred Gb_Su(Tair, pressure, ustar; wind_zh, Dl, fc)
-    @test keys(Gb) == (:Rb_h, :Gb_h, :kB_h, :Gb_CO2)
-    @test Gb.Rb_h ≈ 1.221 rtol=1e-3 # regression to first implementation
-    Gb = @inferred Gb_Su(missing, pressure, ustar; wind_zh, Dl, fc)
-    @test keys(Gb) == (:Rb_h, :Gb_h, :kB_h, :Gb_CO2)
-    @test all(ismissing.(values(Gb)))
+    wind_zh = wind_profile(zh, df, 0.7*zh; zh, zr)
+    @inferred compute_Gb!(df, Val(:Choudhury_1988); leafwidth, LAI, wind_zh)
+    @test last(propertynames(df)) == :Gb_h
+    @test df.Gb_h[1] ≈ Gb_Choud rtol=1e-6
     #
-    # DataFrame variant
     df = copy(tha48)
-    @inferred compute_Gb!(df, Val(:Su_2001); Dl, LAI, zh, zr)
-    @test propertynames(df)[(end-3):end] == SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2]
-    all(isapprox.(values(df[24,SA[:Rb_h, :Gb_h, :kB_h, :Gb_CO2]]), 
-        (1.767, 0.5659, 0.5289, 0.4299), rtol=1e-3)) # regression to first implementation
+    @inferred compute_Gb!(df, Val(:Su_2001); wind_zh, Dl, LAI)
+    @test last(propertynames(df)) == :Gb_h
+    @test df.Gb_h[1] ≈ Gb_S rtol=1e-6
 end
 

@@ -345,7 +345,7 @@ We start with the simplest version, in which $G_b$ is calculated empirically bas
 the friction velocity ($u_*$) according to Thom 1972:
 
 ```@example doc
-aerodynamic_conductance!(thas)
+aerodynamic_conductance!(thas);
 thas[1:3, Cols(:datetime,Between(:zeta,:Ga_CO2))]
 ```
 
@@ -365,7 +365,7 @@ dimension ($D_l$, assumed to be 1cm here), and information on sensor and canopy 
 
 ```@example doc
 aerodynamic_conductance!(thas;Gb_model=Val(:Su_2001),
-     LAI=thal.zh, zh=thal.zh, d=0.7*thal.zh, zr=thal.zr,Dl=thal.Dl)
+     LAI=thal.zh, zh=thal.zh, d=0.7*thal.zh, zr=thal.zr, Dl=thal.Dl);
 thas[1:3, Cols(:datetime,Between(:zeta,:Ga_CO2))]
 ```
 
@@ -383,8 +383,8 @@ Functin `add_Gb` calculates $G_b$ for other trace gases, provided that the respe
 number is known. 
 
 ```@example doc
-compute_Gb!(thas, Val(:Thom_1972)) # adds/modifies column Gb_h and Gb_CO2
-add_Gb!(thas, :Gb_O2 => 0.84, :Gb_CH4 => 0.99) # adds Gb_O2 and Gb_CH4
+compute_Gb!(thas, Val(:Thom_1972)); # adds/modifies column Gb_h and Gb_CO2
+add_Gb!(thas, :Gb_O2 => 0.84, :Gb_CH4 => 0.99); # adds Gb_O2 and Gb_CH4
 select(first(thas,3), r"Gb_")
 ```
 
@@ -403,10 +403,10 @@ close to the surface and weaker at greater heights:
 using Statistics
 wind_heights = 22:2:60.0
 d = 0.7 * thal.zh
-z0m = roughness_parameters(Val(:wind_profile), thas, thal.zh, thal.zr).z0m
+z0m = roughness_parameters(Val(:wind_profile), thas; zh=thal.zh, zr=thal.zr).z0m
 wp = map(wind_heights) do z
-  wind_profile(thas,z,d, z0m; zh=thal.zh, zr=thal.zr)
-end
+  wind_profile(z, thas,d, z0m; zh=thal.zh, zr=thal.zr)
+end;
 nothing # hide
 ```
 ```@setup doc

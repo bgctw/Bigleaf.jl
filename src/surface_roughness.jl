@@ -37,12 +37,17 @@ end
 
 
 """
-    roughness_parameters(::Val{:canopy_height},     zh; frac_d=0.7, frac_z0m=0.1)
+    roughness_parameters(::Val{:canopy_height}    , zh; frac_d=0.7, frac_z0m=0.1)
     roughness_parameters(::Val{:canopy_height_LAI}, zh, LAI; cd=0.2, hs=0.01)
-    roughness_parameters(::Val{:wind_profile},      df, zh, zr;
-      d = 0.7*zh, psi_m = nothing, constants=bigleaf_constants())
+    roughness_parameters(::Val{:wind_profile}     , ustar, wind, psi_m; 
+      zh, zr, d = 0.7*zh, constants)
 
-A simple approximation of the two roughness parameters displacement height (d)
+    roughness_parameters(method::Val{:wind_profile}, utar, wind, Tair, pressure, H; 
+      zh, zr, d = 0.7*zh, stab_formulation=Val(:Dyer_1970), constants)
+    roughness_parameters(method::Val{:wind_profile}, df::DFTable; ...)
+    
+
+A approximations of the two roughness parameters displacement height (d)
 and roughness length for momentum (z0m).
              
 # Arguments              
@@ -59,16 +64,17 @@ By canopy height and LAI
 - `hs`        : roughness length of the soil surface (m). 
 
 By wind profile
-- `df`        : DataFrame or matrix containing all required variables
-  - `wind`      : Wind speed at height zr (m s-1)
-  - `ustar`     : Friction velocity (m s-1)
-  - further variables required by [`stability_correction`](@ref) if `psi_m` is not given
+- `wind`      : Wind speed at height zr (m s-1)
+- `ustar`     : Friction velocity (m s-1)
 - `zr`        : Instrument (reference) height (m)
-- `d`         : Zero-plane displacement height (m)
+- `d`         : Zero-plane displacement height (-)
 - `psi_m`     : value of the stability function for heat, see [`stability_correction`](@ref)
-  Pass `psi_m = 0.0` to neglect stability correction.
-- `z0m`       : Roughness length for momentum (m)
-                 
+
+Another variant estimates of `psi_m` by [`stability_correction`](@ref), which
+requires further input arguments.
+For convenience, these arguments can be provided using a DataFrame, however, the result
+then is not type stable.
+
 # Details
 The two main roughness parameters, the displacement height (d)
 and the roughness length for momentum (z0m) can be estimated from simple
@@ -126,10 +132,10 @@ roughness_parameters(Val(:canopy_height_LAI),zh,2)
    
 # fix d to 0.7*zh and estimate z0m from the wind profile
 df = DataFrame(Tair=[25,25,25],pressure=100,wind=[3,4,5],ustar=[0.5,0.6,0.65],H=200)
-roughness_parameters(Val(:wind_profile),df,zh,40;d=0.7*zh)
+roughness_parameters(Val(:wind_profile),df;zh,zr=40,d=0.7*zh)
 
 # assume d = 0.8*zh
-rp = roughness_parameters(Val(:wind_profile),df,zh,40;d=0.8*zh)
+rp = roughness_parameters(Val(:wind_profile),df;zh,zr=40,d=0.8*zh)
 ≈(rp.z0m, 0.55, rtol=0.1)
 # output
 true
@@ -151,16 +157,10 @@ function roughness_parameters(::Val{:canopy_height_LAI}, zh, LAI;
   (;d, z0m, z0m_se)
 end
 
-# docu: supply psi_m = 0 for no stability correction, default method
-# if psi_m is given df only needs wind and ustar
-function roughness_parameters(::Val{:wind_profile}, df::DFTable, zh, zr;
-  d = 0.7*zh, psi_m = nothing, stab_formulation=Val(:Dyer_1970), 
-  constants=bigleaf_constants()
+function roughness_parameters(::Val{:wind_profile}, ustar::AbstractVector, wind, psi_m; 
+  zh, zr, d = 0.7*zh, constants=bigleaf_constants()
   )
-  if isnothing(psi_m)
-    psi_m = stability_correction(df, zr, d; stab_formulation, constants).psi_m
-  end
-  z0m_all = allowmissing(@. (zr - d) * exp(-constants[:k]*df.wind / df.ustar - psi_m))
+  z0m_all = allowmissing(@. (zr - d) * exp(-constants[:k]*wind / ustar - psi_m))
   #z0m_all[(z0m_all .> zh)] .= missing # problems with missings
   replace!(x -> !ismissing(x) && x > zh ? missing : x, z0m_all)
   nval = sum(.!ismissing.(z0m_all))
@@ -168,6 +168,35 @@ function roughness_parameters(::Val{:wind_profile}, df::DFTable, zh, zr;
   z0m_se = constants[:se_median] * (std(skipmissing(z0m_all)) / sqrt(nval))
   (;d, z0m, z0m_se)
 end
+
+function roughness_parameters(method::Val{:wind_profile}, 
+  ustar::AbstractVector, wind, Tair, pressure, H; zh, zr, d = 0.7*zh,
+  stab_formulation=Val(:Dyer_1970), constants=bigleaf_constants(), kwargs...
+  )
+  # psi_m = Tables.Columns(stability_correction.(
+  #   zr, d, Tair, pressure, ustar, H; stab_formulation, constants)).psi_m
+  psi_m = getindex.(stability_correction.(
+    zr, d, Tair, pressure, ustar, H; stab_formulation, constants), :psi_m)
+  roughness_parameters(method, ustar, wind, psi_m; zh, zr, d, constants, kwargs...)
+end
+
+function roughness_parameters(method::Val{:wind_profile}, df::DFTable; 
+  psi_m = nothing, stab_formulation=Val(:Dyer_1970), kwargs...
+  )
+  !isnothing(psi_m) && return(roughness_parameters(
+    method, df.ustar, df.wind, psi_m; kwargs...))
+  if stab_formulation isa Val{:no_stability_correction}
+    psi_m = 0.0
+    roughness_parameters(method, df.ustar, df.wind, psi_m; kwargs...)
+  else
+    roughness_parameters(method, df.ustar, df.wind, df.Tair, df.pressure, df.H; 
+      stab_formulation, kwargs...)
+  end
+end
+
+
+
+
   
 """                                                                                                                       
     wind_profile(z::Number, ustar, d, z0m, psi_m = zero(z); constants)
@@ -237,52 +266,43 @@ using DataFrames
 heights = 18:2:40  # heights above ground for which to calculate wind speed
 df = DataFrame(Tair=25,pressure=100,wind=[3,4,5],ustar=[0.5,0.6,0.65],H=[200,230,250]) 
 zr=40;zh=25;d=16
-psi_m = stability_correction!(copy(df, copycols=false), zr, d).psi_m
-z0m = roughness_parameters(Val(:wind_profile), df, zh, zr; psi_m).z0m
+z0m = roughness_parameters(Val(:wind_profile), df; zh, zr).z0m
 ws = map(heights) do z
-  wind_profile(df,z,d,z0m,psi_m)
+  wind_profile(z,df,d,z0m; zr, zh)
 end
 using Plots # plot wind profiles for the three rows in df
-plot(heights, first.(ws), xlab = "height (m)", ylab = "wind speed (m/s)")
-plot!(heights, getindex.(ws, 2))
-plot!(heights, getindex.(ws, 3))
+plot(first.(ws), heights, ylab = "height (m)", xlab = "wind speed (m/s)", legend=:topleft)
+plot!(getindex.(ws, 2), heights)
+plot!(getindex.(ws, 3), heights)
 nothing
 # output
 ``` 
 """  
-function wind_profile(z::Number, ustar, d, z0m, psi_m = zero(z); constants=bigleaf_constants())
+function wind_profile(z::Number, ustar, d, z0m, psi_m; constants=bigleaf_constants())
   wind_heights = max(0,(ustar / constants[:k]) * (log(max(0,(z - d)) / z0m) - psi_m))
 end
 
-function wind_profile(stab_formulation, z, ustar, Tair,pressure,H, d, z0m;
-  constants=bigleaf_constants())
-  # in order to comput psi_m need Monin_Obukhov_length with additional vars
-  MOL = Monin_Obukhov_length(Tair,pressure,ustar,H; constants)
-  zeta  = stability_parameter(z,d,MOL)
-  psi_m = stability_correction(zeta; stab_formulation).psi_m
+function wind_profile(z, ustar::Union{Missing,Number}, d, z0m, Tair,pressure,H,
+  stab_formulation=Val(:Dyer_1970), constants=bigleaf_constants())
+  psi_m = stability_correction(z,d, Tair,pressure,ustar,H; stab_formulation, constants).psi_m
   wind_profile(z, ustar, d, z0m, psi_m)
 end
 
-function wind_profile(df::DFTable, z, d, z0m = nothing; 
-  zh = nothing, zr = nothing, 
+function wind_profile(z, df::DFTable, d, z0m = nothing; 
+  zh = nothing, zr = nothing, psi_m = nothing,
   stab_formulation = Val(:Dyer_1970), constants = bigleaf_constants()
   )
-  # TODO providingn z or zr to stabiity correction?
   if isnothing(z0m)
     (isnothing(zh) || isnothing(zr)) && error(
       "wind_profile: If 'z0m' is not given, must specify both 'zh' and 'zr' optional " *
       "arguments to estimate 'z0m' from 'df.wind' and 'df.ustar' measured at height zr.")
     # uses psi_m at zr
-    z0m = roughness_parameters(Val(:wind_profile), df, zh, zr).z0m
+    z0m = roughness_parameters(Val(:wind_profile), df; zh, zr).z0m
   end
-  psi_m = stability_correction(df, z, d; stab_formulation, constants).psi_m
+  if isnothing(psi_m)
+    psi_m = stability_correction(df; z, d, stab_formulation, constants).psi_m
+  end
   #wind_profile(df, z, d, z0m, psi_m; constants)
-  wind_profile(df, z, d, z0m, psi_m; constants)
-end
-
-function wind_profile(df::DFTable, z, d, z0m, psi_m::AbstractVector;
-  constants = bigleaf_constants())
-  # when psi_m is given, df is not used any more, but keep for consistency
   wind_profile.(z, df.ustar, d, z0m, psi_m; constants)
 end
 

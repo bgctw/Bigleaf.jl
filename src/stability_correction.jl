@@ -56,37 +56,35 @@ function Monin_Obukhov_length!(df;constants=bigleaf_constants())
   ft(args...) = Monin_Obukhov_length(args...; constants)
   transform!(df, SA[:Tair, :pressure, :ustar, :H] => ByRow(ft) => :MOL)
 end
-function Monin_Obukhov_length(df::DFTable; kwargs...)
-    tmp = Monin_Obukhov_length.(df.Tair, df.pressure, df.ustar, df.H; kwargs...)
-    # eltype_agg = Union{eltype(df.Tair), eltype(df.pressure), eltype(df.ustar), eltype(df.H)}
-    # convert(Vector{eltype_agg}, tmp)
-end
+# function Monin_Obukhov_length(df::DFTable; kwargs...)
+#     tmp = Monin_Obukhov_length.(df.Tair, df.pressure, df.ustar, df.H; kwargs...)
+# end
 
 """
-    stability_parameter(zr,d,MOL)
-    stability_parameter!(df::AbstractDataFrame; zr,d, MOL=nothing, constants)
-    stability_parameter(df::AbstractDataFrame; zr,d, MOL=nothing, constants)
+    stability_parameter(z,d,MOL)
+    stability_parameter(z,d,Tair, pressure, ustar, H; constants)
+    stability_parameter!(df::AbstractDataFrame; z,d, MOL=nothing, constants)
 
 calculates stability parameter "zeta", a parameter characterizing stratification in the 
 lower atmosphere.
 
 # Arguments             
-- `zr`  : Instrument (reference) height (m)
+- `z`   : height (m)
 - `d`   : Zero-plane displacement height (m)
 - `MOL` : Monin-Obukhov-length L (m)
 - `df`  : DataFrame containting the variables required by [`Monin_Obukhov_length`](@ref)
 optional
 - `constants=`[`bigleaf_constants`](@ref)`()`
 
-If `MOL=nothing` in the DataFrame variants, it is computed by 
-[`Monin_Obukhov_length`](@ref) using `df` and `constants`.
+In the second variant and if `MOL=nothing` in the DataFrame variants, MOL is computed by 
+[`Monin_Obukhov_length`](@ref).
 
 # Details
 The stability parameter ``\\zeta`` is given by:
 
-``\\zeta = (zr - d) / L``
+``\\zeta = (z - d) / L``
 
-where L is the Monin-Obukhov length (m), calculated from the ction
+where L is the Monin-Obukhov length (m), calculated by
 [`Monin_Obukhov_length`](@ref). The displacement height can 
 be estimated from the function [`roughness_parameters`](@ref).
          
@@ -97,43 +95,54 @@ The mutating variant modifies or adds column [`:zeta`].
 ```jldoctest; output = false
 using DataFrames
 df = DataFrame(Tair=25, pressure=100, ustar=0.2:0.1:1.0, H=40:20:200)
-zeta = stability_parameter(df;zr=40,d=15)
+z=40;d=15
+zeta = stability_parameter.(z,d, df.Tair, df.pressure, df.ustar, df.H)
 all(zeta .< 0)
 # output
 true
 ``` 
 """ 
-function stability_parameter(zr,d,MOL)
-  zeta = (zr - d) / MOL
+function stability_parameter(z,d,MOL)
+  zeta = (z - d) / MOL
 end
-function stability_parameter!(df::AbstractDataFrame; zr,d, MOL=nothing,
+function stability_parameter(z,d,Tair, pressure, ustar, H; 
   constants=bigleaf_constants())
-  df[!,:zeta] .= stability_parameter(df; zr,d,MOL,constants)
-  df
+  MOL = Monin_Obukhov_length(Tair, pressure, ustar, H; constants);
+  stability_parameter(z,d,MOL)
 end
-function stability_parameter(df::DFTable; zr,d, MOL=nothing,
+function stability_parameter!(df::AbstractDataFrame; z,d, MOL=nothing,
   constants=bigleaf_constants())
-  if isnothing(MOL) MOL = Monin_Obukhov_length(df; constants); end
-  stability_parameter.(zr,d,MOL)
+  if isnothing(MOL)
+    ft(args...) = stability_parameter.(z,d,args...; constants)
+    transform!(df, SA[:Tair, :pressure, :ustar, :H] => ft => :zeta)
+  else
+    ft2() = stability_parameter.(z,d,MOL)
+    transform!(df, [] => ft2 => :zeta)
+  end
 end
+# function stability_parameter(df::DFTable; z,d, MOL=nothing,
+#   constants=bigleaf_constants())
+#   if isnothing(MOL) MOL = Monin_Obukhov_length(df; constants); end
+#   stability_parameter.(z,d,MOL)
+# end
 
 """
     stability_correction(zeta; 
       stab_formulation=Val(:Dyer_1970))
-    stability_correction(Tair,pressure,ustar,H, z,d; constants,
+    stability_correction(z,d, Tair,pressure,ustar,H; constants,
       stab_formulation=Val(:Dyer_1970))
-    stability_correction!(df, z, d; 
+    stability_correction!(df; zeta, z, d; 
       stab_formulation=Val(:Dyer_1970), constants = bigleaf_constants())
     
 Integrated Stability Correction Functions for Heat and Momentum
 
 # Arguments
 - `zeta`             : Stability parameter zeta (-)
-- `stab_formulation` : Formulation for the stability function. Either 
-            `Val(:Dyer_1970)`, or `Val(:Businger_1971)` or `Val(:no_stability_correction)`
 - `Tair`,`pressure`,`ustar`,`H` : see [`Monin_Obukhov_length`](@ref)
 - `z`,`d`            : see [`stability_parameter`](@ref)
 - `df`  : DataFrame containting the variables required by [`Monin_Obukhov_length`](@ref)
+- `stab_formulation` : Formulation for the stability function. Either 
+            `Val(:Dyer_1970)`, or `Val(:Businger_1971)` or `Val(:no_stability_correction)`
 
 In the second and third form computes `zeta` by [`stability_parameter`](@ref) and
 [`Monin_Obukhov_length`](@ref) and requires respective arguments.
@@ -219,8 +228,7 @@ function get_stability_coefs_unstable(::Val{:Dyer_1970}, zeta)
   (;y_h, y_m)
 end
 
-#TODO z or zr here?
-function stability_correction(Tair::Union{Missing,Number},pressure,ustar,H, z,d; 
+function stability_correction(z,d, Tair::Union{Missing,Number},pressure,ustar,H; 
   stab_formulation=Val(:Dyer_1970), constants = bigleaf_constants())
   stab_formulation isa Val{:no_stability_correction} && return(
     (psi_h = zero(z), psi_m = zero(z)))
@@ -228,16 +236,15 @@ function stability_correction(Tair::Union{Missing,Number},pressure,ustar,H, z,d;
   zeta  = stability_parameter(z,d,MOL)
   stability_correction(zeta; stab_formulation)
 end
-function stability_correction(Tair,pressure,ustar,H, z,d; kwargs...) 
-  Tables.columns(
-    stability_correction.(Tair,pressure,ustar,H, z,d; kwargs...))
-end
-function stability_correction(df::DFTable, z,d; kwargs...)   
-  tmp1 = stability_correction.(df.Tair, df.pressure, df.ustar, df.H, z, d; kwargs...)
-  tmp2 = Tables.columns(tmp1)
-end
-
-function stability_correction!(df; zeta=df.zeta, 
+# function stability_correction(Tair,pressure,ustar,H, z,d; kwargs...) 
+#   Tables.columns(
+#     stability_correction.(Tair,pressure,ustar,H, z,d; kwargs...))
+# end
+# function stability_correction(df::DFTable, z,d; kwargs...)   
+#   tmp1 = stability_correction.(df.Tair, df.pressure, df.ustar, df.H, z, d; kwargs...)
+#   tmp2 = Tables.columns(tmp1)
+# end
+function stability_correction!(df; zeta=nothing, z=nothing, d=nothing, 
   stab_formulation=Val(:Dyer_1970), constants = bigleaf_constants())
   # cannot dispatch on keyword argument, hence need if-clause
   if stab_formulation isa Val{:no_stability_correction}
@@ -245,12 +252,30 @@ function stability_correction!(df; zeta=df.zeta,
     df[!,:psi_m] .= 0.0
     return(df)
   end
-  ft() = stability_correction.(zeta; stab_formulation)
-  transform!(df, [] => ft => AsTable)
+  if !isnothing(zeta)
+    ft() = stability_correction.(zeta; stab_formulation)
+    transform!(df, [] => ft => AsTable)
+  else
+    function ft_met(args...)
+      stability_correction.(z, d, args...; stab_formulation, constants)
+    end
+    transform!(df, SA[:Tair,:pressure,:ustar,:H] => ft_met => AsTable)
+  end
 end
 
-function stability_correction!(df, z, d; 
-  stab_formulation=Val(:Dyer_1970), constants = bigleaf_constants())
-  ft(args...) = stability_correction.(args..., z, d; stab_formulation, constants)
-  transform!(df, SA[:Tair,:pressure,:ustar,:H] => ft => AsTable)
+function stability_correction(df::DFTable; z, d, 
+  stab_formulation=Val(:Dyer_1970), constants = bigleaf_constants()
+  )
+  # cannot dispatch on keyword argument, hence need if-clause
+  if stab_formulation isa Val{:no_stability_correction}
+    z = zero(first(skipmissing(df.ustar)))
+    rows = map(Tables.rows(df)) do row
+      (psi_h = z, psi_m = z)
+    end
+    Tables.columns(rows)
+  end
+  Tables.columns(stability_correction.(
+    z, d, df.Tair, df.pressure, df.ustar, df.H; stab_formulation, constants))
 end
+
+
