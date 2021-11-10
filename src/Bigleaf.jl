@@ -4,6 +4,7 @@ module Bigleaf
 using Optim
 using FillArrays
 using DataFrames
+using Tables: columntable
 using Dates, TimeZones
 using Pipe
 using AstroLib
@@ -36,6 +37,9 @@ export Monin_Obukhov_length, Monin_Obukhov_length!, stability_parameter,
     stability_parameter!, stability_correction, stability_correction!,
     roughness_parameters, Reynolds_Number
 export aerodynamic_conductance!, add_Ga, add_Ga!, compute_Ram, compute_Ram!, roughness_z0h
+
+# shorthand type: either DataFrame or column table (Tables.columntable)
+DFTable = Union{NamedTuple,AbstractDataFrame}
 
 include("util.jl")    
 include("bigleaf_constants.jl")

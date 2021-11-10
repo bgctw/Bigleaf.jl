@@ -56,9 +56,10 @@ function Monin_Obukhov_length!(df;constants=bigleaf_constants())
   ft(args...) = Monin_Obukhov_length(args...; constants)
   transform!(df, SA[:Tair, :pressure, :ustar, :H] => ByRow(ft) => :MOL)
 end
-function Monin_Obukhov_length(df;constants=bigleaf_constants())
-  Monin_Obukhov_length!(copy(df, copycols = false); 
-    constants).MOL
+function Monin_Obukhov_length(df::DFTable; kwargs...)
+    tmp = Monin_Obukhov_length.(df.Tair, df.pressure, df.ustar, df.H; kwargs...)
+    # eltype_agg = Union{eltype(df.Tair), eltype(df.pressure), eltype(df.ustar), eltype(df.H)}
+    # convert(Vector{eltype_agg}, tmp)
 end
 
 """
@@ -110,7 +111,7 @@ function stability_parameter!(df::AbstractDataFrame; zr,d, MOL=nothing,
   df[!,:zeta] .= stability_parameter(df; zr,d,MOL,constants)
   df
 end
-function stability_parameter(df::AbstractDataFrame; zr,d, MOL=nothing,
+function stability_parameter(df::DFTable; zr,d, MOL=nothing,
   constants=bigleaf_constants())
   if isnothing(MOL) MOL = Monin_Obukhov_length(df; constants); end
   stability_parameter.(zr,d,MOL)
@@ -219,13 +220,21 @@ function get_stability_coefs_unstable(::Val{:Dyer_1970}, zeta)
 end
 
 #TODO z or zr here?
-function stability_correction(Tair,pressure,ustar,H, z,d; 
+function stability_correction(Tair::Union{Missing,Number},pressure,ustar,H, z,d; 
   stab_formulation=Val(:Dyer_1970), constants = bigleaf_constants())
   stab_formulation isa Val{:no_stability_correction} && return(
     (psi_h = zero(z), psi_m = zero(z)))
   MOL = Monin_Obukhov_length(Tair,pressure,ustar,H; constants)
   zeta  = stability_parameter(z,d,MOL)
   stability_correction(zeta; stab_formulation)
+end
+function stability_correction(Tair,pressure,ustar,H, z,d; kwargs...) 
+  Tables.columns(
+    stability_correction.(Tair,pressure,ustar,H, z,d; kwargs...))
+end
+function stability_correction(df::DFTable, z,d; kwargs...)   
+  tmp1 = stability_correction.(df.Tair, df.pressure, df.ustar, df.H, z, d; kwargs...)
+  tmp2 = Tables.columns(tmp1)
 end
 
 function stability_correction!(df; zeta=df.zeta, 
@@ -242,6 +251,6 @@ end
 
 function stability_correction!(df, z, d; 
   stab_formulation=Val(:Dyer_1970), constants = bigleaf_constants())
-  ft(args...) = stability_correction(args..., z, d; stab_formulation, constants)
-  transform!(df, SA[:Tair,:pressure,:ustar,:H] => ByRow(ft) => AsTable)
+  ft(args...) = stability_correction.(args..., z, d; stab_formulation, constants)
+  transform!(df, SA[:Tair,:pressure,:ustar,:H] => ft => AsTable)
 end

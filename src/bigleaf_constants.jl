@@ -39,6 +39,7 @@ Default values can be overridden by the named arguments:
 - frac2percent Conversion between fraction and percent
 """
 function bigleaf_constants(;
+  # make sure to provide Float64 values (rather than Int) so that return is type-stable
   ## Physical constants
   cp         = 1004.834,        # specific heat of air for constant pressure (J K-1 kg-1)
   Rgas       = 8.31451,         # universal gas constant (J mol-1 K-1)
@@ -49,7 +50,7 @@ function bigleaf_constants(;
   eps        = 0.622,           # ratio of the molecular weight of water vapor to dry air (=Mw/Md)
   g          = 9.81,            # gravitational acceleration (m s-2)
   solar_constant = 1366.1,      # solar constant, i.e. solar radation at earth distance from the sun (W m-2)
-  pressure0  = 101325,          # reference atmospheric pressure at sea level (Pa)
+  pressure0  = 101325.0,        # reference atmospheric pressure at sea level (Pa)
   Tair0      = 273.15,          # reference air temperature (K)
   k          = 0.41,            # von Karman constant
   Cmol       = 0.012011,        # molar mass of carbon (kg mol-1)
@@ -61,17 +62,17 @@ function bigleaf_constants(;
   ## Conversion constants
   Kelvin       = 273.15,         # conversion degree Celsius to Kelvin
   DwDc         = 1.6,            # Ratio of the molecular diffusivities for water vapor and CO2
-  days2seconds = 86400,          # seconds per day
-  kPa2Pa       = 1000,           # conversion kilopascal (kPa) to pascal (Pa)
+  days2seconds = 86400.0,        # seconds per day
+  kPa2Pa       = 1000.0,         # conversion kilopascal (kPa) to pascal (Pa)
   Pa2kPa       = 0.001,          # conversion pascal (Pa) to kilopascal (kPa)
-  umol2mol     = 1e-06,          # conversion micromole (umol) to mole (mol)
-  mol2umol     = 1e06,           # conversion mole (mol) to micromole (umol)
-  kg2g         = 1000,           # conversion kilogram (kg) to gram (g)
+  umol2mol     = 1.0e-6,         # conversion micromole (umol) to mole (mol)
+  mol2umol     = 1.0e6,          # conversion mole (mol) to micromole (umol)
+  kg2g         = 1000.0,         # conversion kilogram (kg) to gram (g)
   g2kg         = 0.001,          # conversion gram (g) to kilogram (kg)
-  kJ2J         = 1000,           # conversion kilojoule (kJ) to joule (J)
+  kJ2J         = 1000.0,         # conversion kilojoule (kJ) to joule (J)
   J2kJ         = 0.001,          # conversion joule (J) to kilojoule (kJ)
   se_median    = 1.253,          # conversion standard error (SE) of the mean to SE of the median (http://influentialpoints.com/Training/standard_error_of_median.htm)
-  frac2percent = 100             # conversion between fraction and percent
+  frac2percent = 100.0           # conversion between fraction and percent
 )
   Dict(
 :cp => cp, :Rgas => Rgas, :Rv => Rv, :Rd => Rd, :Md => Md, :Mw => Mw, :eps => eps, :g => g,
