@@ -295,15 +295,15 @@ The following figure compares them at absole scale and as difference to the
 #Tair = 0:0.25:12
 ##Tair = [10.0,20.0]
 #eform_def = Val(:Sonntag_1990)
-#Esat_def = Esat_from_Tair.(Tair; formula = eform_def)
+#Esat_def = Esat_from_Tair.(Tair; Esat_formula = eform_def)
 #eforms = (Val(:Sonntag_1990), Val(:Alduchov_1996), Val(:Allen_1998))
 #eform = eforms[2]
 #string.(eforms)
 #df = mapreduce(vcat, eforms) do eform 
-#    Esat = Esat_from_Tair.(Tair; formula = eform)
+#    Esat = Esat_from_Tair.(Tair; Esat_formula = eform)
 #    local dff # make sure to not override previous results
 #    dff = DataFrame(
-#        formula = eform, Tair = Tair, 
+#        Esat_formula = eform, Tair = Tair, 
 #        Esat = Esat,
 #        dEsat = Esat - Esat_def,
 #        )
@@ -311,8 +311,8 @@ The following figure compares them at absole scale and as difference to the
 ##using Chain
 #using Pipe
 #using Plots, StatsPlots
-#dfw = @pipe df |> select(_, 1,2, :Esat) |> unstack(_, :formula, 3)
-#dfws = @pipe df |> select(_, 1,2, :dEsat) |> unstack(_, :formula, 3)
+#dfw = @pipe df |> select(_, 1,2, :Esat) |> unstack(_, :Esat_formula, 3)
+#dfws = @pipe df |> select(_, 1,2, :dEsat) |> unstack(_, :Esat_formula, 3)
 #@df dfw plot(:Tair, cols(2:4), legend = :topleft, xlab="Tair (degC)", #ylab="Esat (kPa)")
 #savefig("Esat_abs.svg")
 #@df dfws plot(:Tair, cols(2:4), legend = :topleft, xlab="Tair (degC)", #ylab="Esat -ESat_Sonntag_1990 (kPa)")
@@ -387,6 +387,32 @@ compute_Gb!(thas, Val(:Thom_1972)); # adds/modifies column Gb_h and Gb_CO2
 add_Gb!(thas, :Gb_O2 => 0.84, :Gb_CH4 => 0.99); # adds Gb_O2 and Gb_CH4
 select(first(thas,3), r"Gb_")
 ```
+
+## Surface conductance
+
+Knowledge of aerodynamic conductance $G_a$ 
+allows us to calculate the bulk surface conductance ($G_s$) of the site 
+(In this case by inverting the Penman-Monteith equation). Gs represents the combined 
+conductance of the vegetation and the soil to water vapor transfer (and as such it is not 
+a purely physiological quantity). Calculating $G_s$ in `Bigleaf.jl` is simple:
+
+```@example doc
+surface_conductance!(thas, Val(:PenmanMonteith));
+thas[1:3,Cols(:datetime, r"Gs")]
+```
+
+The two columns only differ in the unit of $G_s$. 
+One in m s$^{-1}$ and one in mol m$^{-2}$ s$^{-1}$. 
+In this function we have ignored the ground heat flux ($G$) and the storage fluxes ($S$).
+By default they are assumed zero.
+In our example we do not have information on the storage fluxes, but we have measurements 
+on the ground heat flux, which we should add to the function call:
+
+```@example doc
+surface_conductance!(thas, Val(:PenmanMonteith); G=thas.G);
+thas[1:3,Cols(:datetime, r"Gs")]
+```
+
 
 ## Wind profile
 

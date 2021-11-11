@@ -38,13 +38,20 @@ thas = subset(thaf, :valid)
 
 
 function tmpf()
-    
+    Dl=0.01
+    aerodynamic_conductance!(thas; Gb_model=Val(:Su_2001), 
+        Dl, LAI=thal.LAI, zh=thal.zh, zr=thal.zr);
 end
 
 # tha48 and thal see runtests.jl
 
 
 show(thaf.wind[1:48])
+show(thaf.VPD[1:48])
+show(thaf.LE[1:48])
+show(thaf.Rn[1:48])
+show(thaf.G[1:48])
+
 
 dfGPPd = @pipe tha |> 
     transform(_, :datetime => ByRow(yearmonthday) => :ymd, copycols = false) |>

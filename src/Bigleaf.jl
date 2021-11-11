@@ -38,6 +38,7 @@ export Monin_Obukhov_length, Monin_Obukhov_length!, stability_parameter,
     stability_parameter!, stability_correction, stability_correction!,
     roughness_parameters, Reynolds_Number
 export aerodynamic_conductance!, add_Ga, add_Ga!, compute_Ram, compute_Ram!, roughness_z0h
+export surface_conductance, surface_conductance!
 
 # shorthand type: either DataFrame or column table (Tables.columntable)
 DFTable = Union{NamedTuple,AbstractDataFrame}
@@ -54,5 +55,6 @@ include("stability_correction.jl")
 include("surface_roughness.jl")
 include("boundary_layer_conductance.jl")
 include("aerodynamic_conductance.jl")
+include("surface_conductance.jl")
 
 end

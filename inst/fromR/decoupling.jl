@@ -14,7 +14,7 @@
 #' - approach    Approach used to calculate omega. Either `"Jarvis&McNaughton_1986"` (default)
 #'                    or `"Martin_1989"`.
 #' - LAI         Leaf area index (m2 m-2), only used if `approach = "Martin_1989"`.
-#' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
+#' - Esat_formula  Optional: Esat_formula to be used for the calculation of esat and the slope of esat.
 #'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
 #'                      See [`Esat_slope`](@ref). 
 #' - constants   Kelvin - conversion degree Celsius to Kelvin 
@@ -121,7 +121,7 @@ end
 #'                  cp - specific heat of air for constant pressure (J K-1 kg-1)
 #'                  
 #' # Details
- the following formula is used (Martin, 1989):
+ the following Esat_formula is used (Martin, 1989):
 #' 
 #'          ``Gr = 4 \sigma Tair^3 LAI / cp``                             
 #'                                       

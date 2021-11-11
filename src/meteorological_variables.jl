@@ -203,7 +203,7 @@ function wetbulb_temp_from_e_Tair_gamma(ea, Tair, gamma; accuracy=1e-03,
     @warn ("'accuracy' is set to 1 degC")
     accuracy = one(accuracy)
   end
-  fopt(Tw) = abs(ea - (Esat_from_Tair(Tw; formula = Esat_formula,constants) - 
+  fopt(Tw) = abs(ea - (Esat_from_Tair(Tw; Esat_formula = Esat_formula,constants) - 
     0.93*gamma*(Tair - Tw)))
   resopt = optimize(fopt, -100, 100, abs_tol = accuracy)
   roundmult(resopt.minimizer, accuracy)
@@ -261,7 +261,7 @@ function dew_point_from_e(ea;accuracy=1e-03,Esat_formula=Val(:Sonntag_1990), con
     @warn ("'accuracy' is set to 1 degC")
     accuracy = one(accuracy)
   end
-  fopt(Td) = abs(ea - Esat_from_Tair(Td;formula = Esat_formula,constants))
+  fopt(Td) = abs(ea - Esat_from_Tair(Td;Esat_formula = Esat_formula,constants))
   resopt = optimize(fopt, -100, 100, abs_tol = accuracy)
   roundmult(resopt.minimizer, accuracy)
 end

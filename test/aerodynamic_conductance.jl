@@ -76,7 +76,7 @@ end
 end
 
 @testset "aerodynamic_conductance! Gb_Thom" begin
-    df = copy(tha48)
+    df = tha48[:,Not(Cols(:Gb_h, :Ga_h))]
     # test Ga_m by wind_profile
     @inferred aerodynamic_conductance!(
         df; Gb_model=Val(:Thom_1972), Ram_model=Val(:wind_profile), 
@@ -87,7 +87,7 @@ end
 
 @testset "aerodynamic_conductance! constant_kB1" begin
     # specify kB1 as a vecttor
-    df = copy(tha48)
+    df = tha48[:,Not(Cols(:Gb_h, :Ga_h))]
     df[!,:kB_hi] .= 1.18
     df.kB_hi[1] = 1.18/2
     @inferred aerodynamic_conductance!(df; Gb_model=Val(:constant_kB1), kB_h = df.kB_hi, 
@@ -99,7 +99,7 @@ end
 
 @testset "aerodynamic_conductance! Gb_Choudhury" begin
     leafwidth=0.1
-    df = copy(tha48)
+    df = tha48[:,Not(Cols(:Gb_h, :Ga_h))]
     # test Ga_m by wind_profile
     @inferred aerodynamic_conductance!(
         df; Gb_model=Val(:Choudhury_1988), Ram_model=Val(:wind_profile), 
@@ -113,7 +113,7 @@ end
 
 @testset "aerodynamic_conductance! Gb_Su" begin
     Dl=0.01
-    df = copy(tha48)
+    df = tha48[:,Not(Cols(:Gb_h, :Ga_h))]
     df[!,:LAI] .= thal.LAI
     df.LAI[1] = thal.LAI/2
     # test providing changing LAI

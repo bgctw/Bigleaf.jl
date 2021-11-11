@@ -21,9 +21,9 @@
 #' - missing_S_as_NA  if `true`, missing S are treated as `missing`s, otherwise they are set to 0. 
 #'                          Only used if `formulation = Val(:PenmanMonteith)`.
 #' - formulation Formulation used. Either `Val(:PenmanMonteith)` (the default) 
-#'                    using the inverted Penman-Monteith equation, or `"Flux-Gradient"`,
+#'                    using the inverted Penman-Monteith equation, or `Val(:FluxGradient)`,
 #'                    for a simple flux-gradient approach requiring ET, pressure, and VPD only.
-#' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
+#' - Esat_formula  Optional: Esat_formula to be used for the calculation of esat and the slope of esat.
 #'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`. 
 #'                      Only used if `formulation = Val(:PenmanMonteith)`. See [`Esat_slope`](@ref).
 #' - constants   cp - specific heat of air for constant pressure (J K-1 kg-1) 
@@ -48,7 +48,7 @@
 #'  By default, any missing data in G and S are set to 0. If `missing_S_as_NA = true`
 #'  or `missing_S_as_NA = true`, Gs will give `missing` for these timesteps.
 #'  
-#'  If `formulation="Flux-Gradient"`, Gs (in mol m-2 s-1) is calculated from VPD and ET only:
+#'  If `formulation=Val(:FluxGradient)`, Gs (in mol m-2 s-1) is calculated from VPD and ET only:
 #'  
 #'     ``Gs = ET/pressure * VPD``
 #'  
@@ -84,7 +84,7 @@
 #' 
 #' # calculate Gs based on a simple gradient approach
 #' Gs_gradient = surface_conductance(DE_Tha_Jun_2014_2,Tair="Tair",pressure="pressure",
-#'                                    VPD="VPD",formulation="Flux-Gradient")
+#'                                    VPD="VPD",formulation=Val(:FluxGradient))
 #' summary(Gs_gradient)
 #' 
 #' # calculate Gs from the the inverted PM equation (now Rn, and Ga are needed),
@@ -120,13 +120,13 @@
 """
 function surface_conductance(data,Tair="Tair",pressure="pressure",Rn="Rn",G=nothing,S=nothing,
                                 VPD="VPD",LE="LE",Ga="Ga_h",missing_G_as_NA=false,missing_S_as_NA=false,
-                                formulation=c(Val(:PenmanMonteith),"Flux-Gradient"),
+                                formulation=c(Val(:PenmanMonteith),Val(:FluxGradient)),
                                 Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
                                 constants=bigleaf_constants())
   
   formulation = match_arg(formulation)
   
-  if (formulation == "Flux-Gradient")
+  if (formulation == Val(:FluxGradient))
   
     check_input(data,list(Tair,pressure,VPD,LE))
     

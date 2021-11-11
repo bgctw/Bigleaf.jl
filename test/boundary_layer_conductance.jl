@@ -80,7 +80,7 @@ end
     @test ismissing(Gbm)
     #
     # DataFrame variant
-    df = copy(tha48)
+    df = tha48[:,Not(:Gb_h)]
     # sum(skipmissing(...)) not inferrable in Julia 1.6
     # @descend_code_warntype roughness_parameters(
     #     Val(:wind_profile), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
@@ -104,7 +104,7 @@ end
     @test last(propertynames(df)) == :Gb_h
     @test df.Gb_h[1] ≈ Gb_Choud rtol=1e-6
     #
-    df = copy(tha48)
+    df = tha48[:,Not(:Gb_h)]
     @inferred compute_Gb!(df, Val(:Su_2001); wind_zh, Dl, LAI)
     @test last(propertynames(df)) == :Gb_h
     @test df.Gb_h[1] ≈ Gb_S rtol=1e-6

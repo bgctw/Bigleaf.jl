@@ -37,7 +37,7 @@ end
     # rp0 = @inferred roughness_parameters(Val(:wind_profile), df.ustar, df.wind, 
     #     df.Tair, df.pressure, df.H; zh, zr, 
     #     stab_formulation = Val(:no_stability_correction))
-    dfd = disallowmissing(df)
+    dfd = disallowmissing(df[!,Not(:LE)])
     rp0 = @inferred roughness_parameters(Val(:wind_profile), dfd.ustar, dfd.wind, 
         dfd.Tair, dfd.pressure, dfd.H; zh, zr, 
         stab_formulation = Val(:no_stability_correction))
@@ -76,7 +76,7 @@ end
     u30 = @inferred wind_profile(z, ustar, d, z0m, 0.0) # used below
     u30c = @inferred wind_profile(z, ustar, d, z0m, Tair,pressure, H)
     df = copy(tha48)
-    dfd = disallowmissing(df)
+    dfd = disallowmissing(df[!,Not(:LE)])
     windz = @inferred wind_profile(z, columntable(dfd), d, z0m; stab_formulation = Val(:no_stability_correction))    
     windz = wind_profile(z, df, d, z0m; stab_formulation = Val(:no_stability_correction))    
     @test length(windz) == 48

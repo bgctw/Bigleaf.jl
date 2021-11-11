@@ -139,7 +139,7 @@ function potential_ET(Tair, pressure, Rn, G, S, ::Val{:PriestleyTaylor};
   constants=bigleaf_constants())
   #
   gamma  = psychrometric_constant(Tair,pressure;constants)
-  Delta  = Esat_from_Tair_deriv(Tair; formula = Esat_formula,constants)
+  Delta  = Esat_from_Tair_deriv(Tair; Esat_formula = Esat_formula,constants)
   LE_pot = (alpha * Delta * (Rn - G - S)) / (Delta + gamma)
   ET_pot = LE_to_ET(LE_pot,Tair)
   (ET_pot = ET_pot, LE_pot = LE_pot)
@@ -155,7 +155,7 @@ function potential_ET(Tair, pressure, Rn, VPD, Ga, G, S, ::Val{:PenmanMonteith};
   constants=bigleaf_constants())
   #
   gamma  = psychrometric_constant(Tair,pressure;constants)
-  Delta  = Esat_from_Tair_deriv(Tair; formula = Esat_formula,constants)
+  Delta  = Esat_from_Tair_deriv(Tair; Esat_formula = Esat_formula,constants)
   Gs_pot = mol_to_ms(Gs_pot,Tair,pressure;constants)
   rho    = air_density(Tair,pressure;constants)
   LE_pot = (Delta * (Rn - G - S) + rho * constants[:cp] * VPD * Ga) / 
@@ -321,7 +321,7 @@ function equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn, G, S;
   # 
   rho    = air_density(Tair, pressure; constants)
   gamma  = psychrometric_constant(Tair, pressure; constants)
-  Delta  = Esat_from_Tair_deriv(Tair; formula = Esat_formula, constants)
+  Delta  = Esat_from_Tair_deriv(Tair; Esat_formula = Esat_formula, constants)
   LE_eq  = (Delta * (Rn - G - S)) / (gamma + Delta)
   LE_imp = (rho * constants[:cp] * Gs * VPD) / gamma
   #
@@ -362,13 +362,4 @@ function decoupling()
   error("not yet implemented.")
 end
 
-
-"""
-    TODO; implement surface_conductance.
-
-This stub is there to satisfy links im Help-pages.
-"""
-function surface_conductance()
-  error("not yet implemented.")
-end
 
