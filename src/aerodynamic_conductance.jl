@@ -117,14 +117,14 @@ function aerodynamic_conductance!(df; Gb_model = Val(:Thom_1972), Ram_model = Va
   # calculate aerodynamic risistance for momentum (Ra_m)
   Ram_model isa Val{:wind_profile} && compute_Ram!(df, Ram_model; zr, d, z0m, constants) 
   Ram_model isa Val{:wind_zr} && compute_Ram!(df, Ram_model) 
-  function ft(Ra_m, Gb_h, Gb_CO2) 
+  fr = (Ra_m, Gb_h, Gb_CO2) -> begin
     Ga_m = 1/Ra_m
     Ra_h = Ra_m + 1/Gb_h
     Ga_h = 1/Ra_h
     Ga_CO2 =  1/(Ra_m + 1/Gb_CO2)
     (;Ga_m, Ga_h, Ra_h, Ga_CO2)
   end
-  transform!(df, [:Ra_m, :Gb_h, :Gb_CO2] => ByRow(ft) => AsTable)
+  transform!(df, [:Ra_m, :Gb_h, :Gb_CO2] => ByRow(fr) => AsTable)
 end
 
 
@@ -230,7 +230,7 @@ function compute_Ram!(df, method::Val{:wind_profile};
   # put keyword arguments to positional arguments for proper broadcast
   ftpos(ustar, zr, d, z0m, psi_h) = 
     compute_Ram(method, ustar; zr, d, z0m, psi_h, kwargs...)
-  ft(ustar) = ftpos.(ustar, zr, d, z0m, psi_h)
+  ft = (ustar) -> ftpos.(ustar, zr, d, z0m, psi_h)
   transform!(df, :ustar => ft => :Ra_m)
 end
 
@@ -238,8 +238,8 @@ function compute_Ram(::Val{:wind_zr}, ustar::Union{Missing,Number}, wind)
   Ra_m = wind / ustar^2
 end
 function compute_Ram!(df, method::Val{:wind_zr}; kwargs...)
-  ft(ustar, wind) = compute_Ram(method, ustar, wind; kwargs...)
-  transform!(df, SA[:ustar, :wind] => ByRow(ft) => :Ra_m)
+  fr = (ustar, wind) -> compute_Ram(method, ustar, wind; kwargs...)
+  transform!(df, SA[:ustar, :wind] => ByRow(fr) => :Ra_m)
 end
 
 
@@ -286,7 +286,7 @@ function add_Ga!(df::AbstractDataFrame, Sc::Vararg{Pair,N};
   Gb_h = df.Gb_h, Ga_m = df.Ga_m, kwargs...) where N
   N == 0 && return(df)
   Scn, Scv = get_names_and_values("Ga_", Sc...)
-  ft() = add_Ga_.(Gb_h, Ga_m, Ref(Scn), Ref(Scv); kwargs...)
+  ft = () -> add_Ga_.(Gb_h, Ga_m, Ref(Scn), Ref(Scv); kwargs...)
   transform!(df, [] => ft => AsTable)
 end
 function add_Ga(Gb_h::Union{Missing,Number}, Ga_m::Union{Missing,Number}, 

@@ -36,12 +36,12 @@ true
 ``` 
 """
 function compute_Gb!(df::AbstractDataFrame, approach::Val{:Thom_1972}; kwargs...)
-  ft(ustar) = Gb_Thom(ustar; kwargs...)
-  transform!(df, :ustar => ByRow(ft) => :Gb_h)
+  fr = (ustar) -> Gb_Thom(ustar; kwargs...)
+  transform!(df, :ustar => ByRow(fr) => :Gb_h)
 end
 function compute_Gb!(df::AbstractDataFrame, approach::Val{:constant_kB1}; kB_h, kwargs...)
   # do not use ByRow because kb_H can be a vector
-  ft(ustar) = Gb_constant_kB1.(ustar, kB_h; kwargs...)
+  ft = (ustar) -> Gb_constant_kB1.(ustar, kB_h; kwargs...)
   transform!(df, :ustar => ft => :Gb_h)
 end
 function compute_Gb!(df::AbstractDataFrame, approach::Val{:Choudhury_1988}; kwargs...)
@@ -76,7 +76,7 @@ function compute_Gb_quantities(Gb_h, ustar; constants=bigleaf_constants())
   (;Rb_h, Gb_h, kB_h, Gb_CO2)
 end
 function compute_Gb_quantities!(df::AbstractDataFrame; constants=bigleaf_constants())
-  ft(args...) = compute_Gb_quantities.(args...; constants)
+  ft = (args...) -> compute_Gb_quantities.(args...; constants)
   transform!(df, SA[:Gb_h, :ustar] => ft => AsTable)
 end
 
@@ -121,7 +121,7 @@ true
 function add_Gb!(df::AbstractDataFrame, Sc::Vararg{Pair,N}; Gb_h = df.Gb_h, kwargs...) where N
   N == 0 && return(df)
   Scn, Scv = get_names_and_values("Gb_", Sc...)
-  ft() = add_Gb_.(Gb_h, Ref(Scn), Ref(Scv); kwargs...)
+  ft = () -> add_Gb_.(Gb_h, Ref(Scn), Ref(Scv); kwargs...)
   transform!(df, [] => ft => AsTable)
 end
 function add_Gb(Gb_h::Union{Missing,Number}, Sc::Vararg{Pair,N}; kwargs...) where N
@@ -266,7 +266,7 @@ function Gb_Choudhury!(
   # end
   # Broadcasting does not work over keyword arguments, need to pass as positional
   fwind(wind_zh, leafwidth, LAI; kwargs...) = Gb_Choudhury(;wind_zh, leafwidth, LAI, kwargs...)
-  ft() = fwind.(wind_zh, leafwidth, LAI; constants)
+  ft = () -> fwind.(wind_zh, leafwidth, LAI; constants)
   transform!(df, [] => ft => :Gb_h)
 end
 
@@ -370,6 +370,6 @@ function Gb_Su!(df::AbstractDataFrame; wind_zh, Dl, fc=nothing,
   inputcols = SA[:Tair,:pressure,:ustar]
   # Broadcasting does not work over keyword arguments, need to pass as positional
   fwind(wind_zh, Dl, fc, N, Cd, hs, args...; kwargs...) = Gb_Su(args...; wind_zh, Dl, fc, N, Cd, hs, kwargs...)
-  ft(args...) = fwind.(wind_zh, Dl, fc, N, Cd, hs, args...; constants)
+  ft = (args...) -> fwind.(wind_zh, Dl, fc, N, Cd, hs, args...; constants)
   transform!(df, inputcols => ft => :Gb_h)
 end
