@@ -333,7 +333,9 @@ to Su et al. 2001:
 using DataFrames
 df = DataFrame(Tair=25,pressure=100,wind=[3,4,5],ustar=[0.5,0.6,0.65],H=[200,230,250]) 
 zh = 25; zr = 40
-wind_zh = wind_profile(zh, df, 0.7*zh; zh, zr)
+z0m = roughness_parameters(
+  Val(:wind_profile), df.ustar, df.wind, df.Tair, df.pressure, df.H; zh, zr).z0m 
+wind_zh = wind_profile(zh, df, 0.7*zh, z0m)
 compute_Gb!(df,Val(:Su_2001); wind_zh, Dl=0.01, LAI=5)
 # the same meteorological conditions, but larger leaves
 compute_Gb!(df,Val(:Su_2001); wind_zh, Dl=0.1,LAI=5)

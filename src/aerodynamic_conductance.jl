@@ -102,7 +102,7 @@ function aerodynamic_conductance!(df; Gb_model = Val(:Thom_1972), Ram_model = Va
     if isnothing(z0m) 
       z0m = roughness_parameters(Val(:wind_profile), df; zh, zr, psi_m = df.psi_m).z0m
     end
-    wind_zh = wind_profile(zh, df, d, z0m; zh, zr, stab_formulation, constants)
+    wind_zh = wind_profile(zh, df, d, z0m; stab_formulation, constants)
   end
   #
   # calculate canopy boundary layer conductance (Gb)

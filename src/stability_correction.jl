@@ -264,7 +264,7 @@ end
 function stability_correction(df::DFTable; z, d, 
   stab_formulation=Val(:Dyer_1970), constants = bigleaf_constants()
   )
-  # cannot dispatch on keyword argument, hence need if-clause
+  # do not provide zeta, because can simply invoke stability_correction.(zeta)
   if stab_formulation isa Val{:no_stability_correction}
     z = zero(first(skipmissing(df.ustar)))
     rows = map(Tables.rows(df)) do row

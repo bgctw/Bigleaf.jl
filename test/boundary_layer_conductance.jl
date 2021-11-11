@@ -81,7 +81,18 @@ end
     #
     # DataFrame variant
     df = copy(tha48)
-    wind_zh = wind_profile(zh, df, 0.7*zh; zh, zr)
+    # @code_warntype roughness_parameters(
+    #     Val(:wind_profile), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
+    #     zh, zr)
+    z0m = (@inferred roughness_parameters(
+        Val(:wind_profile), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
+        zh, zr)).z0m
+    # function f1(zh, ustar, z0m, Tair, pressure, H) 
+    #     wind_zh = wind_profile.(zh, ustar, 0.7*zh, z0m, Tair, pressure, H)
+    #     wind_zh * 2
+    # end
+    # @code_warntype f(zh, df.ustar, z0m,df.Tair, df.pressure, df.H)    
+    wind_zh = wind_profile.(zh, df.ustar, 0.7*zh, z0m, df.Tair, df.pressure, df.H)
     @inferred compute_Gb!(df, Val(:Choudhury_1988); leafwidth, LAI, wind_zh)
     @test last(propertynames(df)) == :Gb_h
     @test df.Gb_h[1] ≈ Gb_Choud rtol=1e-6
