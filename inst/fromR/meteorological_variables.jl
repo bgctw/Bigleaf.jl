@@ -111,7 +111,7 @@ end
 #'              corresponding slope of the saturation vapor pressure curve.
 #' 
 #' - Tair      Air temperature (deg C)
-#' - formula   Formula to be used. Either `"Sonntag_1990"` (Default), 
+#' - Esat_formula   Esat_formula to be used. Either `"Sonntag_1990"` (Default), 
 #'                  `"Alduchov_1996"`, or `"Allen_1998"`.
 #' - constants Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
 #' 
@@ -160,20 +160,20 @@ end
 #' @importFrom stats D                  
 """
 """
-function Esat_slope(Tair,formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
+function Esat_slope(Tair,Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
                        constants=bigleaf_constants())
   
-  formula = match_arg(formula)
+  Esat_formula = match_arg(Esat_formula)
   
-  if (formula == "Sonntag_1990")
+  if (Esat_formula == "Sonntag_1990")
     a = 611.2
     b = 17.62
     c = 243.12
-elseif (formula == "Alduchov_1996")
+elseif (Esat_formula == "Alduchov_1996")
     a = 610.94
     b = 17.625
     c = 243.04
-elseif (formula == "Allen_1998")
+elseif (Esat_formula == "Allen_1998")
     a = 610.8
     b = 17.27
     c = 237.3
@@ -239,7 +239,7 @@ end
 #' - Tair  Air temperature (deg C)
 #' 
 #' # Details
- The following formula is used:
+ The following Esat_formula is used:
 #' 
 #'   ``\\lambda = (2.501 - 0.00237*Tair)10^6``
 #' 
@@ -280,7 +280,7 @@ end
 #' - Tair         Air temperature (degC)
 #' - gamma        Psychrometric constant (kPa K-1)
 #' - accuracy     Accuracy of the result (degC)
-#' - Esat_formula Optional: formula to be used for the calculation of esat and the slope of esat.
+#' - Esat_formula Optional: Esat_formula to be used for the calculation of esat and the slope of esat.
 #'                     One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
 #'                     See [`Esat_slope`](@ref). 
 #' - constants    Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
@@ -308,7 +308,7 @@ end
 #' - pressure  Atmospheric pressure (kPa)
 #' - VPD       Vapor pressure deficit (kPa)
 #' - accuracy  Accuracy of the result (deg C)
-#' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
+#' - Esat_formula  Optional: Esat_formula to be used for the calculation of esat and the slope of esat.
 #'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
 #'                      See [`Esat_slope`](@ref). 
 #' - constants cp - specific heat of air for constant pressure (J K-1 kg-1) 
@@ -381,7 +381,7 @@ end
 #' 
 #' - ea           Air vapor pressure (kPa)
 #' - accuracy     Accuracy of the result (degC)
-#' - Esat_formula Optional: formula to be used for the calculation of esat and the slope of esat.
+#' - Esat_formula Optional: Esat_formula to be used for the calculation of esat and the slope of esat.
 #'                     One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
 #'                     See [`Esat_slope`](@ref). 
 #' - constants    Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
@@ -409,7 +409,7 @@ end
 #' - Tair     Air temperature (degC)
 #' - VPD      Vapor pressure deficit (kPa)
 #' - accuracy Accuracy of the result (deg C)
-#' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
+#' - Esat_formula  Optional: Esat_formula to be used for the calculation of esat and the slope of esat.
 #'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
 #'                      See [`Esat_slope`](@ref). 
 #' - constants Pa2kPa - conversion pascal (Pa) to kilopascal (kPa)
@@ -472,7 +472,7 @@ end
 #' - Tair      Air temperature (deg C)
 #' - pressure  Atmospheric pressure (kPa)
 #' - VPD       Vapor pressure deficit (kPa)
-#' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat. 
+#' - Esat_formula  Optional: Esat_formula to be used for the calculation of esat and the slope of esat. 
 #'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
 #'                      See [`Esat_slope`](@ref). 
 #' - constants Kelvin - conversion degree Celsius to Kelvin 

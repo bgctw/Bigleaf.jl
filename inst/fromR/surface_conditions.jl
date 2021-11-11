@@ -19,7 +19,7 @@
 #' - Ca               Atmospheric CO2 concentration (mol mol-1). Required if `calc_surface_CO2 = true`.
 #' - NEE              Net ecosystem exchange (umol m-2 s-1). Required if `calc_surface_CO2 = true`.
 #' - Ga_CO2           Aerodynamic conductance for CO2 (m s-1). Required if `calc_surface_CO2 = true`.
-#' - Esat_formula     Optional: formula to be used for the calculation of esat and the slope of esat.
+#' - Esat_formula     Optional: Esat_formula to be used for the calculation of esat and the slope of esat.
 #'                         One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
 #'                         See [`Esat_slope`](@ref).           
 #' - constants        cp - specific heat of air for constant pressure (J K-1 kg-1)  

@@ -21,7 +21,7 @@
 #'                  only used if `approach = Val(:PenmanMonteith)`.
 #' - missing_G_as_NA  if `true`, missing G are treated as `missing`s, otherwise set to 0. 
 #' - missing_S_as_NA  if `true`, missing S are treated as `missing`s, otherwise set to 0. 
-#' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
+#' - Esat_formula  Optional: Esat_formula to be used for the calculation of esat and the slope of esat.
 #'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
 #'                      See [`Esat_slope`](@ref). 
 #' - constants cp - specific heat of air for constant pressure (J K-1 kg-1) 
@@ -165,7 +165,7 @@ end
 #' - S         Sum of all storage fluxes (W m-2); optional
 #' - missing_G_as_NA  if `true`, missing G are treated as `missing`s, otherwise set to 0. 
 #' - missing_S_as_NA  if `true`, missing S are treated as `missing`s, otherwise set to 0. 
-#' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
+#' - Esat_formula  Optional: Esat_formula to be used for the calculation of esat and the slope of esat.
 #'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
 #'                      See [`Esat_slope`](@ref). 
 #' - constants cp - specific heat of air for constant pressure (J K-1 kg-1) 
@@ -202,7 +202,7 @@ end
 #' - S         Sum of all storage fluxes (W m-2); optional
 #' - missing_G_as_NA  if `true`, missing G are treated as `missing`s, otherwise set to 0. 
 #' - missing_S_as_NA  if `true`, missing S are treated as `missing`s, otherwise set to 0.
-#' - Esat_formula  Optional: formula to be used for the calculation of esat and the slope of esat.
+#' - Esat_formula  Optional: Esat_formula to be used for the calculation of esat and the slope of esat.
 #'                      One of `"Sonntag_1990"` (Default), `"Alduchov_1996"`, or `"Allen_1998"`.
 #'                      See [`Esat_slope`](@ref). 
 #' - constants cp - specific heat of air for constant pressure (J K-1 kg-1) 

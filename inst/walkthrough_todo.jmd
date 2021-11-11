@@ -236,26 +236,27 @@ Both surface temperature and VPD are in most cases higher than the ones measured
 
 ## Surface conductance
 
-Knowledge on $G_a$ allows us to calculate the bulk surface conductance ($G_s$) of the site (In this case by inverting the Penman-Monteith equation). Gs represents the combined conductance of the vegetation and the soil to water vapor transfer (and as such it is not a purely physiological quantity). Calculating $G_s$ in `Bigleaf.jl` is simple:
+Knowledge on $G_a$ allows us to calculate the bulk surface conductance ($G_s$) of the site 
+(In this case by inverting the Penman-Monteith equation). Gs represents the combined 
+conductance of the vegetation and the soil to water vapor transfer (and as such it is not 
+a purely physiological quantity). Calculating $G_s$ in `Bigleaf.jl` is simple:
 
-```julia
-summary(surface_conductance(thaf))
-```
-The function output is another DataFrame with two columns which only differ in the unit of $G_s$ (i.e. a hopeless attempt to make both physicists and physiologists happy). One in m s$^{-1}$ and one in mol m$^{-2}$ s$^{-1}$. In this function we have ignored the ground heat flux ($G$) and the storage fluxes ($S$), and the function politely reminds us of this omission by printing the first two lines of the output (it also tells us what it does, it assumes they are 0 in each time step). In this case we do not have information on the storage fluxes, but we have measurements on the ground heat flux, which we should add to the function call:
-
-```julia
-Gs = surface_conductance(thaf,G="G")
-summary(Gs)
-thaf = cbind(thaf,Gs)
+```@example doc
+surface_conductance!(thas, Val(:PenmanMonteith));
+thas[1:3,Cols(:datetime, r"Gs")]
 ```
 
-Again, we have added the two output columns to our DataFrame `thaf`.
+The two columns only differ in the unit of $G_s$. 
+One in m s$^{-1}$ and one in mol m$^{-2}$ s$^{-1}$. 
+In this function we have ignored the ground heat flux ($G$) and the storage fluxes ($S$).
+By default they are assumed zero.
+In our example we do not have information on the storage fluxes, but we have measurements 
+on the ground heat flux, which we should add to the function call:
 
-
-
-
-
-
+```@example doc
+surface_conductance!(thas, Val(:PenmanMonteith); G=thas.G);
+thas[1:3,Cols(:datetime, r"Gs")]
+```
 
 
 

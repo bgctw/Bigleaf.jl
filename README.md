@@ -46,6 +46,8 @@ file an [issue](https://github.com/bgctw/Bigleaf.jl/issues) if you need a specif
 
 At the current state we ported
 - Meteorological variables
+- Boundary layer and Aerodynamic conductance
+- Surface conductance
 - Evapotranspiration
 - Potential radiation
 - Unit conversions
