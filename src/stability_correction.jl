@@ -234,7 +234,8 @@ function stability_correction(z,d, Tair::Union{Missing,Number},pressure,ustar,H;
     (psi_h = zero(z), psi_m = zero(z)))
   MOL = Monin_Obukhov_length(Tair,pressure,ustar,H; constants)
   zeta  = stability_parameter(z,d,MOL)
-  stability_correction(zeta; stab_formulation)
+  psis = stability_correction(zeta; stab_formulation)
+  psis
 end
 # function stability_correction(Tair,pressure,ustar,H, z,d; kwargs...) 
 #   Tables.columns(

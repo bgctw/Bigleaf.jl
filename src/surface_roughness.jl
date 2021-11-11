@@ -197,10 +197,7 @@ function roughness_parameters(method::Val{:wind_profile}, df::DFTable;
   end
 end
 
-
-
-
-  
+ 
 """                                                                                                                       
     wind_profile(z::Number, ustar, d, z0m, psi_m = zero(z); constants)
     wind_profile(z, df::AbstractDataFrame, d, z0m, psi_m::AbstractVector; constants)
@@ -262,10 +259,12 @@ using DataFrames
 heights = 18:2:40  # heights above ground for which to calculate wind speed
 df = DataFrame(Tair=25,pressure=100,wind=[3,4,5],ustar=[0.5,0.6,0.65],H=[200,230,250]) 
 zr=40;zh=25;d=16
-# z0m and L are independent of height, compute before
-z0m = roughness_parameters(Val(:wind_profile), df; zh, zr).z0m 
+# z0m and MOL are independent of height, compute before
+MOL = Monin_Obukhov_length.(df.Tair, df.pressure, df.ustar, df.H)
+z0m = roughness_parameters(
+  Val(:wind_profile), df.ustar, df.wind, df.Tair, df.pressure, df.H; zh, zr).z0m 
 ws = map(heights) do z
-  wind_profile(z,df,d,z0m)
+  wind_profile(z,df,d,z0m; MOL)
 end
 using Plots # plot wind profiles for the three rows in df
 plot(first.(ws), heights, ylab = "height (m)", xlab = "wind speed (m/s)", legend=:topleft)
@@ -288,13 +287,18 @@ function wind_profile(z::Number, ustar::Union{Missing,Number}, d, z0m, Tair,pres
   wind_profile(z, ustar, d, z0m, psi_m)
 end
 
-function wind_profile(z::Number, df::DFTable, d, z0m; psi_m = nothing,
+function wind_profile(z::Number, df::DFTable, d, z0m; psi_m = nothing, MOL = nothing,
   stab_formulation = Val(:Dyer_1970), constants = bigleaf_constants()
   )
   if isnothing(psi_m)
-    psi_m = stability_correction(df; z, d, stab_formulation, constants).psi_m
+    if isnothing(MOL) 
+      psi_m = stability_correction(df; z, d, stab_formulation, constants).psi_m
+    else
+      zeta = stability_parameter.(z,d,MOL)
+      psi_m = getindex.(stability_correction.(zeta), :psi_m)
+    end
   end
   #wind_profile(df, z, d, z0m, psi_m; constants)
-  wind_profile.(z, df.ustar, d, z0m, psi_m; constants)
+  windz = wind_profile.(z, df.ustar, d, z0m, psi_m; constants)
 end
 
