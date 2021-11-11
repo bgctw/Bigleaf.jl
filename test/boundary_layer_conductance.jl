@@ -81,12 +81,19 @@ end
     #
     # DataFrame variant
     df = copy(tha48)
+    # sum(skipmissing(...)) not inferrable in Julia 1.6
+    # @descend_code_warntype roughness_parameters(
+    #     Val(:wind_profile), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
+    #     zh, zr)
     # @code_warntype roughness_parameters(
     #     Val(:wind_profile), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
     #     zh, zr)
-    z0m = (@inferred roughness_parameters(
+    # z0m = (@inferred roughness_parameters(
+    #     Val(:wind_profile), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
+    #     zh, zr)).z0m
+    z0m = roughness_parameters(
         Val(:wind_profile), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
-        zh, zr)).z0m
+        zh, zr).z0m
     # function f1(zh, ustar, z0m, Tair, pressure, H) 
     #     wind_zh = wind_profile.(zh, ustar, 0.7*zh, z0m, Tair, pressure, H)
     #     wind_zh * 2
