@@ -405,7 +405,7 @@ wind_heights = 22:2:60.0
 d = 0.7 * thal.zh
 z0m = roughness_parameters(Val(:wind_profile), thas; zh=thal.zh, zr=thal.zr).z0m
 wp = map(wind_heights) do z
-  wind_profile(z, thas,d, z0m; zh=thal.zh, zr=thal.zr)
+  wind_profile(z, thas,d, z0m)
 end;
 nothing # hide
 ```

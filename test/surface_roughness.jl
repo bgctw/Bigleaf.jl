@@ -85,18 +85,15 @@ end
     @test windzc[1] == u30c
     #plot(windz)
     #plot!(windz2)
+    #
+    # with providing psi_m
     psi_m = stability_correction(df; z, d).psi_m
     windzc2 = @inferred wind_profile(z, columntable(dfd), d, z0m; psi_m)    
     @test windzc2 == windzc
     #
-    # estimate z0m
-    # need to give zh and zr in addition to many variables in df
-    @test_throws Exception wind_profile(z, df, d)    
-    windzc3 = @inferred wind_profile(z, columntable(dfd), d; zh=thal.zh, zr=thal.zr, 
-        stab_formulation = Val(:Dyer_1970))    
-    # may have used slightly different estimated z0m
-    #windzc3 - windzc
-    @test all(isapprox.(windzc3, windzc, atol=0.1))
-    @test windzc3[1] ≈ 2.764203 rtol=1e-3 # from R
+    # with providing L
+    MOL = Monin_Obukhov_length.(df.Tair, df.pressure, df.ustar, df.H)
+    windzc3 = @inferred wind_profile(z, columntable(dfd), d, z0m; MOL)    
+    @test windzc3 == windzc
 end
 

@@ -53,8 +53,8 @@ function Monin_Obukhov_length(Tair, pressure, ustar, H; constants=bigleaf_consta
   MOL  = (-rho*constants[:cp]*ustar^3*TairK) / (constants[:k]*constants[:g]*H)
 end
 function Monin_Obukhov_length!(df;constants=bigleaf_constants())
-  ft(args...) = Monin_Obukhov_length(args...; constants)
-  transform!(df, SA[:Tair, :pressure, :ustar, :H] => ByRow(ft) => :MOL)
+  fr = (args...) -> Monin_Obukhov_length(args...; constants)
+  transform!(df, SA[:Tair, :pressure, :ustar, :H] => ByRow(fr) => :MOL)
 end
 # function Monin_Obukhov_length(df::DFTable; kwargs...)
 #     tmp = Monin_Obukhov_length.(df.Tair, df.pressure, df.ustar, df.H; kwargs...)
@@ -113,11 +113,11 @@ end
 function stability_parameter!(df::AbstractDataFrame; z,d, MOL=nothing,
   constants=bigleaf_constants())
   if isnothing(MOL)
-    ft(args...) = stability_parameter.(z,d,args...; constants)
+    ft = (args...) -> stability_parameter.(z,d,args...; constants)
     transform!(df, SA[:Tair, :pressure, :ustar, :H] => ft => :zeta)
   else
-    ft2() = stability_parameter.(z,d,MOL)
-    transform!(df, [] => ft2 => :zeta)
+    ft = () -> stability_parameter.(z,d,MOL)
+    transform!(df, [] => ft => :zeta)
   end
 end
 # function stability_parameter(df::DFTable; z,d, MOL=nothing,
@@ -234,7 +234,8 @@ function stability_correction(z,d, Tair::Union{Missing,Number},pressure,ustar,H;
     (psi_h = zero(z), psi_m = zero(z)))
   MOL = Monin_Obukhov_length(Tair,pressure,ustar,H; constants)
   zeta  = stability_parameter(z,d,MOL)
-  stability_correction(zeta; stab_formulation)
+  psis = stability_correction(zeta; stab_formulation)
+  psis
 end
 # function stability_correction(Tair,pressure,ustar,H, z,d; kwargs...) 
 #   Tables.columns(
@@ -253,20 +254,18 @@ function stability_correction!(df; zeta=nothing, z=nothing, d=nothing,
     return(df)
   end
   if !isnothing(zeta)
-    ft() = stability_correction.(zeta; stab_formulation)
+    ft = () -> stability_correction.(zeta; stab_formulation)
     transform!(df, [] => ft => AsTable)
   else
-    function ft_met(args...)
-      stability_correction.(z, d, args...; stab_formulation, constants)
-    end
-    transform!(df, SA[:Tair,:pressure,:ustar,:H] => ft_met => AsTable)
+    ft = (args...) -> stability_correction.(z, d, args...; stab_formulation, constants)
+    transform!(df, SA[:Tair,:pressure,:ustar,:H] => ft => AsTable)
   end
 end
 
 function stability_correction(df::DFTable; z, d, 
   stab_formulation=Val(:Dyer_1970), constants = bigleaf_constants()
   )
-  # cannot dispatch on keyword argument, hence need if-clause
+  # do not provide zeta, because can simply invoke stability_correction.(zeta)
   if stab_formulation isa Val{:no_stability_correction}
     z = zero(first(skipmissing(df.ustar)))
     rows = map(Tables.rows(df)) do row
