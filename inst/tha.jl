@@ -41,6 +41,7 @@ function tmpf()
     Dl=0.01
     aerodynamic_conductance!(thas; Gb_model=Val(:Su_2001), 
         Dl, LAI=thal.LAI, zh=thal.zh, zr=thal.zr);
+    surface_conductance!(thas, Val(:PenmanMonteith); G=thas.G);
 end
 
 # tha48 and thal see runtests.jl
