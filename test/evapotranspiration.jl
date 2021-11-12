@@ -1,68 +1,55 @@
 @testset "potential_ET scalars" begin
     Tair,pressure,Rn = 30.0,100.0,500.0
-    ET_pot, LE_pot = potential_ET(Tair,pressure,Rn, Val(:PriestleyTaylor); alpha=1.26)    
+    ET_pot, LE_pot = potential_ET(Val(:PriestleyTaylor), Tair,pressure,Rn; alpha=1.26)    
+    # compare to R
     @test ≈(ET_pot, 0.0002035969; rtol = 1e-5)
     @test ≈(LE_pot, 494.7202; rtol = 1e-5)
     #
-    VPD,Ga = 2.0, 0.1
-    ET_pot,LE_pot = potential_ET(Tair,pressure,Rn,VPD,Ga, Val(:PenmanMonteith))    
-    #
-    #TODO surface_conductance(Tair=20,pressure=100,VPD=2,Ga=0.1,Rn=400,LE=LE_pot_PM)
+    VPD,Ga_h = 2.0, 0.1
+    Gs_pot = 0.5 # assume known surface conductance
+    ET_pot,LE_pot = potential_ET(Val(:PenmanMonteith), Tair,pressure,Rn,VPD,Ga_h; Gs_pot)    
+    Gs_ms, Gs_mol = surface_conductance(Val(:PenmanMonteith), Tair,pressure,VPD,LE_pot,Rn,Ga_h)
+    @test Gs_mol ≈ Gs_pot
 end
 
 @testset "potential_ET dataframe" begin
-    df = DataFrame(
-    Tair = 20.0:1.0:30.0,pressure = 100.0, Rn = 500.0)
-    # df_ET = @test_logs (:info,r"G is not provided") (:info,r"S is not provided") potential_ET(df, Val(:PriestleyTaylor); alpha=1.26)    
-    # # non-mutating
-    # @test ncol(df) == 3
-    # @test nrow(df_ET) == nrow(df)
-    # @test ≈(last(df_ET).ET_pot, 0.0002035969; rtol = 1e-5)
-    # @test ≈(last(df_ET).LE_pot, 494.7202; rtol = 1e-5)
+    dfo = DataFrame(Tair = 20.0:1.0:30.0,pressure = 100.0, Rn = 500.0)
+    df = copy(dfo)
+    potential_ET!(df, Val(:PriestleyTaylor); alpha=1.26)    
+    @test ≈(last(df).ET_pot, 0.0002035969; rtol = 1e-5)
+    @test ≈(last(df).LE_pot, 494.7202; rtol = 1e-5)
     #
-    df2 = copy(df)
-    # df2.VPD .= 2.0 # fail in older versions
-    # df2.Ga .= 0.1
+    df2 = copy(dfo)
     df2[!, :VPD] .= 2.0
-    df2[!, :Ga] .= 0.1
-    # df2 = transform(df,  
-    #     [] => ByRow(() -> 2.0) => :VPD,
-    #     [] => ByRow(() -> 0.1) => :Ga,
-    #     )
-    # df_ET2 = @test_logs (:info,r"G is not provided") (:info,r"S is not provided") potential_ET(df2, Val(:PenmanMonteith))    
-    # @test ncol(df2) == 5
-    # @test nrow(df_ET2) == nrow(df2)
-    #TODO surface_conductance(Tair=20,pressure=100,VPD=2,Ga=0.1,Rn=400,LE=LE_pot_PM)
-    #
-    # mutating
-    dfm = copy(df)
-    #@test_throws Exception 
-    @test_logs (:info,r"G is not provided") (:info,r"S is not provided") potential_ET!(dfm, Val(:PriestleyTaylor); alpha=1.26)   
-    #dfm = @test_logs (:info,r"G is not provided") (:info,r"S is not provided") hcat(dfm, Bigleaf.fill_GS_missings(dfm, missing, missing, false, false); copycols = false)        
-    #potential_ET!(dfm, Val(:PriestleyTaylor); alpha=1.26)   
-    @test ncol(dfm) == 3+2 # two columns added: ET_pot, LE_pot
-    dfm = @test_logs (:info,r"G is not provided") (:info,r"S is not provided")  potential_ET!(copy(df2), Val(:PenmanMonteith))   
-    @test ncol(dfm) == ncol(df2)+2 
+    df2[!, :Ga_h] .= 0.1
+    potential_ET!(df2, Val(:PenmanMonteith); Gs_pot = 0.4)  
+    df2b = rename!(copy(df2, copycols=false),SA[:LE_pot => :LE])  
+    surface_conductance!(df2b, Val(:PenmanMonteith))
+    @test all(df2b.Gs_mol .≈ 0.4)
 end
 
 @testset "potential_ET dataframe missings in G" begin
-    df = @pipe DataFrame(Tair = 20.0:1.0:30.0,pressure = 100.0, Rn = 500.0, G = 105.0) |>
+    df = @pipe DataFrame(Tair = 20.0,pressure = 100.0, Rn = 500.0, G = 100.0:1:110) |>
       allowmissing(_, Cols(:G))
-    df.G[1] = missing
-    df_ET = @test_logs (:info,r"S is not provided") potential_ET!(copy(df), Val(:PriestleyTaylor); G = df.G)    
+    df.G[2] = missing
+    df_ET = potential_ET!(copy(df), Val(:PriestleyTaylor); G = df.G)    
     @test ncol(df_ET) == ncol(df)+2 # two columns added: ET_pot, LE_pot
     @test nrow(df_ET) == nrow(df)
-    @test last(df_ET).ET_pot < 0.0002035969 # smaller because less energy available
-    @test ismissing(first(df_ET).LE_pot)
+    @test df_ET.ET_pot[end] < df_ET.ET_pot[1] # smaller: mith higher G less available energy
+    @test df_ET.ET_pot[1] < 0.0002035969 # smaller as without G because less energy available
+    @test ismissing(df_ET.LE_pot[2])
     #
     df2 = copy(df)
     df2[!, :VPD] .= 2.0
-    df2[!, :Ga] .= 0.1
-    df_ET2 = @test_logs (:info,r"G is not provided") potential_ET!(copy(df2), Val(:PenmanMonteith), S = df.G)    
-    @test ncol(df_ET2) == ncol(df2)+2 # two columns added: ET_pot, LE_pot
-    @test nrow(df_ET2) == nrow(df2)
-    @test ismissing(first(df_ET).LE_pot)
-    #TODO surface_conductance(Tair=20,pressure=100,VPD=2,Ga=0.1,Rn=400,LE=LE_pot_PM)
+    df2[!, :Ga_h] .= 0.1
+    potential_ET!(df2, Val(:PenmanMonteith), S = df.G; Gs_pot = 0.3)    
+    @test ncol(df2) == ncol(df)+2+2 # two columns added: ET_pot, LE_pot
+    @test nrow(df2) == nrow(df)
+    @test ismissing(df2.LE_pot[2])
+    df2b = rename!(copy(df2, copycols=false),SA[:LE_pot => :LE])  
+    surface_conductance!(df2b, Val(:PenmanMonteith); S = df.G)
+    @test ismissing(df2b.Gs_mol[2])
+    @test all(df2b.Gs_mol[1:end .!= 2] .≈ 0.3)
 end
 
 @testset "equilibrium_imposed_ET scalars" begin
@@ -83,11 +70,9 @@ end
     # @test ≈(first(df_ET).ET_imp, ET_imp)
     #
     dfm = copy(df)
-    dfm_ET = equilibrium_imposed_ET!(dfm; infoGS = false)
-    @test dfm_ET === dfm
+    equilibrium_imposed_ET!(dfm)
     @test ncol(dfm) == ncoldf0 + 4
     @test nrow(dfm) == nrow(df)
-    @test ≈(first(dfm_ET).ET_eq, ET_eq)
-    @test ≈(first(dfm_ET).ET_imp, ET_imp)
-    #TODO surface_conductance(Tair=20,pressure=100,VPD=2,Ga=0.1,Rn=400,LE=LE_pot_PM)
+    @test ≈(first(dfm).ET_eq, ET_eq)
+    @test ≈(first(dfm).ET_imp, ET_imp)
 end

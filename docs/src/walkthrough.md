@@ -82,34 +82,38 @@ and temperature always in °C.
 
 ## Function arguments
 
-Most functions of `Bigleaf.jl` require a DataFrame, from which the required
-variables are extracted. This is usually the first argument of a function. 
-Most functions further provide default values for their arguments, 
-such that in many cases it is not necessary to provide them explicitly.
-
-The column names in the DataFrame should correspond to the argument names
-of the corresponding method that accespts each input individually.
-
-Methods are usually provided with two forms:
-- all required scalar inputs as positional arguments with outputing a NamedTuple
-- a mutating DataFrame with columns corresponding to required inputs
-  where the output columns are added or modified.
+`Bigleaf.jl` usually provides functions in two flavours.
+- providing all arguments seperately as scalars and output being a single scalar
+  or a NamedTuple
+- providing a DataFrame as first argument with columns corresponding to the inputs and 
+  ouput being the in-place modified DataFrame. Most keyword arguments
+  accept both, vectors or scalars.
+  The column names in the DataFrame should correspond to the argument names
+  of the corresponding method with individual inputs.
 
 We can demonstrate the usage with a simple example:
 
 ```@example doc
 # explicit inputs
 Tair, pressure, Rn, =  14.81, 97.71, 778.17 
-potential_ET(Tair, pressure, Rn, Val(:PriestleyTaylor))
+potential_ET(Val(:PriestleyTaylor), Tair, pressure, Rn)
+
 # DataFrame
 potential_ET!(copy(tha), Val(:PriestleyTaylor))
+
 # DataFrame with a few columns overwritten by user values
 potential_ET!(transform(tha, :Tair => x -> 25.0; renamecols=false), Val(:PriestleyTaylor))
+
 # varying one input only: scalar form with dot-notation
 Tair_vec =  10.0:1.0:20.0
-DataFrame(potential_ET.(Tair_vec, pressure, Rn, Val(:PriestleyTaylor)))
+DataFrame(potential_ET.(Val(:PriestleyTaylor), Tair_vec, pressure, Rn))
 nothing # hide
 ```
+
+For functions operating only on vectors, e.g. [`roughness_parameters`](@ref) vectors
+are provided with the individual inputs. Sometimes, an additional  non-mutating DataFrame 
+variant is provided for convenience, however, the output value of this variant is 
+not type-stable.
 
 ## Ground heat flux and storage fluxes
 
@@ -463,16 +467,18 @@ evapotranspiration (PET). At the moment, the `Bigleaf.jl` contains two formulati
 for the estimate of PET: the Priestley-Taylor equation, and the Penman-Monteith equation:
 
 ```@example doc
-potential_ET!(thas, Val(:PriestleyTaylor); G = thas.G, infoGS = false)
-# TODO need aerodynamci and surface conductance to compute Ga and Gs_mol before
-# potential_ET!(thas, Val(:PenmanMonteith);  G = thas.G, 
-#        Gs_pot=quantile(skipmissing(thas.Gs_mol),0.95))
-select(thas[24:26,:], :datetime, :ET_pot, :LE_pot)
+potential_ET!(thas, Val(:PriestleyTaylor); G = thas.G)
+
+# aerodynamic Ga_h and surface conductance Gs_mol must be computed before
+potential_ET!(thas, Val(:PenmanMonteith);  G = thas.G, 
+        Gs_pot=quantile(skipmissing(thas.Gs_mol),0.95))
+thas[24:26, Cols(:datetime, :ET_pot, :LE_pot)]
 ```
 
 In the second calculation it is important to provide an estimate of aerodynamic 
-conductance Ga and ``Gs_{pot}``, the potential surface conductance under optimal conditions. 
-Here, we have approximated ``Gs_{pot}`` with the ``95^{\text{th}}`` percentile of all 
+conductance, ``G_a``, and the potential surface conductance under optimal conditions, 
+``G_{s pot}``. 
+Here, we have approximated ``G_{s pot}`` with the ``95^{\text{th}}`` percentile of all 
 ``G_s`` values of the site. 
 
 
