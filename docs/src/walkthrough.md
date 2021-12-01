@@ -6,18 +6,43 @@ some useful hints and guidelines are given at the end of the vignette.
 
 # Package scope and important conceptual considerations
 
-`Bigleaf.jl` calculates physical and physiological ecosystem properties from eddy covariance data. Examples for such properties are aerodynamic and surface conductance, surface conditions(e.g. temperature, VPD), wind profile, roughness parameters, vegetation-atmosphere decoupling, potential evapotranspiration, (intrinsic) water-use efficiency, stomatal sensitivity to VPD, or intercellular CO2 concentration.  All calculations in the `Bigleaf.jl` package assume that the ecosystem behaves like a  "big-leaf", i.e. a single, homogenous plane which acts as the only source and sink of the measured fluxes. This assumption comes with the advantages that calculations are simplified considerably and that (in most cases) little ancillary information on the EC sites is required. It is important to keep in mind that these simplifications go hand in hand with critical limitations. All derived variables are bulk ecosystem characteristics and have to be interpreted as such. It is for example not possible to infer within-canopy variations of a certain property.
+`Bigleaf.jl` calculates physical and physiological ecosystem properties from eddy 
+covariance data. Examples for such properties are aerodynamic and surface conductance, 
+surface conditions(e.g. temperature, VPD), wind profile, roughness parameters, 
+vegetation-atmosphere decoupling, potential evapotranspiration, (intrinsic) water-use 
+efficiency, stomatal sensitivity to VPD, or intercellular CO2 concentration.  
+All calculations in the `Bigleaf.jl` package assume that the ecosystem behaves like a  
+"big-leaf", i.e. a single, homogenous plane which acts as the only source and sink of the 
+measured fluxes. This assumption comes with the advantages that calculations are simplified 
+considerably and that (in most cases) little ancillary information on the EC sites is 
+required. It is important to keep in mind that these simplifications go hand in hand with 
+critical limitations. All derived variables are bulk ecosystem characteristics and have to 
+be interpreted as such. It is for example not possible to infer within-canopy variations 
+of a certain property.
 
-Please also keep in mind that the `Bigleaf.jl` package does NOT provide formulations for bottom-up modelling. The principle applied here is to use an inversion approach in which ecosystem properties are inferred top-down from the measured fluxes. Such an inversion can, in principle, be also be conducted with more complex models (e.g. sun/shade or canopy/soil models), but keep in mind that these approaches also require that the additional, site-specific parameters are adequately well known. 
+Please also keep in mind that the `Bigleaf.jl` package does NOT provide formulations for 
+bottom-up modelling. The principle applied here is to use an inversion approach in which 
+ecosystem properties are inferred top-down from the measured fluxes. Such an inversion can, 
+in principle, be also be conducted with more complex models (e.g. sun/shade or canopy/soil 
+models), but keep in mind that these approaches also require that the additional, 
+site-specific parameters are adequately well known. 
 
-The use of more detailed models is not within the scope of the `Bigleaf.jl` package, but it is preferable to use such approaches when important assumptions of the "big-leaf" approach are not met. This is the case in particular when the ecosystem is sparsely covered with vegetation (low LAI, e.g. sparse crops, some savanna systems). 
+The use of more detailed models is not within the scope of the `Bigleaf.jl` package, but 
+it is preferable to use such approaches when important assumptions of the "big-leaf" 
+approach are not met. This is the case in particular when the ecosystem is sparsely covered 
+with vegetation (low LAI, e.g. sparse crops, some savanna systems). 
 
 
 # Preparing the data
 
-In this tutorial, we will work with a dataset from the eddy covariance site Tharandt (DE-Tha), a spruce forest in Eastern Germany. The DataFrame `DE_Tha_Jun_2014` is downloaded from the `bigleaf` 
-[R package](https://bitbucket.org/juergenknauer/Bigleaf/) repository and contains half-hourly data of meteorological and flux measurements made in June 2014. For loading the RData into Julia, see the 
-[source](https://github.com/bgctw/Bigleaf.jl/blob/main/docs/src/walkthrough.md?plain=1#L26) of this file. We give the data.frame a shorter name here and create a timestamp.
+In this tutorial, we will work with a dataset from the eddy covariance site Tharandt 
+(DE-Tha), a spruce forest in Eastern Germany. The DataFrame `DE_Tha_Jun_2014` is downloaded 
+from the `bigleaf` 
+[R package](https://bitbucket.org/juergenknauer/Bigleaf/) repository and contains 
+half-hourly data of meteorological and flux measurements made in June 2014. For loading the 
+RData into Julia, see the 
+[source](https://github.com/bgctw/Bigleaf.jl/blob/main/docs/src/walkthrough.md?plain=1#L26) 
+of this file. We give the data.frame a shorter name here and create a timestamp.
 
 ```@example doc
 using Bigleaf
@@ -37,7 +62,8 @@ register(DataDep(
 ))
 #println(datadep"DE_Tha_Jun_2014.rda")
 ENV["DATADEPS_ALWAYS_ACCEPT"]="true" # avoid question to download
-DE_Tha_Jun_2014 = first(values(load(joinpath(datadep"DE_Tha_Jun_2014.rda/DE_Tha_Jun_2014.rda"))))
+DE_Tha_Jun_2014 = first(values(load(joinpath(
+  datadep"DE_Tha_Jun_2014.rda/DE_Tha_Jun_2014.rda"))))
 nothing
 ```
 ```@example doc
@@ -520,28 +546,28 @@ The package further provides a number of useful unit interconversions, which are
 
 ```@example doc
 # VPD to vapor pressure (e, kPa)
-VPD_to_e(2, 25)
+VPD_to_e(2.0, 25.0)
 ```
 ```@example doc
 # vapor pressure to specific humidity (kg kg-1)
-e_to_q(1, 100)
+e_to_q(1.0, 100.0)
 ```
 ```@example doc
 # relative humidity to VPD (kPa)
-rH_to_VPD(0.6, 25)
+rH_to_VPD(0.6, 25.0)
 ```
 ```@example doc
 # conductance from ms-1 to mol m-2 s-1
-ms_to_mol(0.01, 25, 100) # mC, Tair, pressure
+ms_to_mol(0.01, 25.0, 100.0) # mC, Tair, pressure
 ```
 ```@example doc
 # umol CO2 m-2 s-1 to g C m-2 d-1
-umolCO2_to_gC(20)
+umolCO2_to_gC(20.0)
 ```
 
 Many functions provide constant empirical parameters. Those can
 be changed by overriding the default values with 
-[`bigleaf_constants`](@ref) 
+[`BigleafConstants`](@ref) 
 and passing this Dictionary to the respective function.
 
 

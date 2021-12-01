@@ -134,7 +134,7 @@ function filter_data(data,quality_control=true,filter_growseas=false,
                         missing_qc_as_bad=true,GPP="GPP",doy="doy",
                         year="year",tGPP=0.5,ws=15,min_int=5,precip="precip",
                         tprecip=0.01,precip_hours=24,records_per_hour=2,
-                        filtered_data_to_NA=true,constants=bigleaf_constants())
+                        filtered_data_to_NA=true,constants=BigleafConstants())
   
   
   ### I) Quality control filter
@@ -174,7 +174,7 @@ else { # same, but consider missing quality flag variables as good
         qc_invalid      = sum(get(paste0(var,quality_ext)) > max(good_quality) & !ismissing(get(paste0(var,quality_ext))))
 end
       
-      qc_invalid_perc = round((qc_invalid/nrow(data))*constants[:frac2percent],2)
+      qc_invalid_perc = round((qc_invalid/nrow(data))*constants.frac2percent,2)
       
       cat(var,": ",qc_invalid," data points (",qc_invalid_perc,"%) set to missing",fill=true,sep="")
 end
@@ -223,12 +223,12 @@ end
 end
   
   # 4) calculate number and percentage of filtered values
-  invalids_perc = sapply(invalids, function(x) round((length(x)/nrow(data))*constants[:frac2percent],2))
+  invalids_perc = sapply(invalids, function(x) round((length(x)/nrow(data))*constants.frac2percent,2))
   
   additional_invalids = sapply(2:length(invalids), function(x) 
     length(setdiff(invalids[[x]],unique(unlist(invalids[1:(x-1)])))))
   
-  additional_invalids_perc = round(additional_invalids/nrow(data)*constants[:frac2percent],2)
+  additional_invalids_perc = round(additional_invalids/nrow(data)*constants.frac2percent,2)
   
   
   # 5) write to output
@@ -253,10 +253,10 @@ end
     invalid        = unique(unlist(invalids))
     valid[invalid] = 0
   
-    excl_perc = round((length(invalid)/nrow(data))*constants[:frac2percent],2)
+    excl_perc = round((length(invalid)/nrow(data))*constants.frac2percent,2)
   
     cat(length(invalid)," data points (",excl_perc,"%) excluded in total",fill=true,sep="")
-    cat(nrow(data) - length(invalid)," valid data points (",constants[:frac2percent]-excl_perc,"%) remaining.",fill=true,sep="")
+    cat(nrow(data) - length(invalid)," valid data points (",constants.frac2percent-excl_perc,"%) remaining.",fill=true,sep="")
   
   
     # 6) return input data frame with filtered time steps set to missing or an additional 'valid' column

@@ -15,14 +15,14 @@ end
 end
 
 @testset "virtual_temp" begin
-  Tair,pressure,VPD = 25,100,1.5
+  Tair,pressure,VPD = 25.0,100.0,1.5
   vt = @inferred virtual_temp(Tair,pressure,VPD)  
   # regression test
   @test ≈(vt, 26.9, atol =0.1)
 end
 
 @testset "kinematic_viscosity" begin
-  Tair,pressure = 25,100
+  Tair,pressure = 25.0,100.0
   vis = @inferred kinematic_viscosity(Tair,pressure)
   # regression test
   @test ≈(vis, 1.58e-5, atol =1e-7)
@@ -41,6 +41,7 @@ end
   VPD = 1.5
   Tair = 25.0
   accuracy = 1e-2
+  #@descend_code_warntype VPD_to_e(VPD,Tair)
   ea = @inferred VPD_to_e(VPD,Tair)
   Td = @inferred dew_point_from_e(ea,accuracy = accuracy)                
   @test ≈(ea, Esat_from_Tair(Td), atol = accuracy)
@@ -52,7 +53,7 @@ end
 @testset "wetbulb temperature" begin
   Tair = 25.0
   VPD = 1.0
-  pressure = 100
+  pressure = 100.0
   accuracy = 1e-2
   #
   gamma  = @inferred psychrometric_constant(Tair,pressure)

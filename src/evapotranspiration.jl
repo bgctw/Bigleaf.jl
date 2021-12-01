@@ -22,7 +22,7 @@ the Penman-Monteith equation with a prescribed surface conductance.
 optional:
 - `G=0.0`:         Ground heat flux (W m-2). Defaults to zero.
 - `S=0.0`:         Sum of all storage fluxes (W m-2) . Defaults to zero.
-- `constants=`[`bigleaf_constants`](@ref)`()`: physical constants (cp, eps, Rd, Rgas)
+- `constants=`[`BigleafConstants`](@ref)`()`: physical constants (cp, eps, Rd, Rgas)
 for `PriestleyTaylor`:
 - `alpha = 1.26`:   Priestley-Taylor coefficient
 for PenmanMonteith:
@@ -130,7 +130,7 @@ end
 function potential_ET(::Val{:PriestleyTaylor}, Tair, pressure, Rn, G, S;
   alpha=1.26,
   Esat_formula=Val(:Sonntag_1990),
-  constants=bigleaf_constants())
+  constants=BigleafConstants())
   #
   gamma  = psychrometric_constant(Tair,pressure;constants)
   Delta  = Esat_from_Tair_deriv(Tair; Esat_formula, constants)
@@ -155,13 +155,13 @@ end
 function potential_ET(::Val{:PenmanMonteith}, Tair, pressure, Rn, VPD, Ga_h, G, S;
   Gs_pot=0.6,
   Esat_formula=Val(:Sonntag_1990),
-  constants=bigleaf_constants()
+  constants=BigleafConstants()
   )
   gamma  = psychrometric_constant(Tair,pressure;constants)
   Delta  = Esat_from_Tair_deriv(Tair; Esat_formula = Esat_formula,constants)
   Gs_pot = mol_to_ms(Gs_pot,Tair,pressure;constants)
   rho    = air_density(Tair,pressure;constants)
-  LE_pot = (Delta * (Rn - G - S) + rho * constants[:cp] * VPD * Ga_h) / 
+  LE_pot = (Delta * (Rn - G - S) + rho * oftype(VPD,constants.cp) * VPD * Ga_h) / 
     (Delta + gamma * (1 + Ga_h / Gs_pot))
   ET_pot = LE_to_ET(LE_pot,Tair)
   (ET_pot = ET_pot, LE_pot = LE_pot)
@@ -247,7 +247,7 @@ optional :
 - `G=0`       : Ground heat flux (W m-2)
 - `S=0`       : Sum of all storage fluxes (W m-2)
 - `Esat_formula=Val(:Sonntag_1990)`: formula used in [`Esat_from_Tair`](@ref)
-- `constants=`[`bigleaf_constants`](@ref)`()`: pysical constants (cp, eps)
+- `constants=`[`BigleafConstants`](@ref)`()`: pysical constants (cp, eps)
                  
 # Details
 Total evapotranspiration can be written in the form (Jarvis & McNaughton 6):
@@ -300,13 +300,13 @@ end
 
 function equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn, G, S;
   Esat_formula=Val(:Sonntag_1990),
-  constants=bigleaf_constants())
+  constants=BigleafConstants())
   # 
   rho    = air_density(Tair, pressure; constants)
   gamma  = psychrometric_constant(Tair, pressure; constants)
   Delta  = Esat_from_Tair_deriv(Tair; Esat_formula = Esat_formula, constants)
   LE_eq  = (Delta * (Rn - G - S)) / (gamma + Delta)
-  LE_imp = (rho * constants[:cp] * Gs * VPD) / gamma
+  LE_imp = (rho * constants.cp * Gs * VPD) / gamma
   #
   ET_imp = LE_to_ET(LE_imp,Tair)
   ET_eq  = LE_to_ET(LE_eq,Tair)

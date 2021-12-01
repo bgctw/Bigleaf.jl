@@ -78,7 +78,7 @@
 function decoupling(data,Tair="Tair",pressure="pressure",Ga="Ga_h",Gs="Gs_ms",
                        approach=c("Jarvis&McNaughton_1986","Martin_1989"),
                        LAI,Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
-                       constants=bigleaf_constants())
+                       constants=BigleafConstants())
   
   approach    = match_arg(approach)
   
@@ -137,11 +137,11 @@ end
 #' longwave_conductance(25,seq(1,8,1))            
 #'                  
 #' @export             
-function longwave_conductance(Tair,LAI,constants=bigleaf_constants())
+function longwave_conductance(Tair,LAI,constants=BigleafConstants())
   
-  Tair = Tair + constants[:Kelvin]
+  Tair = Tair + constants.Kelvin
   
-  Gr = 4 * constants[:sigma] * Tair^3 * LAI / constants[:cp]
+  Gr = 4 * constants.sigma] * Tair^3 * LAI / constants[:cp
   
   return(Gr)
 end

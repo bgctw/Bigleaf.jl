@@ -197,7 +197,7 @@ function aerodynamic_conductance(data,Tair="Tair",pressure="pressure",wind="wind
                                     zr,zh,d,z0m=nothing,Dl,N=2,fc=nothing,LAI,Cd=0.2,hs=0.01,wind_profile=false,
                                     stab_correction=true,stab_formulation=c(Val(:Dyer_1970),Val(:Businger_1971)),
                                     Gb_model=c(Val(:Thom_1972),Val(:Choudhury_1988),Val(:Su_2001),Val(:constant_kB1)),
-                                    kB_h=nothing,Sc=nothing,Sc_name=nothing,constants=bigleaf_constants())
+                                    kB_h=nothing,Sc=nothing,Sc_name=nothing,constants=BigleafConstants())
   
   Gb_model         = match_arg(Gb_model)
   stab_formulation = match_arg(stab_formulation)
@@ -239,7 +239,7 @@ elseif (Gb_model == Val(:constant_kB1))
     if(isnothing(kB_h))
       stop("value of kB-1 has to be specified if Gb_model is set to 'constant_kB-1'!")
 else 
-      Rb_h = kB_h/(constants[:k] * ustar)
+      Rb_h = kB_h/(constants.k * ustar)
       Gb_h = 1/Rb_h
       
       if (!isnothing(Sc) | !isnothing(Sc_name))
@@ -251,8 +251,8 @@ end
 end
 end
       
-      Sc   = c(constants[:Sc_CO2],Sc)
-      Gb_x = DataFrame(lapply(Sc,function(x) Gb_h / (x/constants[:Pr])^0.67))
+      Sc   = c(constants.Sc_CO2,Sc)
+      Gb_x = DataFrame(lapply(Sc,function(x) Gb_h / (x/constants.Pr)^0.67))
       colnames(Gb_x) = paste0("Gb_",c("CO2",Sc_name))
       
 end
@@ -286,11 +286,11 @@ else
              Choose 'stab_correction = false' if no stability correction should be applied.")
 end
       
-      Ra_m  = pmax((log((zr - d)/z0m) - psi_h),0) / (constants[:k]*ustar)
+      Ra_m  = pmax((log((zr - d)/z0m) - psi_h),0) / (constants.k*ustar)
       
 else 
         
-        Ra_m  = pmax((log((zr - d)/z0m)),0) / (constants[:k]*ustar)
+        Ra_m  = pmax((log((zr - d)/z0m)),0) / (constants.k*ustar)
         zeta = psi_h = rep(NA_integer_,length=length(Ra_m))
         
 end

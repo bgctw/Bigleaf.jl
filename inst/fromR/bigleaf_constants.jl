@@ -48,7 +48,7 @@
 #'
 #'          the value of a constant can be returned by calling:
 #'
-#'          `bigleaf_constants()$*name_of_constant*`
+#'          `bigleaf_constants$*name_of_constant*`
 #'
 #'          To permanently change the constants contained within this function (which
 #'          makes sense for some of them, e.g. for the von Karman constant),

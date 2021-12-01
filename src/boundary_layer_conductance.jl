@@ -60,7 +60,7 @@ Based on boundary layer conductance for heat, compute derived quantities.
 # Arguments
 - `Gb_h` : Boundary layer conductance for heat transfer (m s-1)
 - `df`   : DataFrame with above columns
-- `constants=`[`bigleaf_constants`](@ref)`()`: entries `Sc_CO2` and `Pr`
+- `constants=`[`BigleafConstants`](@ref)`()`: entries `Sc_CO2` and `Pr`
 
 # Value
 NamedTuple with entries
@@ -69,13 +69,17 @@ NamedTuple with entries
 - `kB_h`: kB-1 parameter for heat transfer
 - `Gb_CO2`: Boundary layer conductance for CO2 (m s-1). 
 """
-function compute_Gb_quantities(Gb_h, ustar; constants=bigleaf_constants())
+function compute_Gb_quantities(Gb_h, ustar; constants=BigleafConstants())
+  (ismissing(Gb_h) || ismissing(ustar)) && return(
+    (Rb_h=missing, Gb_h=missing, kB_h=missing, Gb_CO2=missing))
   Rb_h = 1/Gb_h
-  kB_h = Rb_h*constants[:k]*ustar
-  Gb_CO2 = Gb_h / (constants[:Sc_CO2]/constants[:Pr])^0.67
+  kB_h = Rb_h*oftype(ustar,constants.k)*ustar
+  #Gb_CO2 = Gb_h / ((Gb_h,constants.Sc_CO2/constants.Pr)^0.67)
+  Gb_CO2 = Gb_h / 
+    ((oftype(Gb_h,constants.Sc_CO2)/oftype(Gb_h,constants.Pr))^oftype(Gb_h,0.67))
   (;Rb_h, Gb_h, kB_h, Gb_CO2)
 end
-function compute_Gb_quantities!(df::AbstractDataFrame; constants=bigleaf_constants())
+function compute_Gb_quantities!(df::AbstractDataFrame; constants=BigleafConstants())
   ft = (args...) -> compute_Gb_quantities.(args...; constants)
   transform!(df, SA[:Gb_h, :ustar] => ft => AsTable)
 end
@@ -93,7 +97,7 @@ compute boundary layer conductance for additional quantities for given Schmidt-n
                additional conductances to be calculated
 - `df`       : DataFrame to add output columns               
 optional
-- `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with entries 
+- `constants=`[`BigleafConstants`](@ref)`()`: Dictionary with entries 
   - `Pr` - Prandtl number 
 
 # Details
@@ -128,9 +132,11 @@ function add_Gb(Gb_h::Union{Missing,Number}, Sc::Vararg{Pair,N}; kwargs...) wher
   Scn, Scv = get_names_and_values("Gb_", Sc...)
   add_Gb_(Gb_h, Scn, Scv; kwargs...)
 end
-function add_Gb_(Gb_h::Union{Missing,Number}, Scn::NTuple{N,Symbol}, Scv::NTuple{N}; 
-  constants=bigleaf_constants()) where N 
-  Gbxv = @. Gb_h / (Scv/constants[:Pr])^0.67
+function add_Gb_(Gb_h::FTM, Scn::NTuple{N,Symbol}, Scv::NTuple{N}; 
+  constants=BigleafConstants()) where {N, FTM<:Union{Missing,Number}}
+  #Gbxv = @. Gb_h / ((Scv/constants.Pr)^0.67)
+  ismissing(Gb_h) && return(NamedTuple{Scn}(ntuple(_->missing,N)))
+  Gbxv = @. Gb_h / ((Scv/FTM(constants.Pr))^FTM(0.67))
   Gbx = NamedTuple{Scn}(Gbxv)
 end
 function get_names_and_values(prefix::AbstractString, Sc::Vararg{Pair,N}) where N
@@ -151,7 +157,7 @@ for heat transfer based on a simple ustar (friction velocity) dependency.
 # Arguments  
 - `ustar`     : Friction velocity (m s-1)
 - `df`        : DataFrame with above variables
-- `constants=`[`bigleaf_constants`](@ref)`()`
+- `constants=`[`BigleafConstants`](@ref)`()`
  
 # Details
 The empirical equation for Rb suggested by Thom 1972 is:
@@ -177,7 +183,7 @@ compute_Gb!(df, Val(:Thom_1972))
 propertynames(df) == [:ustar, :Gb_h]
 ``` 
 """
-function Gb_Thom(ustar::Union{Missing,Number}; constants=bigleaf_constants())
+function Gb_Thom(ustar::Union{Missing,Number}; constants=BigleafConstants())
   Rb_h = 6.2*ustar^-0.667
   Gb_h = 1/Rb_h
 end
@@ -192,15 +198,16 @@ Boundary Layer Conductance using constant kB-1 value for heat transfer.
 - `ustar`     : Friction velocity (m s-1)
 - `df`        : DataFrame with above variables
 - `kB_h`      : kB-1 value for heat transfer
-- `constants=`[`bigleaf_constants`](@ref)`()`
+- `constants=`[`BigleafConstants`](@ref)`()`
  
 # Details
 Rb_h computed by ``kB_h/(k * ustar)``, where k is the von Karman constant.
 """
-function Gb_constant_kB1(ustar, kB_h; constants=bigleaf_constants())
-  Rb_h = kB_h/(constants[:k] * ustar)
+function Gb_constant_kB1(ustar, kB_h; constants=BigleafConstants())
+  ismissing(ustar) && return(missing)
+  Rb_h = kB_h/(oftype(ustar,constants.k) * ustar)
   Gb_h = 1/Rb_h
-  # Gb_CO2 = Gb_h / (constants[:Sc_CO2]/constants[:Pr])^0.67
+  # Gb_CO2 = Gb_h / (constants.Sc_CO2]/constants[:Pr)^0.67
   # (;Rb_h, Gb_h, kB_h, Gb_CO2)
 end
   
@@ -216,7 +223,7 @@ for heat transfer according to Choudhury & Monteith 1988.
 - `leafwidth`        : Leaf width (m)
 - `LAI`              : One-sided leaf area index
 - `wind_zh`          : Wind speed at canopy heihgt (m s-1), see [`wind_profile`](@ref) 
-- `constants=`[`bigleaf_constants`](@ref)`()`
+- `constants=`[`BigleafConstants`](@ref)`()`
                         
 # Value
 see [`compute_Gb!`](@ref)
@@ -247,19 +254,16 @@ However, here (if not explicitly given) it is estimated by [`wind_profile`](@ref
   A preliminary multiple resistance routine for deriving dry deposition velocities
   from measured quantities. Water, Air, and Soil Pollution 36, 311-330.
 """
-function Gb_Choudhury(; leafwidth, LAI, wind_zh, constants=bigleaf_constants())
-  alpha   = 4.39 - 3.97*exp(-0.258*LAI)
+function Gb_Choudhury(; leafwidth, LAI, wind_zh::FT, constants=BigleafConstants()) where FT
+  FT == Missing && return(missing)
+  alpha   = FT(4.39) - FT(3.97)*exp(FT(-0.258)*FT(LAI)) 
   # (ismissing(wind_zh) || isnothing(wind_zh)) && return(
   #   (Rb_h=missing, Gb_h=missing, kB_h=missing, Gb_CO2=missing))
-  wind_zh = max(0.01, wind_zh) ## avoid zero windspeed
-  Gb_h = LAI*((0.02/alpha)*sqrt(wind_zh/leafwidth)*(1-exp(-alpha/2)))
-  # Rb_h = 1/Gb_h
-  # kB_h = Rb_h*constants[:k]*ustar
-  # Gb_CO2 = Gb_h / (constants[:Sc_CO2]/constants[:Pr])^0.67
-  # (;Rb_h, Gb_h, kB_h, Gb_CO2)
+  wind_zh = max(FT(0.01), wind_zh) ## avoid zero windspeed
+  Gb_h = FT(LAI)*((FT(0.02)/alpha)*sqrt(wind_zh/FT(leafwidth))*(FT(1)-exp(-FT(alpha)/FT(2))))
 end
 function Gb_Choudhury!(
-  df::AbstractDataFrame; leafwidth, LAI, wind_zh, constants=bigleaf_constants()
+  df::AbstractDataFrame; leafwidth, LAI, wind_zh, constants=BigleafConstants()
   )
   # if isnothing(wind_zh)
   #   wind_zh = wind_profile(zh, df, d, z0m; zh, zr, stab_formulation, constants)
@@ -267,7 +271,7 @@ function Gb_Choudhury!(
   # Broadcasting does not work over keyword arguments, need to pass as positional
   fwind(wind_zh, leafwidth, LAI; kwargs...) = Gb_Choudhury(;wind_zh, leafwidth, LAI, kwargs...)
   ft = () -> fwind.(wind_zh, leafwidth, LAI; constants)
-  transform!(df, [] => ft => :Gb_h)
+  transform!(df, [] => ft => :Gb_h) 
 end
 
 """
@@ -288,7 +292,7 @@ formulation according to Su et al. 2001.
 - `N`         : Number of leaf sides participating in heat exchange (defaults to 2)
 - `Cd`        : Foliage drag coefficient (-)
 - `hs`        : Roughness height of the soil (m)
-- `constants=`[`bigleaf_constants`](@ref)`()`
+- `constants=`[`BigleafConstants`](@ref)`()`
 
 # Value
 see [`compute_Gb!`](@ref)
@@ -331,7 +335,8 @@ to Su et al. 2001:
 
 ```jldoctest; output = false
 using DataFrames
-df = DataFrame(Tair=25,pressure=100,wind=[3,4,5],ustar=[0.5,0.6,0.65],H=[200,230,250]) 
+df = DataFrame(
+  Tair=25.0,pressure=100.0,wind=[3.0,4,5],ustar=[0.5,0.6,0.65],H=[200.0,230,250])
 zh = 25; zr = 40
 z0m = roughness_parameters(
   Val(:wind_profile), df.ustar, df.wind, df.Tair, df.pressure, df.H; zh, zr).z0m 
@@ -346,22 +351,24 @@ compute_Gb!(df,Val(:Su_2001); wind_zh, Dl=0.1,LAI=1.5)
 true
 ``` 
 """
-function Gb_Su(Tair,pressure,ustar; wind_zh, Dl, fc, N=2, Cd=0.2, hs=0.01,
-  constants=bigleaf_constants()
-  )
-  wind_zh = max(0.01,wind_zh) ## avoid zero windspeed
+function Gb_Su(Tair,pressure,ustar::FT; wind_zh, Dl, fc, N=2, Cd=0.2, hs=0.01,
+  constants=BigleafConstants() 
+  ) where FT
+  FT == Missing && return(missing)
+  wind_zh = max(FT(0.01),FT(wind_zh)) ## avoid zero windspeed
   v   = kinematic_viscosity(Tair,pressure;constants)
-  Re  = Reynolds_Number(Tair,pressure,ustar,hs; constants)
-  kBs = 2.46 * (Re)^0.25 - log(7.4)
-  Reh = Dl * wind_zh / v
-  Ct  = 1*constants[:Pr]^-0.6667*Reh^-0.5*N
+  Re  = Reynolds_Number(Tair,pressure,ustar,FT(hs); constants)
+  kBs = FT(2.46) * (Re)^FT(0.25) - log(FT(7.4))
+  Reh = FT(Dl) * wind_zh / v
+  #Ct  = 1*(constants.Pr^-0.6667)*Reh^-0.5*N
+  Ct  = 1*(FT(constants.Pr)^-FT(0.6667)) * Reh^-FT(0.5) * FT(N)
   #
-  kB_h = (constants[:k]*Cd)/(4*Ct*ustar/wind_zh)*fc^2 + kBs*(1 - fc)^2
-  Rb_h = kB_h/(constants[:k]*ustar)
+  kB_h = (FT(constants.k)*FT(Cd))/(4*Ct*ustar/wind_zh)*FT(fc)^2 + kBs*(1 - FT(fc))^2
+  Rb_h = kB_h/(FT(constants.k)*ustar)
   Gb_h = 1/Rb_h
 end
 function Gb_Su!(df::AbstractDataFrame; wind_zh, Dl, fc=nothing, 
-  N=2, Cd=0.2, hs=0.01, LAI, constants=bigleaf_constants()
+  N=2, Cd=0.2, hs=0.01, LAI, constants=BigleafConstants()
   )
   if isnothing(fc)
     isnothing(LAI) && error("one of 'fc' or 'LAI' must be provided")
@@ -371,7 +378,9 @@ function Gb_Su!(df::AbstractDataFrame; wind_zh, Dl, fc=nothing,
     "need to provide keyword argument Dl with :Su_2001 method")
   inputcols = SA[:Tair,:pressure,:ustar]
   # Broadcasting does not work over keyword arguments, need to pass as positional
-  fwind(wind_zh, Dl, fc, N, Cd, hs, args...; kwargs...) = Gb_Su(args...; wind_zh, Dl, fc, N, Cd, hs, kwargs...)
+  fwind = (wind_zh, Dl, fc, N, Cd, hs, args...; kwargs...) -> Gb_Su(args...; 
+    wind_zh, Dl, fc=oftype(wind_zh,fc), N, Cd=oftype(wind_zh,Cd), hs=oftype(wind_zh,hs), 
+    kwargs...)
   ft = (args...) -> fwind.(wind_zh, Dl, fc, N, Cd, hs, args...; constants)
   transform!(df, inputcols => ft => :Gb_h)
 end

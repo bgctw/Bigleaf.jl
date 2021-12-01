@@ -56,13 +56,13 @@
 #' 
 """
 """
-function Gb_Thom(ustar,Sc=nothing,Sc_name=nothing,constants=bigleaf_constants())
+function Gb_Thom(ustar,Sc=nothing,Sc_name=nothing,constants=BigleafConstants())
   
   check_input(nothing,ustar)
   
   Rb_h = 6.2*ustar^-0.667
   Gb_h = 1/Rb_h
-  kB_h = Rb_h*constants[:k]*ustar
+  kB_h = Rb_h*constants.k*ustar
   
   if (!isnothing(Sc) | !isnothing(Sc_name))
     if (length(Sc) != length(Sc_name))
@@ -73,8 +73,8 @@ end
 end
 end
   
-  Sc   = c(constants[:Sc_CO2],Sc)
-  Gb_x = DataFrame(lapply(Sc,function(x) Gb_h / (x/constants[:Pr])^0.67))
+  Sc   = c(constants.Sc_CO2,Sc)
+  Gb_x = DataFrame(lapply(Sc,function(x) Gb_h / (x/constants.Pr)^0.67))
   colnames(Gb_x) = paste0("Gb_",c("CO2",Sc_name))
   
   return(DataFrame(Gb_h,Rb_h,kB_h,Gb_x))
@@ -174,7 +174,7 @@ end
 #' @export                                                                                                                                                                                                                                                                                    
 function Gb_Choudhury(data,Tair="Tair",pressure="pressure",wind="wind",ustar="ustar",H="H",
                          leafwidth,LAI,zh,zr,d,z0m=nothing,stab_formulation=c(Val(:Dyer_1970),Val(:Businger_1971)),
-                         Sc=nothing,Sc_name=nothing,constants=bigleaf_constants())
+                         Sc=nothing,Sc_name=nothing,constants=BigleafConstants())
   
   stab_formulation = match_arg(stab_formulation)
   
@@ -207,10 +207,10 @@ end
   
   Gb_h = LAI*((0.02/alpha)*sqrt(wind_zh/leafwidth)*(1-exp(-alpha/2)))
   Rb_h = 1/Gb_h
-  kB_h = Rb_h*constants[:k]*ustar
+  kB_h = Rb_h*constants.k*ustar
   
-  Sc   = c(constants[:Sc_CO2],Sc)
-  Gb_x = DataFrame(lapply(Sc,function(x) Gb_h / (x/constants[:Pr])^0.67))
+  Sc   = c(constants.Sc_CO2,Sc)
+  Gb_x = DataFrame(lapply(Sc,function(x) Gb_h / (x/constants.Pr)^0.67))
   colnames(Gb_x) = paste0("Gb_",c("CO2",Sc_name))
   
   
@@ -336,7 +336,7 @@ end
 function Gb_Su(data,Tair="Tair",pressure="pressure",ustar="ustar",wind="wind",
                   H="H",zh,zr,d,z0m=nothing,Dl,fc=nothing,LAI=nothing,N=2,Cd=0.2,hs=0.01,
                   stab_formulation=c(Val(:Dyer_1970),Val(:Businger_1971)),
-                  Sc=nothing,Sc_name=nothing,constants=bigleaf_constants())
+                  Sc=nothing,Sc_name=nothing,constants=BigleafConstants())
   
   stab_formulation = match_arg(stab_formulation)
   
@@ -365,10 +365,10 @@ end
   Re  = Reynolds_Number(Tair,pressure,ustar,hs,constants)
   kBs = 2.46 * (Re)^0.25 - log(7.4)
   Reh = Dl * wind_zh / v
-  Ct  = 1*constants[:Pr]^-0.6667*Reh^-0.5*N
+  Ct  = 1*constants.Pr^-0.6667*Reh^-0.5*N
   
-  kB_h = (constants[:k]*Cd)/(4*Ct*ustar/wind_zh)*fc^2 + kBs*(1 - fc)^2
-  Rb_h = kB_h/(constants[:k]*ustar)
+  kB_h = (constants.k*Cd)/(4*Ct*ustar/wind_zh)*fc^2 + kBs*(1 - fc)^2
+  Rb_h = kB_h/(constants.k*ustar)
   Gb_h = 1/Rb_h
   
   if (!isnothing(Sc) | !isnothing(Sc_name))
@@ -380,8 +380,8 @@ end
 end
 end
   
-  Sc   = c(constants[:Sc_CO2],Sc)
-  Gb_x = DataFrame(lapply(Sc,function(x) Gb_h / (x/constants[:Pr])^0.67))
+  Sc   = c(constants.Sc_CO2,Sc)
+  Gb_x = DataFrame(lapply(Sc,function(x) Gb_h / (x/constants.Pr)^0.67))
   colnames(Gb_x) = paste0("Gb_",c("CO2",Sc_name))
   
   return(DataFrame(Gb_h,Rb_h,kB_h,Gb_x))

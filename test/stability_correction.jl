@@ -1,7 +1,7 @@
 @testset "Monin_Obukhov_length" begin
     datetime, ustar, Tair, pressure, H = tha48[24,Cols(:datetime, :ustar, :Tair, :pressure, :H)]
     MOL24 = @inferred Monin_Obukhov_length(Tair, pressure, ustar, H)
-    MOL24 = @inferred Monin_Obukhov_length(Tair, pressure, ustar, H; constants = bigleaf_constants())
+    MOL24 = @inferred Monin_Obukhov_length(Tair, pressure, ustar, H; constants =BigleafConstants())
     @test ≈(MOL24, -104.3, rtol = 1/1000)
     #
     df = copy(tha48)
@@ -59,7 +59,7 @@ end
 
 @testset "stability_correction metvars" begin
     z=40;d=15
-    df = DataFrame(Tair=25, pressure=100, ustar=0.2:0.1:1.0, H=40:20:200)
+    df = DataFrame(Tair=25.0, pressure=100.0, ustar=0.2:0.1:1.0, H=40:20.0:200)
     df1 = df[1,:]
     zeta1 = stability_parameter(z,d,df1.Tair, df1.pressure, df1.ustar, df1.H)
     res1 = @inferred stability_correction(z,d, df1.Tair, df1.pressure, df1.ustar, df1.H) 
@@ -68,7 +68,7 @@ end
 
 @testset "stability_correction DataFrame variant" begin
     z=40;d=15
-    dfo = DataFrame(Tair=25, pressure=100, ustar=0.2:0.1:1.0, H=40:20:200)
+    dfo = DataFrame(Tair=25.0, pressure=100.0, ustar=0.2:0.1:1.0, H=40:20.0:200)
     df = copy(dfo)
     res = stability_correction(df; z, d)
     # for type stability, use columntable(df)
@@ -104,3 +104,57 @@ end
     @test df3.psi_h[1] != df.psi_h[1]
     @test DataFrame(res) == df3[!, (end-1):end]
 end
+
+@testset "stability_correction DataFrame variant Float32" begin
+    z=40;d=15
+    dfo = DataFrame(Tair=25.0, pressure=100.0, ustar=0.2:0.1:1.0, H=40:20.0:200)
+    float_cols = names(dfo, All())
+    dfo = transform(dfo,  float_cols .=> ByRow(passmissing(Float32)) .=> float_cols)
+    
+    df = copy(dfo)
+    res = stability_correction(df; z, d)
+    @test eltype(res.psi_h) == Float32
+    # for type stability, use columntable(df)
+    stability_correction!(df; z, d)
+    propertynames(df)[(end-1):end] == SA[:psi_h, :psi_m]
+    @test eltype(df.psi_h) == Float32
+    @test DataFrame(res) == df[!, (end-1):end]
+    #
+    dfm = allowmissing(dfo)
+    dfm.ustar[1] = missing
+    res = stability_correction(
+        dfm; z, d, stab_formulation = Val(:no_stability_correction))
+    @test eltype(res.psi_h) == Float32
+    stability_correction!(
+        dfm; z, d, stab_formulation = Val(:no_stability_correction))
+    propertynames(dfm)[(end-1):end] == SA[:psi_h, :psi_m]
+    @test all(iszero.(dfm.psi_h))
+    @test all(iszero.(dfm.psi_m))
+    #@test eltype(dfm.psi_h) == typeof(z) #Float32
+    @test DataFrame(res) == dfm[!, (end-1):end]
+    #
+    # test specifying zeta instead of z and d
+    df2 = copy(dfo)
+    stability_parameter!(df2; z, d) # adds zeta
+    stability_correction!(df2, zeta=df2.zeta)
+    @test eltype(df2.psi_h) == Float32
+    @test df2.psi_h == df.psi_h
+    @test df2.psi_m == df.psi_m
+    #
+    # test specifying zr as a vector
+    df3 = copy(dfo)
+    df3[!,:zi] .= z
+    df3.zi[1] = z/2
+    df3_before = copy(df3)
+    res = stability_correction(df3; z=df3.zi, d)
+    @test df3 == df3_before
+    @test eltype(res.psi_h) == Float32
+    @inferred stability_correction!(df3; z=df3.zi, d)
+    @test eltype(df3.psi_h) == Float32
+    @test df3.psi_h[2:end] == df.psi_h[2:end]
+    @test df3.psi_h[1] != df.psi_h[1]
+    @test DataFrame(res) == df3[!, (end-1):end]
+end
+
+
+

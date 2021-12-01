@@ -9,7 +9,7 @@ calculates the Roughness Reynolds Number.
 - `ustar`     : Friction velocity (m s-1)
 - `z0m`       : Roughness length (m)
 optional
-- `constants=`[`bigleaf_constants`](@ref)`()`
+- `constants=`[`BigleafConstants`](@ref)`()`
                  
 # Details
 The Roughness Reynolds Number is calculated as in Massman 1999a:     
@@ -23,14 +23,14 @@ Massman, W_J., 1999a: A model study of kB H- 1 for vegetated surfaces using
 'localized near-field' Lagrangian theory. Journal of Hydrology 223, 27-43.
 
 ```jldoctest; output = false
-Tair,pressure,ustar,z0m = 25,100,0.5,0.5
+Tair,pressure,ustar,z0m = 25.0,100.0,0.5,0.5
 R = Reynolds_Number(Tair,pressure,ustar,z0m)                             
 ≈(R, 15870, rtol=1e-3) 
 # output
 true
 ``` 
 """
-function Reynolds_Number(Tair,pressure,ustar,z0m;constants=bigleaf_constants())
+function Reynolds_Number(Tair,pressure,ustar,z0m;constants=BigleafConstants())
   v  = kinematic_viscosity(Tair,pressure;constants)
   Re = z0m*ustar/v
 end
@@ -52,7 +52,7 @@ and roughness length for momentum (z0m).
              
 # Arguments              
 - `zh`        : Vegetation height (m)          
-- `constants=`[`bigleaf_constants`](@ref)`()`: 
+- `constants=`[`BigleafConstants`](@ref)`()`: 
 
 By canopy height:
 - `frac_d`    : Fraction of displacement height on canopy height (-)
@@ -131,7 +131,9 @@ roughness_parameters(Val(:canopy_height_LAI),zh,5)
 roughness_parameters(Val(:canopy_height_LAI),zh,2)   
    
 # fix d to 0.7*zh and estimate z0m from the wind profile
-df = DataFrame(Tair=[25,25,25],pressure=100,wind=[3,4,5],ustar=[0.5,0.6,0.65],H=200)
+df = DataFrame(
+  Tair=[25.0,25.0,25.0],pressure=100.0,wind=[3.0,4.0,5.0],
+  ustar=[0.5,0.6,0.65],H=200.0)
 roughness_parameters(Val(:wind_profile),df;zh,zr=40,d=0.7*zh)
 
 # assume d = 0.8*zh
@@ -157,21 +159,25 @@ function roughness_parameters(::Val{:canopy_height_LAI}, zh, LAI;
   (;d, z0m, z0m_se)
 end
 
-function roughness_parameters(::Val{:wind_profile}, ustar::AbstractVector, wind, psi_m; 
-  zh, zr, d = 0.7*zh, constants=bigleaf_constants()
-  )
-  z0m_all = allowmissing(@. (zr - d) * exp(-constants[:k]*wind / ustar - psi_m))
+function roughness_parameters(::Val{:wind_profile}, ustar::AbstractVector{FT}, wind, psi_m; 
+  zh, zr, d = 0.7*zh, constants=BigleafConstants()
+  ) where FT
+  FT == Missing && return((d = d, z0m = missing, z0m_se = missing))
+  z0m_all = allowmissing(@. (nonmissingtype(FT)(zr) - nonmissingtype(FT)(d)) * 
+    exp(-nonmissingtype(FT)(constants.k)*wind / ustar - psi_m))
   #z0m_all[(z0m_all .> zh)] .= missing # problems with missings
   replace!(x -> !ismissing(x) && x > zh ? missing : x, z0m_all)
   nval = sum(.!ismissing.(z0m_all))
   z0m    = median(skipmissing(z0m_all))
-  z0m_se = constants[:se_median] * (std(skipmissing(z0m_all)) / sqrt(nval))
+  z0m_se0 = (std(skipmissing(z0m_all)) / sqrt(nval))
+  # http://influentialpoints.com/Training/standard_error_of_median.htm
+  z0m_se = oftype(z0m_se0,constants.se_median) * z0m_se0
   (;d, z0m, z0m_se)
 end
 
 function roughness_parameters(method::Val{:wind_profile}, 
   ustar::AbstractVector, wind, Tair, pressure, H; zh, zr, d = 0.7*zh,
-  stab_formulation=Val(:Dyer_1970), constants=bigleaf_constants(), kwargs...
+  stab_formulation=Val(:Dyer_1970), constants=BigleafConstants(), kwargs...
   )
   # psi_m = Tables.Columns(stability_correction.(
   #   zr, d, Tair, pressure, ustar, H; stab_formulation, constants)).psi_m
@@ -212,7 +218,7 @@ measurements of wind speed.
 - `ustar`     : Friction velocity (m s-1)
 - `d`         : Zero-plane displacement height (-)
 - `z0m`       : Roughness length (m)
-- `constants=`[`bigleaf_constants`](@ref)`()`
+- `constants=`[`BigleafConstants`](@ref)`()`
 For DataFrame variant with supplying stability_parameter
 - `df`:         : DataFrame with columns 
   - `ustar`     : Friction velocity (m s-1)
@@ -257,7 +263,8 @@ wind speed at given height `z`.
 ```jldoctest; output = false
 using DataFrames
 heights = 18:2:40  # heights above ground for which to calculate wind speed
-df = DataFrame(Tair=25,pressure=100,wind=[3,4,5],ustar=[0.5,0.6,0.65],H=[200,230,250]) 
+df = DataFrame(
+  Tair=25.0,pressure=100.0,wind=[3.0,4,5],ustar=[0.5,0.6,0.65],H=[200.0,230,250]) 
 zr=40;zh=25;d=16
 # z0m and MOL are independent of height, compute before
 MOL = Monin_Obukhov_length.(df.Tair, df.pressure, df.ustar, df.H)
@@ -275,20 +282,21 @@ nothing
 ``` 
 """  
 function wind_profile(
-  z::Number, ustar::Union{Missing,Number}, d, z0m, psi_m; constants=bigleaf_constants()
-  )
-  wind_heights = max(0,(ustar / constants[:k]) * (log(max(0,(z - d)) / z0m) - psi_m))
+  z::Number, ustar::Union{Missing,FT}, d, z0m, psi_m; constants=BigleafConstants()
+  ) where FT<:Number
+  wind_heights = max(FT(0),(ustar / FT(constants.k)) * (log(max(FT(0),(FT(z) -FT(d))) / FT(z0m)) - psi_m))
+  wind_heights
 end
 
 function wind_profile(z::Number, ustar::Union{Missing,Number}, d, z0m, Tair,pressure,H,
-  stab_formulation=Val(:Dyer_1970), constants=bigleaf_constants())
+  stab_formulation=Val(:Dyer_1970), constants=BigleafConstants())
   psi_m = stability_correction(
     z,d, Tair,pressure,ustar,H; stab_formulation, constants).psi_m
   wind_profile(z, ustar, d, z0m, psi_m)
 end
 
 function wind_profile(z::Number, df::DFTable, d, z0m; psi_m = nothing, MOL = nothing,
-  stab_formulation = Val(:Dyer_1970), constants = bigleaf_constants()
+  stab_formulation = Val(:Dyer_1970), constants =BigleafConstants()
   )
   if isnothing(psi_m)
     if isnothing(MOL) 

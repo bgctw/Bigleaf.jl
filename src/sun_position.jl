@@ -8,7 +8,7 @@ Compute the Sun position at given time and observer coordinates in horizontal co
 - `lat`, `long`: latitude and longitude in degree
 
 # Value
-`NamedTuple`: sun position with entries
+`NamedTuple`: sun position with entries of the same type as `lat` and `long`
 - `altitude`: angle above the horizon [rad].
 - `azimuth`: angle ange the horizon plane eastwards of north [rad]
 - `hourangle`: [rad] as output by AstroLib.eq2hor
@@ -18,14 +18,14 @@ Compute the Sun position at given time and observer coordinates in horizontal co
 function calc_sun_position_hor(datetime::ZonedDateTime, lat, long)
   datetimeUTC = DateTime(datetime,UTC)
   calc_sun_position_hor(datetimeUTC, lat, long)
-end,
-function calc_sun_position_hor(datetime::DateTime, lat, long)
-    deg2rad = π/180
-    jd = datetime2julian(datetime)
+end
+function calc_sun_position_hor(datetime::DateTime, lat::FT, long::FT) where FT
+    deg2rad = FT(π/180)
+    jd = FT(datetime2julian(datetime))
     pos_eq = calc_sun_position_MOD(jd)
     # precession is already account for in MOD
     pos_hor = eq2hor(pos_eq.α/deg2rad, pos_eq.δ/deg2rad, jd, lat, long; precession = false) .* deg2rad
-    (altitude = pos_hor[1], azimuth = pos_hor[2], hourangle = pos_hor[3])
+    (altitude = FT(pos_hor[1]), azimuth = FT(pos_hor[2]), hourangle = FT(pos_hor[3]))
 end
 
 

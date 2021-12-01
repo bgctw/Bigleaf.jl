@@ -5,17 +5,17 @@
 Compute the extraterrestrial solar radiation with the
 eccentricity correction. Computation follows Lanini, 2010 (Master thesis, Bern University).
 
-
 # Arguments
-- doy: integer vector with day of year (DoY)
+- doy: integer with day of year (DoY) starting at 1
 optional 
-- `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with entries 
+- `constants=`[`BigleafConstants`](@ref)`()`: Dictionary with entries 
    - solar_constant
 - `year`=2030: year to create timestamps. Due to precession results slightly
   change across decades.   
+- `FT=typeof(constants.solar_constant)`: Specif Float type of the return value
 
 # Value
-numeric vector of extraterrestrial radiation (W_m-2)
+extraterrestrial radiation (W_m-2) of type `FT`.
 
 # Examples
 ```jldoctest; output = false
@@ -25,18 +25,19 @@ ex_rad = extraterrestrial_radiation(1)
 true
 ```
 """
-function extraterrestrial_radiation(doy::Number;constants = bigleaf_constants(), year = 2030)
-  FracYearRad = 2 * π * (doy - 1) / 365.24
+function extraterrestrial_radiation(doy::Number;constants =BigleafConstants(), year = 2030, FT=typeof(constants.solar_constant))
+  # Fractional year in radians
+  FracYearRad = 2 * π * (doy - 1) / oftype(doy/1, 365.24)
   #Eccentricity correction
-  ExtRadiation = constants[:solar_constant] * (
+  ExtRadiation = constants.solar_constant * (
     1.00011 + 0.034221 * cos(FracYearRad) + 0.00128 * sin(FracYearRad)
      + 0.000719 * cos(2 * FracYearRad) + 0.000077 * sin(2 * FracYearRad)
      )
-end,
-function extraterrestrial_radiation(datetime::TimeType; constants = bigleaf_constants())
-  # Fractional year in radians
+  FT(ExtRadiation)
+end
+function extraterrestrial_radiation(datetime::TimeType; kwargs...)
   doy = Dates.dayofyear(datetime)
-  extraterrestrial_radiation(doy; constants)
+  extraterrestrial_radiation(doy; kwargs...)
 end
 
 """
@@ -59,6 +60,8 @@ optional
 - timezone:  Timezone for doy and hour, defaults to "GMT+x"
    nearest to given longitude.
 - year: specific year for doy and hour
+- `...`: other keyword arguments passed to [`extraterrestrial_radiation`](@ref)
+  such as `constants` and `FT`
 
 # Value
 vector of potential radiation (W m-2)
@@ -69,7 +72,8 @@ vector of potential radiation (W m-2)
 potrad = potential_radiation(160, 10.5, 51.0, 11.5)
 ```
 """
-function potential_radiation(doy, hour, lat, long; timezone = FixedTimeZone("UTC+"*string(round(Int32, long/15))), year = 2030)
+function potential_radiation(doy, hour, lat, long; 
+  timezone = FixedTimeZone("UTC+"*string(round(Int32, long/15))), year = 2030, kwargs...)
   # the following doctest does not suppress warnings and fails
   # ```jldoctest; output = false
   # # assume hours in the GMT+x that is closest to given longitude
@@ -80,12 +84,12 @@ function potential_radiation(doy, hour, lat, long; timezone = FixedTimeZone("UTC
   # ```
   @pipe get_datetime_for_doy_hour(doy,hour; year) |>  
     ZonedDateTime(_, timezone) |> 
-    potential_radiation(_, lat, long)
-end,
-function potential_radiation(datetime::TimeType, lat, long)
+    potential_radiation(_, lat, long; kwargs...)
+end
+function potential_radiation(datetime::TimeType, lat::FT, long::FT; kwargs...) where FT
   # Calculate potential radiation from solar elevation and extraterrestrial solar radiation
   solElevRad = calc_sun_position_hor(datetime, lat, long).altitude
-  extRadiation = extraterrestrial_radiation(datetime)
+  extRadiation = extraterrestrial_radiation(datetime; FT=FT, kwargs...)
   potRad = extRadiation * sin(solElevRad)
 end
 
