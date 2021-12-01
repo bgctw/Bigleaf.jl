@@ -34,7 +34,7 @@ function extraterrestrial_radiation(doy::Number;constants =BigleafConstants(), y
      + 0.000719 * cos(2 * FracYearRad) + 0.000077 * sin(2 * FracYearRad)
      )
   FT(ExtRadiation)
-end,
+end
 function extraterrestrial_radiation(datetime::TimeType; kwargs...)
   doy = Dates.dayofyear(datetime)
   extraterrestrial_radiation(doy; kwargs...)
@@ -60,7 +60,7 @@ optional
 - timezone:  Timezone for doy and hour, defaults to "GMT+x"
    nearest to given longitude.
 - year: specific year for doy and hour
-- `...`: other keyword arguments passed to [`extraterrestrial_radiation`]
+- `...`: other keyword arguments passed to [`extraterrestrial_radiation`](@ref)
   such as `constants` and `FT`
 
 # Value
@@ -85,7 +85,7 @@ function potential_radiation(doy, hour, lat, long;
   @pipe get_datetime_for_doy_hour(doy,hour; year) |>  
     ZonedDateTime(_, timezone) |> 
     potential_radiation(_, lat, long; kwargs...)
-end,
+end
 function potential_radiation(datetime::TimeType, lat::FT, long::FT; kwargs...) where FT
   # Calculate potential radiation from solar elevation and extraterrestrial solar radiation
   solElevRad = calc_sun_position_hor(datetime, lat, long).altitude

@@ -158,11 +158,11 @@ a function of heigh `z`,
 which can be calculated from the function [`stability_parameter`](@ref).
 The integration of the universal functions is:
 
-``\\psi = -x * zeta`` 
+``\\psi = -x * \\zeta`` 
 
 for stable atmospheric conditions (``\\zeta`` >= 0), and
 
-``\\psi = 2 * log( (1 + y(zeta)) / 2)``
+``\\psi = 2 * log( (1 + y(\\zeta)) / 2)``
 
 for unstable atmospheric conditions (``\\zeta`` < 0).
 
