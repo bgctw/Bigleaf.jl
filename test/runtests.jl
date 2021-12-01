@@ -5,6 +5,7 @@ using DataFrames, Dates, TimeZones
 using Tables: columntable
 using StaticArrays
 using Statistics, StatsBase
+using Missings
 
 isapproxm(args...; kwargs...) = isapprox(args...; kwargs...); 
 isapproxm(::Missing, ::Missing; kwargs...) = true
@@ -45,9 +46,10 @@ thal = (
 )
 
 
-
-
 @testset "Bigleaf" begin
+    @testset "bigleaf_constants" begin
+        include("bigleaf_constants.jl")
+    end
     @testset "util" begin
         include("util.jl")
     end

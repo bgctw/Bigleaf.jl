@@ -30,4 +30,12 @@ cstB(Val(:g))
 f1(Val(cstB))
 @code_llvm f1(Val(cstB))
 
+using Bigleaf
+f3(;cst=BigleafConstants()) = 2 * cst.g
+f3()
+@code_llvm f3()
+@code_llvm f3(cst=BigleafConstants())
+@code_warntype f3()
+@code_warntype f3(cst=BigleafConstants())
+@code_warntype bigleaf_constants.g
 

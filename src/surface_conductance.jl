@@ -14,7 +14,7 @@ or from a simple flux-gradient approach.
 - `pressure`  : Atmospheric pressure (kPa)
 - `Rn`        : Net radiation (W m-2)
 - `df`        : DataFrame with above variables
-- `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with physical constants
+- `constants=`[`BigleafConstants`](@ref)`()`: Dictionary with physical constants
 
 additional for PenmanMonteith
 - `LE`        : Latent heat flux (W m-2)
@@ -78,9 +78,9 @@ isapprox(Gs.Gs_mol, 0.28, atol=0.1)
 true
 ``` 
 """
-function surface_conductance(::Val{:FluxGradient}, Tair,pressure,VPD,LE; constants=bigleaf_constants())
-    Gs_mol = (LE_to_ET(LE,Tair)/constants[:Mw]) * pressure / VPD
-    Gs_ms  = mol_to_ms(Gs_mol,Tair,pressure)
+function surface_conductance(::Val{:FluxGradient}, Tair,pressure,VPD,LE; constants=BigleafConstants())
+    Gs_mol = (LE_to_ET(LE,Tair)/oftype(pressure,constants.Mw)) * pressure / VPD
+    Gs_ms  = mol_to_ms(Gs_mol,Tair,pressure; constants)
     (;Gs_ms,Gs_mol)   
 end     
 function surface_conductance!(df::AbstractDataFrame, method::Val{:FluxGradient}; kwargs...)
@@ -91,14 +91,14 @@ end
 function surface_conductance(::Val{:PenmanMonteith}, Tair,pressure,VPD,LE,Rn,Ga_h; 
       G = 0.0, S = 0.0,
       #Ga="Ga_h",missing_G_as_NA=false,missing_S_as_NA=false,
-      Esat_formula=Val(:Sonntag_1990), constants=bigleaf_constants()
+      Esat_formula=Val(:Sonntag_1990), constants=BigleafConstants()
       )
       Delta = Esat_from_Tair_deriv(Tair; Esat_formula, constants)
       gamma = psychrometric_constant(Tair, pressure; constants)
       rho   = air_density(Tair, pressure; constants)
       Gs_ms  = ( LE * Ga_h * gamma ) / 
-      (Delta * (Rn-G-S) + rho * constants[:cp] * Ga_h * VPD - LE * (Delta + gamma))
-      Gs_mol = ms_to_mol(Gs_ms,Tair,pressure)
+      (Delta * (Rn-G-S) + rho * oftype(Tair,constants.cp) * Ga_h * VPD - LE * (Delta + gamma))
+      Gs_mol = ms_to_mol(Gs_ms,Tair,pressure; constants)
       (;Gs_ms,Gs_mol)    
 end
 function surface_conductance!(df::AbstractDataFrame, method::Val{:PenmanMonteith}; 

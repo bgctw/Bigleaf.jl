@@ -1,5 +1,5 @@
 @testset "Reynolds_Number" begin
-    Tair,pressure,ustar,z0m = 25,100,0.5,0.5
+    Tair,pressure,ustar,z0m = 25.0,100-0,0.5,0.5
     R = @inferred Reynolds_Number(Tair,pressure,ustar,z0m)                             
     @test ≈(R, 15870, rtol=1e-3) 
 end

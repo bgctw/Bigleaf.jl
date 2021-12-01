@@ -34,7 +34,7 @@
 #' 
 """
 """
-function Reynolds_Number(Tair,pressure,ustar,z0m,constants=bigleaf_constants())
+function Reynolds_Number(Tair,pressure,ustar,z0m,constants=BigleafConstants())
   
   v  = kinematic_viscosity(Tair,pressure,constants)
   Re = z0m*ustar/v
@@ -148,7 +148,7 @@ function roughness_parameters(method=c(Val(:canopy_height),Val(:canopy_height_LA
                                  frac_d=0.7,frac_{z0m}=0.1,LAI,zr,cd=0.2,hs=0.01,data,Tair="Tair",pressure="pressure",
                                  wind="wind",ustar="ustar",H="H",d=nothing,z0m=nothing,
                                  stab_roughness=true,stab_formulation=c(Val(:Dyer_1970),Val(:Businger_1971)),
-                                 constants=bigleaf_constants())
+                                 constants=BigleafConstants())
   
   method           = match_arg(method)
   stab_formulation = match_arg(stab_formulation)
@@ -186,18 +186,18 @@ end
       zeta  = stability_parameter(data=data,Tair=Tair,pressure=pressure,ustar=ustar,H=H,
                                    zr=zr,d=d,constants=constants)
       psi_m = stability_correction(zeta,formulation=stab_formulation)[,"psi_m"]
-      z0m_all = (zr - d) * exp(-constants[:k]*wind / ustar - psi_m)
+      z0m_all = (zr - d) * exp(-constants.k*wind / ustar - psi_m)
       
 else 
       
-      z0m_all = (zr - d) * exp(-constants[:k]*wind / ustar)
+      z0m_all = (zr - d) * exp(-constants.k*wind / ustar)
       
 end
     
     z0m_all[z0m_all > zh] = missing
     
     z0m    = median(z0m_all,na_rm=true)
-    z0m_se = constants[:se_median] * (sd(z0m_all,na_rm=true) / sqrt(length(z0m_all[complete_cases(z0m_all)])))
+    z0m_se = constants.se_median] * (sd(z0m_all,na_rm=true) / sqrt(length(z0m_all[complete_cases(z0m_all))))
     
 end
   
@@ -284,7 +284,7 @@ end
 function wind_profile(data,z,Tair="Tair",pressure="pressure",ustar="ustar",H="H",wind="wind",
                          zr,zh,d=nothing,frac_d=0.7,z0m=nothing,frac_{z0m}=nothing,estimate_z0m=true,
                          stab_correction=true,stab_formulation=c(Val(:Dyer_1970),Val(:Businger_1971)),
-                         constants=bigleaf_constants())
+                         constants=BigleafConstants())
   
   stab_formulation = match_arg(stab_formulation)
   
@@ -331,11 +331,11 @@ end
     zeta  = stability_parameter(data=data,Tair=Tair,pressure=pressure,ustar=ustar,H=H,
                                  zr=z,d=d,constants=constants)
     psi_m = stability_correction(zeta,formulation=stab_formulation)[,"psi_m"]
-    wind_heights = pmax(0,(ustar / constants[:k]) * (log(pmax(0,(z - d)) / z0m) - psi_m))
+    wind_heights = pmax(0,(ustar / constants.k) * (log(pmax(0,(z - d)) / z0m) - psi_m))
       
 else 
       
-    wind_heights = pmax(0,(ustar / constants[:k]) * (log(pmax(0,(z - d)) / z0m)))
+    wind_heights = pmax(0,(ustar / constants.k) * (log(pmax(0,(z - d)) / z0m)))
       
 end
   

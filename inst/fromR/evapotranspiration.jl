@@ -96,7 +96,7 @@ function potential_ET(data,Tair="Tair",pressure="pressure",Rn="Rn",G=nothing,S=n
                          VPD="VPD",Ga="Ga_h",approach=c(Val(:PriestleyTaylor),Val(:PenmanMonteith)),
                          alpha=1.26,Gs_pot=0.6,missing_G_as_NA=false,missing_S_as_NA=false,
                          Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
-                         constants=bigleaf_constants())
+                         constants=BigleafConstants())
   
   approach = match_arg(approach)
   
@@ -136,7 +136,7 @@ elseif (approach == Val(:PenmanMonteith))
     Gs_pot = mol_to_ms(Gs_pot,Tair=Tair,pressure=pressure,constants=constants)
     rho    = air_density(Tair,pressure,constants)
     
-    LE_pot = (Delta * (Rn - G - S) + rho * constants[:cp] * VPD * Ga) / 
+    LE_pot = (Delta * (Rn - G - S) + rho * constants.cp * VPD * Ga) / 
       (Delta + gamma * (1 + Ga / Gs_pot))
     ET_pot = LE_to_ET(LE_pot,Tair)
 end
@@ -178,7 +178,7 @@ end
 function reference_ET(data,Gs_ref=0.0143,Tair="Tair",pressure="pressure",VPD="VPD",Rn="Rn",Ga="Ga_h",
                          G=nothing,S=nothing,missing_G_as_NA=false,missing_S_as_NA=false,
                          Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
-                         constants=bigleaf_constants())
+                         constants=BigleafConstants())
   
   stop("this function is deprecated (since bigleaf version 0.6.0). For the calculation of potential ET from the Penman-Monteith equation (as formerly calculated with this function), use function potential_ET() with the argument approach='Penman-Monteith'. Note that the default value for argument 'Gs_pot' is expressed now in mol m-2 s-1 for simplicity (0.6 mol m-2 s-1).")
   
@@ -263,7 +263,7 @@ end
 function equilibrium_imposed_ET(data,Tair="Tair",pressure="pressure",VPD="VPD",Gs="Gs_ms",
                                    Rn="Rn",G=nothing,S=nothing,missing_G_as_NA=false,missing_S_as_NA=false,
                                    Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
-                                   constants=bigleaf_constants())
+                                   constants=BigleafConstants())
   
   check_input(data,list(Tair,pressure,VPD,Rn,Gs,G,S))
   
@@ -286,7 +286,7 @@ end
   Delta  = Esat_slope(Tair,Esat_formula,constants)[,"Delta"]
   
   LE_eq  = (Delta * (Rn - G - S)) / (gamma + Delta)
-  LE_imp = (rho * constants[:cp] * Gs * VPD) / gamma
+  LE_imp = (rho * constants.cp * Gs * VPD) / gamma
   
   ET_imp = LE_to_ET(LE_imp,Tair)
   ET_eq  = LE_to_ET(LE_eq,Tair)

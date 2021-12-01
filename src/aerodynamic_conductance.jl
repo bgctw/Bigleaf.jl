@@ -64,8 +64,8 @@ value for the entire time period. If a varying `z0m` value
 # Examples
 ```jldoctest; output = false
 using DataFrames
-df = DataFrame(Tair=25,pressure=100,wind=[3,4,5],
-  ustar=[0.5,0.6,0.65],H=[200,230,250])   
+df = DataFrame(Tair=25.0,pressure=100.0,wind=[3.0,4,5],
+  ustar=[0.5,0.6,0.65],H=[200.0,230,250])   
 # simple calculation of Ga  
 aerodynamic_conductance!(df;Gb_model=Val(:Thom_1972)) 
 # calculation of Ram using a model derived from the logarithmic wind profile
@@ -84,7 +84,7 @@ function aerodynamic_conductance!(df; Gb_model = Val(:Thom_1972), Ram_model = Va
   z0m=nothing,Dl=nothing,N=2,fc=nothing,LAI=nothing,Cd=0.2,hs=0.01,
   leafwidth=nothing,
   stab_formulation=Val(:Dyer_1970),
-  kB_h=nothing,constants=bigleaf_constants()
+  kB_h=nothing,constants=BigleafConstants()
   )
   # add zeta
   if !isnothing(zr) && !isnothing(d) && !(stab_formulation isa Val{:no_stability_correction})
@@ -155,7 +155,7 @@ roughness_z0h(z0m, kB_h) = z0m / exp(kB_h)
 
 """
     compute_Ram(::Val{:wind_profile}, ustar; 
-      zr, d, z0m, psi_h, constants=bigleaf_constants())
+      zr, d, z0m, psi_h, constants=BigleafConstants())
     compute_Ram!(df, method::Val{:wind_profile};  
       zr, d, z0m, psi_h = df.psi_h, kwargs...)
 
@@ -220,9 +220,9 @@ Aerodynamic resistance for momentum transfer (s m-1) (``Ra_m``)
 [`aerodynamic_conductance!`](@ref), [`add_Ga!`](@ref)
 """
 function compute_Ram(::Val{:wind_profile}, ustar::Union{Missing,Number}; 
-  zr, d, z0m, psi_h, constants=bigleaf_constants()
+  zr, d, z0m, psi_h, constants=BigleafConstants()
   )
-  Ra_m = max((log((zr - d)/z0m) - psi_h),0) / (constants[:k]*ustar)
+  Ra_m = max((log((zr - d)/z0m) - psi_h),0) / (oftype(ustar,constants.k)*ustar)
 end
 function compute_Ram!(df, method::Val{:wind_profile};  
   zr, d, z0m, psi_h = df.psi_h, kwargs...
@@ -256,7 +256,7 @@ compute additional aerodynamic conductance quantities for given Schmidt-numbers
                additional conductances to be calculated
 - `df`       : DataFrame to add output columns               
 optional
-- `constants=`[`bigleaf_constants`](@ref)`()`: Dictionary with entries 
+- `constants=`[`BigleafConstants`](@ref)`()`: Dictionary with entries 
   - `Pr` - Prandtl number 
 
 # Details
@@ -295,7 +295,7 @@ function add_Ga(Gb_h::Union{Missing,Number}, Ga_m::Union{Missing,Number},
   add_Ga_(Gb_h, Ga_m, Scn, Scv; kwargs...)
 end
 function add_Ga_(Gb_h::Union{Missing,Number}, Ga_m::Union{Missing,Number}, 
-  Scn::NTuple{N,Symbol}, Scv::NTuple{N};  constants=bigleaf_constants()) where N 
+  Scn::NTuple{N,Symbol}, Scv::NTuple{N};  constants=BigleafConstants()) where N 
   Gbx = add_Gb_(Gb_h, Scn, Scv; constants)
   Gaxv = ntuple(i -> 1/(1/Ga_m + 1/Gbx[i]), length(Gbx))
   Gax = NamedTuple{Scn}(Gaxv)

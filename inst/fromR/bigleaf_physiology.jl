@@ -63,7 +63,7 @@
 """
 """
 function intercellular_CO2(data,Ca="Ca",GPP="GPP",Gs="Gs_mol",Rleaf=nothing,
-                              missing_Rleaf_as_NA=false,constants=bigleaf_constants())
+                              missing_Rleaf_as_NA=false,constants=BigleafConstants())
   
   check_input(data,list(Ca,GPP,Gs))
   
@@ -74,7 +74,7 @@ else
     Rleaf = 0
 end
   
-  Ci = Ca - (GPP - Rleaf)/(Gs/constants[:DwDc])
+  Ci = Ca - (GPP - Rleaf)/(Gs/constants.DwDc)
   
   return(Ci)
   
@@ -290,23 +290,23 @@ function photosynthetic_capacity(data,C3=true,Temp,GPP="GPP",Ci,PPFD="PPFD",PPFD
                                     Kc_Ha=79.43,Ko_Ha=36.38,Gam_Ha=37.83,Vcmax_Ha=65.33,Vcmax_Hd=200,
                                     Vcmax_dS=0.635,Jmax_Ha=43.9,Jmax_Hd=200,Jmax_dS=0.640,
                                     Theta=0.7,alpha_canopy=0.8,missing_Rleaf_as_NA=false,Ci_C4=100,
-                                    constants=bigleaf_constants())
+                                    constants=BigleafConstants())
   
   check_input(data,list(Temp,GPP,Ci,PPFD))
   
-  Temp = Temp + constants[:Kelvin]
-  Tref = 25.0 + constants[:Kelvin]
+  Temp = Temp + constants.Kelvin
+  Tref = 25.0 + constants.Kelvin
   
   if (C3){  # C3 vegetation
-    Kc_Ha    = Kc_Ha * constants[:kJ2J]
-    Ko_Ha    = Ko_Ha * constants[:kJ2J]
-    Gam_Ha   = Gam_Ha * constants[:kJ2J]
+    Kc_Ha    = Kc_Ha * constants.kJ2J
+    Ko_Ha    = Ko_Ha * constants.kJ2J
+    Gam_Ha   = Gam_Ha * constants.kJ2J
     
     # Temperature dependencies of photosynthetic parameters 
-    Kc  = Kc25 * exp(Kc_Ha * (Temp - Tref) / (Tref*constants[:Rgas]*Temp))
-    Ko  = Ko25 * exp(Ko_Ha * (Temp - Tref) / (Tref*constants[:Rgas]*Temp))
-    Gam = Gam25 * exp(Gam_Ha * (Temp - Tref) / (Tref*constants[:Rgas]*Temp))
-    Ko  = Ko * constants[:J2kJ]
+    Kc  = Kc25 * exp(Kc_Ha * (Temp - Tref) / (Tref*constants.Rgas*Temp))
+    Ko  = Ko25 * exp(Ko_Ha * (Temp - Tref) / (Tref*constants.Rgas*Temp))
+    Gam = Gam25 * exp(Gam_Ha * (Temp - Tref) / (Tref*constants.Rgas*Temp))
+    Ko  = Ko * constants.J2kJ
     
     # basic filtering on Ci 
     Ci[Ci < 80 | ismissing(Ci)] = missing
@@ -360,18 +360,18 @@ else
 end
   
   # calculate Vcmax25 and Jmax25
-  Vcmax25 = Arrhenius_temp_response(Vcmax,Temp-constants[:Kelvin],Ha=Vcmax_Ha,
+  Vcmax25 = Arrhenius_temp_response(Vcmax,Temp-constants.Kelvin,Ha=Vcmax_Ha,
                                      Hd=Vcmax_Hd,dS=Vcmax_dS,constants=constants)
   
-  Jmax25 = Arrhenius_temp_response(Jmax,Temp[calcJmax]-constants[:Kelvin],Ha=Jmax_Ha,
+  Jmax25 = Arrhenius_temp_response(Jmax,Temp[calcJmax]-constants.Kelvin,Ha=Jmax_Ha,
                                     Hd=Jmax_Hd,dS=Jmax_dS,constants=constants)
   
   
   # calculate medians and standard errors of the median
   Vcmax25_Median = median(Vcmax25,na_rm=true)
-  Vcmax25_SE     = constants[:se_median] * sd(Vcmax25,na_rm=true)/sqrt((sum(!ismissing(Vcmax25))))
+  Vcmax25_SE     = constants.se_median * sd(Vcmax25,na_rm=true)/sqrt((sum(!ismissing(Vcmax25))))
   Jmax25_Median  = median(Jmax25,na_rm=true)
-  Jmax25_SE      = constants[:se_median] * sd(Jmax25,na_rm=true)/sqrt((sum(!ismissing(Jmax25))))
+  Jmax25_SE      = constants.se_median * sd(Jmax25,na_rm=true)/sqrt((sum(!ismissing(Jmax25))))
   
   return(c("Vcmax25"=round(Vcmax25_Median,2),"Vcmax25_SE"=round(Vcmax25_SE,2),
            "Jmax25"=round(Jmax25_Median,2),"Jmax25_SE"=round(Jmax25_SE,2)))
@@ -432,14 +432,14 @@ end
 #'             Plant, Cell and Environment 30, 1176-1190.
 #'             
 #' @export             
-function Arrhenius_temp_response(param,Temp,Ha,Hd,dS,constants=bigleaf_constants())
+function Arrhenius_temp_response(param,Temp,Ha,Hd,dS,constants=BigleafConstants())
   
-  Temp = Temp + constants[:Kelvin]
-  Tref = 25.0 + constants[:Kelvin]
+  Temp = Temp + constants.Kelvin
+  Tref = 25.0 + constants.Kelvin
   
-  Ha = ifelse(missing(Ha),missing,Ha*constants[:kJ2J])
-  Hd = ifelse(missing(Hd),missing,Hd*constants[:kJ2J])
-  dS = ifelse(missing(dS),missing,dS*constants[:kJ2J])
+  Ha = ifelse(missing(Ha),missing,Ha*constants.kJ2J)
+  Hd = ifelse(missing(Hd),missing,Hd*constants.kJ2J)
+  dS = ifelse(missing(dS),missing,dS*constants.kJ2J)
   
   if (ismissing(Ha))
     
@@ -449,14 +449,14 @@ end
   
   if (ismissing(Hd) & ismissing(dS))
     
-    param25 = param / exp(Ha * (Temp - Tref) / (Tref*constants[:Rgas]*Temp))
+    param25 = param / exp(Ha * (Temp - Tref) / (Tref*constants.Rgas*Temp))
   
 elseif (!ismissing(Hd) & !ismissing(dS))
     
     param25 = param /
-      ( exp(Ha * (Temp - Tref) / (Tref*constants[:Rgas]*Temp)) *
-        (1 + exp((Tref*dS - Hd) / (Tref * constants[:Rgas]))) /
-        (1 + exp((Temp*dS - Hd) / (Temp * constants[:Rgas])))
+      ( exp(Ha * (Temp - Tref) / (Tref*constants.Rgas*Temp)) *
+        (1 + exp((Tref*dS - Hd) / (Tref * constants.Rgas))) /
+        (1 + exp((Temp*dS - Hd) / (Temp * constants.Rgas)))
       )
     
 elseif ((!ismissing(Hd) & ismissing(dS)) | (ismissing(Hd) & !ismissing(dS)) )
@@ -465,7 +465,7 @@ elseif ((!ismissing(Hd) & ismissing(dS)) | (ismissing(Hd) & !ismissing(dS)) )
              that considers a temperature optimum and a deactivation term!
              Continue considering activation energy (Ha) only...")
     
-    param25 = param / exp(Ha * (Temp - Tref) / (Tref*constants[:Rgas]*Temp))
+    param25 = param / exp(Ha * (Temp - Tref) / (Tref*constants.Rgas*Temp))
     
 end
 
@@ -600,14 +600,14 @@ function stomatal_slope(data,Tair="Tair",pressure="pressure",GPP="GPP",Gs="Gs_mo
                            VPD="VPD",Ca="Ca",Rleaf=nothing,model=c("USO","Ball&Berry","Leuning"),
                            robust_nls=false,nmin=40,fitg0=false,g0=0,fitD0=false,
                            D0=1.5,Gamma=50,missing_Rleaf_as_NA=false,
-                           constants=bigleaf_constants(),...)
+                           constants=BigleafConstants(),...)
   
   model = match_arg(model)
   
   check_input(data,list(Tair,pressure,GPP,Gs,VPD,Ca))
 
   df   = DataFrame(Tair,pressure,GPP,Gs,VPD,Ca)
-  DwDc = constants[:DwDc]  # ...to work within nls()
+  DwDc = constants.DwDc  # ...to work within nls()
   
   
   if (model == "Leuning")
@@ -652,7 +652,7 @@ end
 else 
         if (robust_nls)
           df$g0   = rep(g0,nrow(df))    # g0 as constant does not work in the nlrob function...
-          df$DwDc = rep(DwDc,nrow(df))  # same with constants[:DwDc]
+          df$DwDc = rep(DwDc,nrow(df))  # same with constants.DwDc
           mod_weights = nlrob(Gs ~ g0 + DwDc*(1.0 + g1/sqrt(VPD))*GPP/Ca,data=df,start=list(g1=3),
                                na_action=na_exclude,...)$w
           mod = nls(Gs ~ g0 + DwDc*(1.0 + g1/sqrt(VPD))*GPP/Ca,start=list(g1=3),weights=mod_weights,...)

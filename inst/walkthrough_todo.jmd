@@ -456,7 +456,7 @@ The `Bigleaf.jl` package contains a single list of constants (see `?Bigleaf_cons
 ```julia
 summary(aerodynamic_conductance(thaf,wind_profile=true,zr= thal.zr,d=0.7*zh,z0m=2.65)[,"Ga_h"])
 summary(aerodynamic_conductance(thaf,wind_profile=true,zr= thal.zr,d=0.7*zh,z0m=2.65,
-                                constants=Bigleaf_constants(k=0.4))[,"Ga_h"])
+                                constants=BigleafConstants()(k=0.4))[,"Ga_h"])
 ```
 
 We see that in this case, small changes in k have an effect on the calculated values of $G_{ah}$, but they do not change the results significantly (however, the same value of k should be used for all calculations).
