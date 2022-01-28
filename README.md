@@ -26,7 +26,7 @@ The `bigleaf.jl` R package can be installed with the usual command once:
 
 ```julia
 using Pkg
-Pkg.add(Bigleaf)
+Pkg.add("Bigleaf")
 ```
 
 And then importet to the every Julia session by:
