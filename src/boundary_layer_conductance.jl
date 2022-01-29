@@ -36,8 +36,9 @@ true
 ``` 
 """
 function compute_Gb!(df::AbstractDataFrame, approach::Val{:Thom_1972}; kwargs...)
-  fr = (ustar) -> Gb_Thom(ustar; kwargs...)
-  transform!(df, :ustar => ByRow(fr) => :Gb_h)
+  fr = (ustar) -> Gb_Thom.(ustar; kwargs...)
+  #transform!(df, :ustar => ByRow(fr) => :Gb_h) # does not work with SVector
+  transform!(df, :ustar => fr => :Gb_h)
 end
 function compute_Gb!(df::AbstractDataFrame, approach::Val{:constant_kB1}; kB_h, kwargs...)
   # do not use ByRow because kb_H can be a vector
