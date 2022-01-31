@@ -44,9 +44,10 @@ combined results of [`compute_Gb!`](@ref) and
 - `Ga_h`: Aerodynamic conductance for heat transfer (m s-1)
 - `Ra_h`: Aerodynamic resistance for heat transfer (s m-1)
 - `Ga_CO2`: Aerodynamic conductance for CO2 transfer (m s-1)
+- `z0h`: roughness length for heat (m)
        
 # Note
-The roughness length for water and heat (z0h) can be computed by [`roughness_z0h`](@ref).
+The roughness length for water and heat (z0h) is computed by [`roughness_length_heat`](@ref).
 
 TODO check
 Input variables such as LAI, Dl, or zh can be either constants, or
@@ -125,16 +126,22 @@ function aerodynamic_conductance!(df; Gb_model = Val(:Thom_1972), Ram_model = Va
     (;Ga_m, Ga_h, Ra_h, Ga_CO2)
   end
   transform!(df, [:Ra_m, :Gb_h, :Gb_CO2] => ByRow(fr) => AsTable)
+  if !(isnothing(z0m))
+    df[!,:z0h] .= roughness_length_heat.(z0m, df.kB_h)
+  else
+    df[!,:z0h] .= missing
+  end
+  df
 end
 
 
 """
-    roughness_z0h(z0m, kB_h)
+    roughness_length_heat(z0m, kB_h)
 
 # Arguments
 - `z0m` : Roughness length for momentum (m). Can be calculated 
           by [`roughness_parameters`](@ref).
-- `kB_h` : kB-1 parameter, Output of [`aerodynamic_conductance!`](@ref)          
+- `kB_h` : kB-1 parameter of heat transfer, Output of [`aerodynamic_conductance!`](@ref)          
 
 # Details
 The roughness length for water and heat (z0h) is calculated from the 
@@ -147,10 +154,14 @@ it follows:
 ``z_{0h} = z_{0m} / e^{k_{B_h}}``
 
 # References
-Verma, S., 1989: Aerodynamic resistances to transfers of heat, mass and momentum.
+
+- Verma, S., 1989: Aerodynamic resistances to transfers of heat, mass and momentum.
   In: Estimation of areal evapotranspiration, IAHS Pub, 177, 13-20.
+- Rigden, A., Li, D., Salvucci, G., 2018: Dependence of thermal roughness length on friction 
+  velocity across land cover types: A synthesis analysis using AmeriFlux data. Agricultural 
+  and Forest Meteorology 249, 512-519.
 """
-roughness_z0h(z0m, kB_h) = z0m / exp(kB_h)
+roughness_length_heat(z0m, kB_h) = z0m / exp(kB_h)
 
 
 """

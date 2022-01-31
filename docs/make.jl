@@ -10,7 +10,7 @@ DocMeta.setdocmeta!(Bigleaf, :DocTestSetup, :(using Bigleaf, Latexify, DataFrame
 doctest(Bigleaf, manual = false)
 
 makedocs(;
-    modules=[Bigleaf],
+    # modules=[Bigleaf], # uncomment to show warnings on non-included docstrings
     authors="Thomas Wutzler <twutz@bgc-jena.mpg.de>, Jürgen Knauer <Juergen.Knauer@csiro.au> and contributors",
     repo="https://github.com/bgctw/Bigleaf.jl/blob/{commit}{path}#{line}",
     sitename="Bigleaf.jl",
@@ -37,7 +37,7 @@ makedocs(;
         hide("unit_conversions.md"),
         hide("BigleafConstants.md"),
         hide("filter_data.md"),
-        "Index" => "autodocs.md",
+        #"Index" => "autodocs.md",
         ],
 )
 

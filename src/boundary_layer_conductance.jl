@@ -288,7 +288,7 @@ formulation according to Su et al. 2001.
 - `ustar`     : Friction velocity (m s-1)
 - `df`        : DataFrame or matrix containing the above variables
 - `Dl`        : Leaf characteristic dimension (m)
-- `fc`        : Fractional vegetation cover [0-1] (if not provided, calculated from LAI)
+- `fc`        : Fractional vegetation cover (0-1), if not provided, calculated from LAI
 - `LAI`       : One-sided leaf area index (-) - alternative to `fc`.
 - `N`         : Number of leaf sides participating in heat exchange (defaults to 2)
 - `Cd`        : Foliage drag coefficient (-)

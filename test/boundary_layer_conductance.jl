@@ -12,7 +12,7 @@
     @test all(ismissing.(values(Gbm)))
     # 
     # DataFrame variant
-    dfo = DataFrame(Gb_h=SA[Gb_h, missing, 0.055])
+    dfo = DataFrame(Gb_h=[Gb_h, missing, 0.055])
     df = copy(dfo)
     df2 = @inferred add_Gb!(df)
     @test isequal(df2, dfo)
@@ -38,7 +38,8 @@ end
     @test all(ismissing.(values(getindex.(Ref(Gbq), SA[:Rb_h, :Gb_h, :Gb_CO2]))))
     #
     # DataFrame variant
-    dfo = DataFrame(ustar = SA[0.1,missing,0.3])
+    #dfo = DataFrame(ustar = SA[0.1,missing,0.3]) # not use SVector in DataFrame
+    dfo = DataFrame(ustar = [0.1,missing,0.3])
     df = copy(dfo)
     @inferred compute_Gb!(df, Val(:constant_kB1); kB_h)
     @test propertynames(df) == [:ustar, :Gb_h]
@@ -56,7 +57,7 @@ end
     @test ismissing(Gbm)
     #
     # DataFrame variant
-    dfo = DataFrame(ustar = SA[ustar,missing,0.3])
+    dfo = DataFrame(ustar = [ustar,missing,0.3])
     df = copy(dfo)
     @inferred compute_Gb!(df, Val(:Thom_1972))
     @test propertynames(df) == [:ustar, :Gb_h]

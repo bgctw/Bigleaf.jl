@@ -568,6 +568,6 @@ umolCO2_to_gC(20.0)
 Many functions provide constant empirical parameters. Those can
 be changed by overriding the default values with 
 [`BigleafConstants`](@ref) 
-and passing this Dictionary to the respective function.
+and passing this Struct to the respective function.
 
 

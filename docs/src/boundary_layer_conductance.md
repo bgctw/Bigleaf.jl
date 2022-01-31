@@ -9,4 +9,6 @@ add_Gb!
 Gb_Thom
 Gb_Choudhury
 Gb_Su
+Gb_constant_kB1
+compute_Gb_quantities
 ```
