@@ -141,7 +141,7 @@ end
 # Arguments
 - `z0m` : Roughness length for momentum (m). Can be calculated 
           by [`roughness_parameters`](@ref).
-- `kB_h` : kB-1 parameter of heat transfer, Output of [`aerodynamic_conductance!`](@ref)          
+- `kB_h` : kB^(-1) parameter of heat transfer, Output of [`aerodynamic_conductance!`](@ref)          
 
 # Details
 The roughness length for water and heat (z0h) is calculated from the 
@@ -219,7 +219,7 @@ Aerodynamic resistance for momentum transfer (s m-1) (``Ra_m``)
 # References
 - Verma, S., 1989: Aerodynamic resistances to transfers of heat, mass and momentum.
   In: Estimation of areal evapotranspiration, IAHS Pub, 177, 13-20.
-- Verhoef, A., De Bruin, H., Van Den Hurk, B., 1997: Some practical notes on the parameter kB-1
+- Verhoef, A., De Bruin, H., Van Den Hurk, B., 1997: Some practical notes on the parameter kB^(-1)
   for sparse vegetation. Journal of Applied Meteorology, 36, 560-572.
 - Hicks, B_B., Baldocchi, D_D., Meyers, T_P., Hosker, J_R., Matt, D_R., 1987:
   A preliminary multiple resistance routine for deriving dry deposition velocities

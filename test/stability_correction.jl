@@ -48,6 +48,7 @@ end
     @test all(isapprox.(df2.psi_h, SA[2.085, 1.862, 1.564, 1.106,0, -3.9], rtol=1e-3))
     @test all(isapprox.(df2.psi_m, SA[2.418, 2.200, 1.904, 1.435,0, -3], rtol=1e-3))
     #
+    # https://bitbucket.org/juergenknauer/bigleaf/issues/8/logical-inconsistency-possible-bug-with
     resm = @inferred stability_correction(missing)
     @test keys(resm) == (:psi_h, :psi_m)
     @test all(ismissing.(values(resm)))

@@ -19,7 +19,7 @@ updated DataFrame `df` with the following columns:
 - `Gb_h`: Boundary layer conductance for heat transfer (m s-1)
 
 To subsequently derived quantities see
-- [`compute_Gb_quantities`](@ref) for Resistance, kB-1 constant, and CO2 conductance
+- [`compute_Gb_quantities`](@ref) for Resistance, kB^(-1) constant, and CO2 conductance
 - [`add_Gb!`](@ref) for conductances of other species given their Schmidt numbers.
 
 # See also
@@ -67,7 +67,7 @@ Based on boundary layer conductance for heat, compute derived quantities.
 NamedTuple with entries
 - `Gb_h`: Boundary layer conductance for heat transfer (m s-1)
 - `Rb_h`: Boundary layer resistance for heat transfer (s m-1)
-- `kB_h`: kB-1 parameter for heat transfer
+- `kB_h`: kB^(-1) parameter for heat transfer
 - `Gb_CO2`: Boundary layer conductance for CO2 (m s-1). 
 """
 function compute_Gb_quantities(Gb_h, ustar; constants=BigleafConstants())
@@ -193,12 +193,12 @@ end
     Gb_constant_kB1(ustar, kB_h; constants)
     compute_Gb!(df, Val{:constant_kB1})
 
-Boundary Layer Conductance using constant kB-1 value for heat transfer.
+Boundary Layer Conductance using constant kB^(-1) value for heat transfer.
 
 # Arguments  
 - `ustar`     : Friction velocity (m s-1)
 - `df`        : DataFrame with above variables
-- `kB_h`      : kB-1 value for heat transfer
+- `kB_h`      : kB^(-1) value for heat transfer
 - `constants=`[`BigleafConstants`](@ref)`()`
  
 # Details
@@ -299,7 +299,7 @@ formulation according to Su et al. 2001.
 see [`compute_Gb!`](@ref)
     
 # Details
-The formulation is based on the kB-1 model developed by Massman 1999. 
+The formulation is based on the kB^(-1) model developed by Massman 1999. 
 Su et al. 2001 derived the following approximation:
  
 ``k_{B1} = (k C_d f_c^2) / (4C_t u^*/u(z_h)) + k_{Bs-1}(1 - f_c)^2``
