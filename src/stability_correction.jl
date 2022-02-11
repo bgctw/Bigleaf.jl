@@ -128,13 +128,18 @@ end
 #   stability_parameter.(z,d,MOL)
 # end
 
+abstract type StabilityCorrectionMethod end
+struct Dyer1970 <: StabilityCorrectionMethod end
+struct Businger1971 <: StabilityCorrectionMethod end
+struct NoStabilityCorrection <: StabilityCorrectionMethod end
+
 """
     stability_correction(zeta; 
-      stab_formulation=Val(:Dyer_1970))
+      stab_formulation=Dyer1970())
     stability_correction(z,d, Tair,pressure,ustar,H; constants,
-      stab_formulation=Val(:Dyer_1970))
+      stab_formulation=Dyer1970())
     stability_correction!(df; zeta, z, d; 
-      stab_formulation=Val(:Dyer_1970), constants =BigleafConstants())
+      stab_formulation=Dyer1970(), constants =BigleafConstants())
     
 Integrated Stability Correction Functions for Heat and Momentum
 
@@ -144,7 +149,7 @@ Integrated Stability Correction Functions for Heat and Momentum
 - `z`,`d`            : see [`stability_parameter`](@ref)
 - `df`  : DataFrame containting the variables required by [`Monin_Obukhov_length`](@ref)
 - `stab_formulation` : Formulation for the stability function. Either 
-            `Val(:Dyer_1970)`, or `Val(:Businger_1971)` or `Val(:no_stability_correction)`
+            `Dyer1970()`, or `Businger1971()` or `NoStabilityCorrection()`
 
 In the second and third form computes `zeta` by [`stability_parameter`](@ref) and
 [`Monin_Obukhov_length`](@ref) and requires respective arguments.
@@ -190,15 +195,15 @@ a NamedTuple with the following columns:
 ```jldoctest; output = false
 using DataFrames
 zeta = -2:0.5:0.5
-df2 = DataFrame(stability_correction.(zeta; stab_formulation=Val(:Businger_1971)))                         
+df2 = DataFrame(stability_correction.(zeta; stab_formulation=Businger1971()))                         
 propertynames(df2) == [:psi_h, :psi_m]
 # output
 true
 ``` 
 """            
-function stability_correction(zeta::FT; stab_formulation=Val(:Dyer_1970)) where FT
-  # integration of universal functions (after Paulson_1970 and Foken 2008)
-  stab_formulation isa Val{:no_stability_correction} && return(
+function stability_correction(zeta::FT; stab_formulation=Dyer1970()) where FT
+  # integration of universal functions (after Paulson1970 and Foken 2008)
+  stab_formulation isa NoStabilityCorrection && return(
     (psi_h = zero(zeta), psi_m = zero(zeta)))
   ismissing(zeta) && return((psi_h = missing, psi_m = missing))
   is_stable = zeta >= 0 
@@ -216,24 +221,25 @@ function stability_correction(zeta::FT; stab_formulation=Val(:Dyer_1970)) where 
   (;psi_h, psi_m)
 end 
 
-get_stability_coefs_stable(::Val{:Businger_1971}) = (x_h = -7.8, x_m = -6)
-function get_stability_coefs_unstable(::Val{:Businger_1971}, zeta)
+get_stability_coefs_stable(::Businger1971) = (x_h = -7.8, x_m = -6)
+function get_stability_coefs_unstable(::Businger1971, zeta)
   y_h = 0.95 * ( 1 - 11.6 * zeta)^0.5
   y_m = (1 - 19.3*zeta)^0.25
   (;y_h, y_m)
 end
 
-get_stability_coefs_stable(::Val{:Dyer_1970}) = (x_h = -5, x_m = -5)
-function get_stability_coefs_unstable(::Val{:Dyer_1970}, zeta)
+get_stability_coefs_stable(::Dyer1970) = (x_h = -5, x_m = -5)
+function get_stability_coefs_unstable(::Dyer1970, zeta)
   y_h       = (1 - 16 * zeta)^0.5
   y_m       = (1 - 16 * zeta)^0.25
   (;y_h, y_m)
 end
 
 function stability_correction(z,d, Tair::Union{Missing,Number},pressure,ustar::FT,H; 
-  stab_formulation=Val(:Dyer_1970), constants =BigleafConstants()) where FT
-  stab_formulation isa Val{:no_stability_correction} && return(
+  stab_formulation=Dyer1970(), constants=BigleafConstants()) where FT
+  stab_formulation isa NoStabilityCorrection && return(
     (psi_h = zero(FT), psi_m = zero(FT)))
+  FT <: Missing && return(missing)
   MOL = Monin_Obukhov_length(Tair,pressure,ustar,H; constants)
   zeta  = stability_parameter(FT(z),FT(d),MOL)
   psis = stability_correction(zeta; stab_formulation)
@@ -248,9 +254,9 @@ end
 #   tmp2 = Tables.columns(tmp1)
 # end
 function stability_correction!(df; zeta=nothing, z=nothing, d=nothing, 
-  stab_formulation=Val(:Dyer_1970), constants =BigleafConstants())
+  stab_formulation=Dyer1970(), constants =BigleafConstants())
   # cannot dispatch on keyword argument, hence need if-clause
-  if stab_formulation isa Val{:no_stability_correction}
+  if stab_formulation isa NoStabilityCorrection
     zeroT = :ustar in propertynames(df) ? zero(eltype(skipmissing(df.ustar))) : zero(z)
     df[!,:psi_h] .= zeroT
     df[!,:psi_m] .= zeroT
@@ -266,10 +272,10 @@ function stability_correction!(df; zeta=nothing, z=nothing, d=nothing,
 end
 
 function stability_correction(df::DFTable; z, d, 
-  stab_formulation=Val(:Dyer_1970), constants =BigleafConstants()
+  stab_formulation=Dyer1970(), constants =BigleafConstants()
   )
   # do not provide zeta, because can simply invoke stability_correction.(zeta)
-  if stab_formulation isa Val{:no_stability_correction}
+  if stab_formulation isa NoStabilityCorrection
     zeroT = zero(eltype(skipmissing(df.ustar)))
     rows = map(Tables.rows(df)) do row
       (psi_h = zeroT, psi_m = zeroT)

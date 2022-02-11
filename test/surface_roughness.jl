@@ -9,12 +9,12 @@ end
     zr = thal.zr
     LAI = thal.LAI
     keys_exp = (:d, :z0m, :z0m_se)
-    rp = @inferred roughness_parameters(Roughness_canopy_height(), zh)
+    rp = @inferred roughness_parameters(RoughnessCanopyHeight(), zh)
     #round.(values(rp); sigdigits = 4)
     @test keys(rp) == keys_exp
     @test all(isapproxm.(values(rp), (18.55, 2.65, missing), rtol=1e-3))
     #
-    rp = @inferred roughness_parameters(Roughness_canopy_height_LAI(), zh, LAI)
+    rp = @inferred roughness_parameters(RoughnessCanopyHeightLAI(), zh, LAI)
     #round.(values(rp); sigdigits = 4)
     @test keys(rp) == keys_exp
     @test all(isapproxm.(values(rp), (21.77, 1.419, missing), rtol=1e-3))
@@ -36,17 +36,17 @@ end
     # broadcast across Missings is not type-stable 
     # rp0 = @inferred roughness_parameters(Roughness_wind_profile(), df.ustar, df.wind, 
     #     df.Tair, df.pressure, df.H; zh, zr, 
-    #     stab_formulation = Val(:no_stability_correction))
+    #     stab_formulation = NoStabilityCorrection())
     dfd = disallowmissing(df[!,Not(:LE)])
     rp0 = @inferred roughness_parameters(Roughness_wind_profile(), dfd.ustar, dfd.wind, 
         dfd.Tair, dfd.pressure, dfd.H; zh, zr, 
-        stab_formulation = Val(:no_stability_correction))
+        stab_formulation = NoStabilityCorrection())
     @test keys(rp0) == keys_exp
     # same magnitude as with stability correction
     @test all(isapproxm.(values(rp0), values(rp), rtol=0.5))
     # providing DataFrame is not type stable
     rp0b = roughness_parameters(Roughness_wind_profile(), df; zh, zr, 
-        stab_formulation = Val(:no_stability_correction))
+        stab_formulation = NoStabilityCorrection())
     @test rp0b == rp0         
     #
     # estimate psi
@@ -57,7 +57,7 @@ end
     #
     # DataFrame with only columns ustar and wind
     rp0c = roughness_parameters(Roughness_wind_profile(), df[!,Cols(:ustar, :wind)]; zh, zr, 
-        stab_formulation = Val(:no_stability_correction))
+        stab_formulation = NoStabilityCorrection())
     @test rp0c == rp0         
 end
 
@@ -77,11 +77,11 @@ end
     u30c = @inferred wind_profile(z, ustar, d, z0m, Tair,pressure, H)
     df = copy(tha48)
     dfd = disallowmissing(df[!,Not(:LE)])
-    windz = @inferred wind_profile(z, columntable(dfd), d, z0m; stab_formulation = Val(:no_stability_correction))    
-    windz = wind_profile(z, df, d, z0m; stab_formulation = Val(:no_stability_correction))    
+    windz = @inferred wind_profile(z, columntable(dfd), d, z0m; stab_formulation = NoStabilityCorrection())    
+    windz = wind_profile(z, df, d, z0m; stab_formulation = NoStabilityCorrection())    
     @test length(windz) == 48
     @test windz[1] == u30
-    windzc = @inferred wind_profile(z, columntable(dfd), d, z0m; stab_formulation = Val(:Dyer_1970))    
+    windzc = @inferred wind_profile(z, columntable(dfd), d, z0m; stab_formulation = Dyer1970())    
     @test windzc[1] == u30c
     #plot(windz)
     #plot!(windz2)

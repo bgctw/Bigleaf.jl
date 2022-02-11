@@ -1,10 +1,14 @@
-"""
-    potential_ET(::Val{:PriestleyTaylor}, Tair, pressure, Rn; G=0.0, S=0.0, ...)
-    potential_ET(::Val{:PriestleyTaylor}, Tair, pressure, Rn, G, S; ...)
+abstract type ETMethod end
+struct PriestleyTaylor <: ETMethod end
+struct PenmanMonteith <: ETMethod end
 
-    potential_ET(::Val{:PenmanMonteith}, Tair, pressure, Rn, VPD, Ga_h;
+"""
+    potential_ET(::PriestleyTaylor, Tair, pressure, Rn; G=0.0, S=0.0, ...)
+    potential_ET(::PriestleyTaylor, Tair, pressure, Rn, G, S; ...)
+
+    potential_ET(::PenmanMonteith, Tair, pressure, Rn, VPD, Ga_h;
       G=zero(Tair),S=zero(Tair), ...)
-    fpotential_ET(::Val{:PenmanMonteith}, Tair, pressure, Rn, VPD, Ga_h, G, S; ...)
+    fpotential_ET(::PenmanMonteith, Tair, pressure, Rn, VPD, Ga_h, G, S; ...)
     
     potential_ET!(df, approach; ...)
 
@@ -18,7 +22,7 @@ the Penman-Monteith equation with a prescribed surface conductance.
 - `VPD`:       Vapor pressure deficit (kPa)
 - `Ga`:        Aerodynamic conductance to heat/water vapor (m s-1)
 - `df`:        DataFrame with the above variables
-- `approach`:  Approach used: Either `Val(:PriestleyTaylor)`  or `Val(:PenmanMonteith)`.
+- `approach`:  Approach used: Either `PriestleyTaylor()`  or `PenmanMonteith()`.
 optional:
 - `G=0.0`:         Ground heat flux (W m-2). Defaults to zero.
 - `S=0.0`:         Sum of all storage fluxes (W m-2) . Defaults to zero.
@@ -32,7 +36,7 @@ for PenmanMonteith:
 
 # Details
 Potential evapotranspiration is calculated according to Priestley & Taylor, 1972
-(`approach = Val(:PriestleyTaylor)`:
+(`approach = PriestleyTaylor()`:
 
 ``\\mathit{LE}_{pot} = (\\alpha \\, \\Delta \\, (Rn - G - S)) / (\\Delta + \\gamma)``
 
@@ -40,7 +44,7 @@ Potential evapotranspiration is calculated according to Priestley & Taylor, 1972
 of the saturation vapor pressure curve (kPa K-1), and ``\\gamma`` is the 
 psychrometric constant (kPa K-1).
 
-If `approach = Val(:PenmanMonteith)`, potential evapotranspiration is calculated according
+If `approach = PenmanMonteith()`, potential evapotranspiration is calculated according
 to the Penman-Monteith equation:
 
 ``\\mathit{LE}_{pot} = (\\Delta \\, (R_n - G - S) + \\rho \\, c_p \\, \\mathit{VPD} \\; G_a) / 
@@ -81,7 +85,7 @@ Calculate potential ET of a surface that receives a net radiation of 500 Wm-2
 using Priestley-Taylor:
 ```jldoctest; output=false
 Tair, pressure, Rn = 30.0,100.0,500.0
-ET_pot, LE_pot = potential_ET(Val(:PriestleyTaylor), Tair, pressure, Rn)    
+ET_pot, LE_pot = potential_ET(PriestleyTaylor(), Tair, pressure, Rn)    
 ≈(ET_pot, 0.000204; rtol = 1e-2)
 # output
 true
@@ -93,10 +97,10 @@ using Penman-Monteith:
 Tair, pressure, Rn = 30.0,100.0,500.0
 VPD, Ga_h, Gs_pot = 2.0, 0.1, 0.5
 ET_pot, LE_pot = potential_ET(
-  Val(:PenmanMonteith), Tair,pressure,Rn,VPD, Ga_h; Gs_pot)    
+  PenmanMonteith(), Tair,pressure,Rn,VPD, Ga_h; Gs_pot)    
 # now cross-check with the inverted equation
 Gs_ms, Gs_mol = surface_conductance(
-  Val(:PenmanMonteith), Tair,pressure,VPD,LE_pot,Rn,Ga_h)
+  InversePenmanMonteith(), Tair,pressure,VPD,LE_pot,Rn,Ga_h)
 Gs_mol ≈ Gs_pot
 # output
 true
@@ -111,25 +115,25 @@ df = DataFrame(
 allowmissing!(df, Cols(:G)); df.G[1] = missing
 #
 # need to provide G explicitly
-df_ET = potential_ET!(copy(df), Val(:PriestleyTaylor); G = df.G)    
+df_ET = potential_ET!(copy(df), PriestleyTaylor(); G = df.G)    
 ismissing(df_ET.ET_pot[1])
 #
 # use coalesce to replace missing values by zero
 df_ET = potential_ET!(
-  copy(df), Val(:PriestleyTaylor); G = coalesce.(df.G, zero(df.G)))    
+  copy(df), PriestleyTaylor(); G = coalesce.(df.G, zero(df.G)))    
 !ismissing(df_ET.ET_pot[1])
 # output
 true
 ``` 
 """
-function potential_ET(approach::Val{:PriestleyTaylor}, Tair, pressure, Rn;
+function potential_ET(approach::PriestleyTaylor, Tair, pressure, Rn;
   G=zero(Tair),S=zero(Tair), kwargs...)
   #
   potential_ET(approach, Tair, pressure, Rn, G, S; kwargs...)
 end
-function potential_ET(::Val{:PriestleyTaylor}, Tair, pressure, Rn, G, S;
+function potential_ET(::PriestleyTaylor, Tair, pressure, Rn, G, S;
   alpha=1.26,
-  Esat_formula=Val(:Sonntag_1990),
+  Esat_formula=Sonntag1990(),
   constants=BigleafConstants())
   #
   gamma  = psychrometric_constant(Tair,pressure;constants)
@@ -138,23 +142,21 @@ function potential_ET(::Val{:PriestleyTaylor}, Tair, pressure, Rn, G, S;
   ET_pot = LE_to_ET(LE_pot,Tair)
   (ET_pot = ET_pot, LE_pot = LE_pot)
 end
-function potential_ET!(df::AbstractDataFrame, approach::Val{:PriestleyTaylor}; 
+function potential_ET!(df::AbstractDataFrame, approach::PriestleyTaylor; 
   G=0.0,S=0.0, kwargs...) 
-  ft = (args...) -> potential_ET.(approach, args...,G,S; kwargs...)
-  transform!(df, SA[:Tair, :pressure, :Rn] => ft => AsTable)
+  # G or S might be vectors, hence cannot use ByRow
+  ft = (args...) -> potential_ET.(Ref(approach), args...,G,S; kwargs...)
+  transform!(df, Cols(:Tair, :pressure, :Rn) => ft => AsTable)
 end
 
-
-
-
-function potential_ET(approach::Val{:PenmanMonteith}, Tair, pressure, Rn, VPD, Ga_h;
+function potential_ET(approach::PenmanMonteith, Tair, pressure, Rn, VPD, Ga_h;
   G=zero(Tair),S=zero(Tair), kwargs...)
   #
   potential_ET(approach, Tair, pressure, Rn, VPD, Ga_h, G, S; kwargs...)
 end
-function potential_ET(::Val{:PenmanMonteith}, Tair, pressure, Rn, VPD, Ga_h, G, S;
+function potential_ET(::PenmanMonteith, Tair, pressure, Rn, VPD, Ga_h, G, S;
   Gs_pot=0.6,
-  Esat_formula=Val(:Sonntag_1990),
+  Esat_formula=Sonntag1990(),
   constants=BigleafConstants()
   )
   gamma  = psychrometric_constant(Tair,pressure;constants)
@@ -166,15 +168,16 @@ function potential_ET(::Val{:PenmanMonteith}, Tair, pressure, Rn, VPD, Ga_h, G, 
   ET_pot = LE_to_ET(LE_pot,Tair)
   (ET_pot = ET_pot, LE_pot = LE_pot)
 end
-function potential_ET!(df::AbstractDataFrame, approach::Val{:PenmanMonteith}; 
+function potential_ET!(df::AbstractDataFrame, approach::PenmanMonteith; 
   G=0.0,S=0.0, kwargs...
   ) 
-  ft = (args...) -> potential_ET.(approach, args..., G, S; kwargs...)
-  transform!(df, [:Tair, :pressure, :Rn, :VPD, :Ga_h] => ft => AsTable)
+  # G or S might be vectors, hence cannot use ByRow
+  ft = (args...) -> potential_ET.(Ref(approach), args..., G, S; kwargs...)
+  transform!(df, Cols(:Tair, :pressure, :Rn, :VPD, :Ga_h) => ft => AsTable)
 end
 
 
-# function potential_ET(df, approach::Val{:PriestleyTaylor}; 
+# function potential_ET(df, approach::PriestleyTaylor; 
 #   G=missing,S=missing, infoGS=true, kwargs...) 
 #   #
 #   dfGS = get_df_GS(df, G,S; infoGS) 
@@ -183,7 +186,7 @@ end
 #     All() => ByRow(f) => AsTable
 #   )
 # end
-# function potential_ET(df, approach::Val{:PenmanMonteith}; 
+# function potential_ET(df, approach::PenmanMonteith; 
 #   G=missing,S=missing, infoGS=true, kwargs...) 
 #   #
 #   dfGS = get_df_GS(df, G,S; infoGS) 
@@ -246,7 +249,7 @@ Evapotranspiration (ET) split up into imposed ET and equilibrium ET.
 optional : 
 - `G=0`       : Ground heat flux (W m-2)
 - `S=0`       : Sum of all storage fluxes (W m-2)
-- `Esat_formula=Val(:Sonntag_1990)`: formula used in [`Esat_from_Tair`](@ref)
+- `Esat_formula=Sonntag1990()`: formula used in [`Esat_from_Tair`](@ref)
 - `constants=`[`BigleafConstants`](@ref)`()`: pysical constants (cp, eps)
                  
 # Details
@@ -299,7 +302,7 @@ function equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn;
 end
 
 function equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn, G, S;
-  Esat_formula=Val(:Sonntag_1990),
+  Esat_formula=Sonntag1990(),
   constants=BigleafConstants())
   # 
   rho    = air_density(Tair, pressure; constants)

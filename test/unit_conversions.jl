@@ -1,12 +1,12 @@
 @testset "Esat_from_Tair" begin
   Tair = 15
-  Esat_formula=Val(:Sonntag_1990)
+  Esat_formula=Sonntag1990()
   constants=BigleafConstants()
   eSat = Esat_from_Tair(Tair; Esat_formula, constants)
   # regression test
   @test isapprox(eSat, 1.702, atol=1e-3)
-  eSat2 = Esat_from_Tair(Tair; Esat_formula = Val(:Alduchov_1996), constants)
-  eSat3 = Esat_from_Tair(Tair; Esat_formula = Val(:Allen_1998), constants)
+  eSat2 = Esat_from_Tair(Tair; Esat_formula = Alduchov1996(), constants)
+  eSat3 = Esat_from_Tair(Tair; Esat_formula = Allen1998(), constants)
   # different results with different methods
   @test !(eSat2 ≈ eSat)
   @test !(eSat3 ≈ eSat)
@@ -19,7 +19,7 @@ end
 @testset "Esat_from_Tair_slope" begin
     step = 0.1
     Tair = range(20.0, 22.0, step = step)
-    Esat_formula=Val(:Sonntag_1990)
+    Esat_formula=Sonntag1990()
     constants=BigleafConstants()
     Esat = Esat_from_Tair.(Tair)
     delta = Esat_from_Tair_deriv.(Tair)

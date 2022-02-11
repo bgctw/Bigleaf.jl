@@ -36,20 +36,20 @@ function Reynolds_Number(Tair,pressure,ustar,z0m;constants=BigleafConstants())
 end
 
 
-abstract type Roughness_Method end
-struct Roughness_wind_profile <: Roughness_Method end
-struct Roughness_canopy_height <: Roughness_Method end
-struct Roughness_canopy_height_LAI <: Roughness_Method end
+abstract type RoughnessMethod end
+struct Roughness_wind_profile <: RoughnessMethod end
+struct RoughnessCanopyHeight <: RoughnessMethod end
+struct RoughnessCanopyHeightLAI <: RoughnessMethod end
 
 """
-    roughness_parameters(::Roughness_canopy_height()    , zh; frac_d=0.7, frac_z0m=0.1)
-    roughness_parameters(::Roughness_canopy_height_LAI(), zh, LAI; cd=0.2, hs=0.01)
+    roughness_parameters(::RoughnessCanopyHeight()    , zh; frac_d=0.7, frac_z0m=0.1)
+    roughness_parameters(::RoughnessCanopyHeightLAI(), zh, LAI; cd=0.2, hs=0.01)
     roughness_parameters(::Roughness_wind_profile()     , ustar, wind, psi_m; 
       zh, zr, d = 0.7*zh, constants)
 
-    roughness_parameters(method::Roughness_wind_profile(), utar, wind, Tair, pressure, H; 
-      zh, zr, d = 0.7*zh, stab_formulation=Val(:Dyer_1970), constants)
-    roughness_parameters(method::Roughness_wind_profile(), df::DFTable; ...)
+    roughness_parameters(::Roughness_wind_profile(), ustar, wind, Tair, pressure, H; 
+      zh, zr, d = 0.7*zh, stab_formulation=Dyer1970(), constants)
+    roughness_parameters(::Roughness_wind_profile(), df::DFTable; ...)
     
 
 A approximations of the two roughness parameters displacement height (d)
@@ -83,7 +83,7 @@ then is not type stable.
 # Details
 The two main roughness parameters, the displacement height (d)
 and the roughness length for momentum (z0m) can be estimated from simple
-empirical relationships with canopy height (zh). If `method = Roughness_canopy_height()`,
+empirical relationships with canopy height (zh). If `method = RoughnessCanopyHeight()`,
 the following formulas are used:  
 
 ``d = frac_d * zh``
@@ -93,7 +93,7 @@ the following formulas are used:
 where ``frac_d`` defaults to 0.7 and ``frac_{z0m}`` to 0.1.
 
 Alternatively, d and z0m can be estimated from both canopy height and LAI
-(If `method = Roughness_canopy_height_LAI()`).
+(If `method = RoughnessCanopyHeightLAI()`).
 Based on data from Shaw & Pereira 1982, Choudhury & Monteith 1988 proposed 
 the following semi-empirical relations:
 
@@ -132,8 +132,8 @@ a NamedTuple with the following components:
 using DataFrames
 # estimate d and z0m from canopy height for a dense (LAI=5) and open (LAI=2) canopy
 zh = 25.0
-roughness_parameters(Roughness_canopy_height_LAI(),zh,5)
-roughness_parameters(Roughness_canopy_height_LAI(),zh,2)   
+roughness_parameters(RoughnessCanopyHeightLAI(),zh,5)
+roughness_parameters(RoughnessCanopyHeightLAI(),zh,2)   
    
 # fix d to 0.7*zh and estimate z0m from the wind profile
 df = DataFrame(
@@ -148,14 +148,14 @@ rp = roughness_parameters(Roughness_wind_profile(),df;zh,zr=40,d=0.8*zh)
 true
 ``` 
 """                                 
-function roughness_parameters(::Roughness_canopy_height, zh; frac_d=0.7, frac_z0m=0.1)
+function roughness_parameters(::RoughnessCanopyHeight, zh; frac_d=0.7, frac_z0m=0.1)
   d      = frac_d*zh
   z0m    = frac_z0m*zh
   z0m_se = missing
   (;d, z0m, z0m_se)
 end
 
-function roughness_parameters(::Roughness_canopy_height_LAI, zh, LAI; 
+function roughness_parameters(::RoughnessCanopyHeightLAI, zh, LAI; 
   cd=0.2, hs=0.01)
   X = cd * LAI
   d = 1.1 * zh * log(1 + X^(1/4))
@@ -182,7 +182,7 @@ end
 
 function roughness_parameters(method::Roughness_wind_profile, 
   ustar::AbstractVector, wind, Tair, pressure, H; zh, zr, d = 0.7*zh,
-  stab_formulation=Val(:Dyer_1970), constants=BigleafConstants(), kwargs...
+  stab_formulation=Dyer1970(), constants=BigleafConstants(), kwargs...
   )
   # psi_m = Tables.Columns(stability_correction.(
   #   zr, d, Tair, pressure, ustar, H; stab_formulation, constants)).psi_m
@@ -195,11 +195,11 @@ function roughness_parameters(method::Roughness_wind_profile,
 end
 
 function roughness_parameters(method::Roughness_wind_profile, df::DFTable; 
-  psi_m = nothing, stab_formulation=Val(:Dyer_1970), kwargs...
+  psi_m = nothing, stab_formulation=Dyer1970(), kwargs...
   )
   !isnothing(psi_m) && return(roughness_parameters(
     method, df.ustar, df.wind, psi_m; kwargs...))
-  if stab_formulation isa Val{:no_stability_correction}
+  if stab_formulation isa NoStabilityCorrection
     psi_m = 0.0
     roughness_parameters(method, df.ustar, df.wind, psi_m; kwargs...)
   else
@@ -213,7 +213,7 @@ end
     wind_profile(z::Number, ustar, d, z0m, psi_m = zero(z); constants)
     wind_profile(z, df::AbstractDataFrame, d, z0m, psi_m::AbstractVector; constants)
     wind_profile(z, df::DFTable, d, z0m; psi_m = nothing,
-      stab_formulation = Val(:Dyer_1970), constants)
+      stab_formulation = Dyer1970(), constants)
 
 Wind speed at a given height above the canopy estimated from single-level
 measurements of wind speed.
@@ -294,14 +294,14 @@ function wind_profile(
 end
 
 function wind_profile(z::Number, ustar::Union{Missing,Number}, d, z0m, Tair,pressure,H,
-  stab_formulation=Val(:Dyer_1970), constants=BigleafConstants())
+  stab_formulation=Dyer1970(), constants=BigleafConstants())
   psi_m = stability_correction(
     z,d, Tair,pressure,ustar,H; stab_formulation, constants).psi_m
   wind_profile(z, ustar, d, z0m, psi_m)
 end
 
 function wind_profile(z::Number, df::DFTable, d, z0m; psi_m = nothing, MOL = nothing,
-  stab_formulation = Val(:Dyer_1970), constants =BigleafConstants()
+  stab_formulation = Dyer1970(), constants =BigleafConstants()
   )
   if isnothing(psi_m)
     if isnothing(MOL) 
