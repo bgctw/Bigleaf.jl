@@ -41,7 +41,7 @@ end
     #dfo = DataFrame(ustar = SA[0.1,missing,0.3]) # not use SVector in DataFrame
     dfo = DataFrame(ustar = [0.1,missing,0.3])
     df = copy(dfo)
-    @inferred compute_Gb!(df, Val(:constant_kB1); kB_h)
+    @inferred compute_Gb!(df, Constant_kB1(); kB_h)
     @test propertynames(df) == [:ustar, :Gb_h]
     compute_Gb_quantities!(df)
     @test propertynames(df) == [:ustar, :Gb_h, :Rb_h, :kB_h, :Gb_CO2]
@@ -59,7 +59,7 @@ end
     # DataFrame variant
     dfo = DataFrame(ustar = [ustar,missing,0.3])
     df = copy(dfo)
-    @inferred compute_Gb!(df, Val(:Thom_1972))
+    @inferred compute_Gb!(df, Thom_1972())
     @test propertynames(df) == [:ustar, :Gb_h]
     @test df.Gb_h[1] == Gb1
 end
@@ -84,16 +84,16 @@ end
     df = tha48[:,Not(:Gb_h)]
     # sum(skipmissing(...)) not inferrable in Julia 1.6
     # @descend_code_warntype roughness_parameters(
-    #     Val(:wind_profile), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
+    #     Roughness_wind_profile(), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
     #     zh, zr)
     # @code_warntype roughness_parameters(
-    #     Val(:wind_profile), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
+    #     Roughness_wind_profile(), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
     #     zh, zr)
     # z0m = (@inferred roughness_parameters(
-    #     Val(:wind_profile), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
+    #     Roughness_wind_profile(), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
     #     zh, zr)).z0m
     z0m = roughness_parameters(
-        Val(:wind_profile), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
+        Roughness_wind_profile(), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
         zh, zr).z0m
     # function f1(zh, ustar, z0m, Tair, pressure, H) 
     #     wind_zh = wind_profile.(zh, ustar, 0.7*zh, z0m, Tair, pressure, H)
@@ -101,12 +101,12 @@ end
     # end
     # @code_warntype f(zh, df.ustar, z0m,df.Tair, df.pressure, df.H)    
     wind_zh = wind_profile.(zh, df.ustar, 0.7*zh, z0m, df.Tair, df.pressure, df.H)
-    @inferred compute_Gb!(df, Val(:Choudhury_1988); leafwidth, LAI, wind_zh)
+    @inferred compute_Gb!(df, Choudhury_1988(); leafwidth, LAI, wind_zh)
     @test last(propertynames(df)) == :Gb_h
     @test df.Gb_h[1] ≈ Gb_Choud rtol=1e-6
     #
     df = tha48[:,Not(:Gb_h)]
-    @inferred compute_Gb!(df, Val(:Su_2001); wind_zh, Dl, LAI)
+    @inferred compute_Gb!(df, Su_2001(); wind_zh, Dl, LAI)
     @test last(propertynames(df)) == :Gb_h
     @test df.Gb_h[1] ≈ Gb_S rtol=1e-6
 end
@@ -138,16 +138,16 @@ end
     df = copy(df0)
     # sum(skipmissing(...)) not inferrable in Julia 1.6
     # @descend_code_warntype roughness_parameters(
-    #     Val(:wind_profile), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
+    #     Roughness_wind_profile(), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
     #     zh, zr)
     # @code_warntype roughness_parameters(
-    #     Val(:wind_profile), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
+    #     Roughness_wind_profile(), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
     #     zh, zr)
     # z0m = (@inferred roughness_parameters(
-    #     Val(:wind_profile), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
+    #     Roughness_wind_profile(), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
     #     zh, zr)).z0m
     z0m = roughness_parameters(
-        Val(:wind_profile), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
+        Roughness_wind_profile(), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
         zh, zr).z0m
     @test typeof(z0m) == Float32        
     # function f1(zh, ustar, z0m, Tair, pressure, H) 
@@ -157,13 +157,13 @@ end
     # @code_warntype f(zh, df.ustar, z0m,df.Tair, df.pressure, df.H)    
     wind_zh = wind_profile.(zh, df.ustar, 0.7*zh, z0m, df.Tair, df.pressure, df.H)
     @test eltype(wind_zh) == Float32
-    @inferred compute_Gb!(df, Val(:Choudhury_1988); leafwidth, LAI, wind_zh)
+    @inferred compute_Gb!(df, Choudhury_1988(); leafwidth, LAI, wind_zh)
     @test last(propertynames(df)) == :Gb_h
     @test eltype(df.Gb_h) == Float32
     @test df.Gb_h[1] ≈ Gb_Choud rtol=1e-6
     #
     df = copy(df0)
-    @inferred compute_Gb!(df, Val(:Su_2001); wind_zh, Dl, LAI)
+    @inferred compute_Gb!(df, Su_2001(); wind_zh, Dl, LAI)
     @test last(propertynames(df)) == :Gb_h
     @test df.Gb_h[1] ≈ Gb_S rtol=1e-6
     @test eltype(df.Gb_h) == Float32

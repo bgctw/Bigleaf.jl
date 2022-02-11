@@ -1,2 +1,3 @@
 - renamed roughness_z0h to roughness_length_heat
 - aerodynamic_conductance computes roughness_length_heat for heat
+- replace ValueTypes of methods by proper Julia Types
