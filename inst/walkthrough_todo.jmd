@@ -178,7 +178,7 @@ thas[1:6, Cols(:datetime,Between(:zeta,:Ga_CO2))]
 
 Note that by not providing additional arguments, the default values are taken.
 We also do not need most of the arguments that can be provided to the function in this case 
-(i.e. with `Gb_model=Val(:Thom_1972)`). These are only required if we use a more complex 
+(i.e. with `Gb_model=Thom_1972()`). These are only required if we use a more complex 
 formulation of $G_b$.
 The output of the function is another DataFrame which contains separate columns for 
 conductances and resistances of different scalars (momentum, heat, and $CO_2$ by default).
@@ -191,7 +191,7 @@ dimension ($D_l$, assumed to be 1cm here), and information on sensor and canopy 
 
 
 ```julia
-aerodynamic_conductance!(thas;Gb_model=Val(:Su_2001),
+aerodynamic_conductance!(thas;Gb_model=Su_2001(),
      LAI=thal.zh, zh=thal.zh, d=0.7*thal.zh, zr=thal.zr,Dl=thal.Dl)
 thas[1:6, Cols(:datetime,Between(:zeta,:Ga_CO2))]
 ```
@@ -317,7 +317,7 @@ using Statistics
 wind_heights = 22:2:60.0
 d = 0.7 * thal.zh
 #psi_m = stability_correction!(copy(tha, copycols=false), thal.zr, d).psi_m
-#z0m = roughness_parameters(Val(:wind_profile), tha, thal.zh, thal.zr; psi_m).z0m
+#z0m = roughness_parameters(Roughness_wind_profile(), tha, thal.zh, thal.zr; psi_m).z0m
 wp = map(wind_heights) do z
   wind_profile(tha,z,d; zh=thal.zh, zr=thal.zr)
 end
@@ -472,7 +472,7 @@ Functin `add_Gb` calculates $G_b$ for other trace gases, provided that the respe
 number is known. 
 
 ```@example doc
-compute_Gb!(thaf, Val(:Thom_1972)) # adds/modifies column Gb_h and Gb_CO2
+compute_Gb!(thaf, Thom_1972()) # adds/modifies column Gb_h and Gb_CO2
 add_Gb!(thaf, :Gb_O2 => 0.84, :Gb_CH4 => 0.99) # adds Gb_O2 and Gb_CH4
 select(first(thaf,3), r"Gb_")
 ```
@@ -556,7 +556,7 @@ unc_all = mapply(aerodynamic_conductance,Dl=Dl_sample,z0m=z0m_sample,LAI=LAI_sam
                         MoreArgs=list(data=thaf,zr=42,zh=26.5,d=0.7*26.5,
                                       N=2,stab_correction=T,
                                       stab_formulation=Val(:Dyer_1970),
-                                      Gb_model=Val(:Su_2001))
+                                      Gb_model=Su_2001())
                   )
 
 # select "Ga_h" output variable and convert to matrix

@@ -15,6 +15,10 @@ using PaddedViews, StaticArrays
 using Infiltrator
 using Parameters
 
+export Conductance_Method, Thom_1972, Choudhury_1988, Su_2001, Constant_kB1
+export Resistance_Method, Resistance_wind_zr, Resistance_wind_profile
+export Roughness_Method, Roughness_wind_profile, Roughness_canopy_height, Roughness_canopy_height_LAI
+
 export frac_hour, moving_average, get_nonoverlapping_periods, set_datetime_ydh!
 export BigleafConstants
 export Esat_slope, Esat_from_Tair, Esat_from_Tair_deriv,

@@ -9,12 +9,12 @@ end
     zr = thal.zr
     LAI = thal.LAI
     keys_exp = (:d, :z0m, :z0m_se)
-    rp = @inferred roughness_parameters(Val(:canopy_height), zh)
+    rp = @inferred roughness_parameters(Roughness_canopy_height(), zh)
     #round.(values(rp); sigdigits = 4)
     @test keys(rp) == keys_exp
     @test all(isapproxm.(values(rp), (18.55, 2.65, missing), rtol=1e-3))
     #
-    rp = @inferred roughness_parameters(Val(:canopy_height_LAI), zh, LAI)
+    rp = @inferred roughness_parameters(Roughness_canopy_height_LAI(), zh, LAI)
     #round.(values(rp); sigdigits = 4)
     @test keys(rp) == keys_exp
     @test all(isapproxm.(values(rp), (21.77, 1.419, missing), rtol=1e-3))
@@ -25,8 +25,8 @@ end
     psi_m = stability_correction!(df; z=zr, d).psi_m
     # note: must use columntable for type stability - but needs compilation timede
     # not type-stable if some columns allow missings in Julia 1.6
-    #rp = @inferred roughness_parameters(Val(:wind_profile), df.ustar, df.wind, psi_m; zh, zr)
-    rp = roughness_parameters(Val(:wind_profile), df.ustar, df.wind, psi_m; zh, zr)
+    #rp = @inferred roughness_parameters(Roughness_wind_profile(), df.ustar, df.wind, psi_m; zh, zr)
+    rp = roughness_parameters(Roughness_wind_profile(), df.ustar, df.wind, psi_m; zh, zr)
     @test keys(rp) == keys_exp
     #@test all(isapproxm.(values(rp), (18.55, 1.879, 0.3561), rtol=1e-3))
     #from R:
@@ -34,29 +34,29 @@ end
     #
     # no stability correction
     # broadcast across Missings is not type-stable 
-    # rp0 = @inferred roughness_parameters(Val(:wind_profile), df.ustar, df.wind, 
+    # rp0 = @inferred roughness_parameters(Roughness_wind_profile(), df.ustar, df.wind, 
     #     df.Tair, df.pressure, df.H; zh, zr, 
     #     stab_formulation = Val(:no_stability_correction))
     dfd = disallowmissing(df[!,Not(:LE)])
-    rp0 = @inferred roughness_parameters(Val(:wind_profile), dfd.ustar, dfd.wind, 
+    rp0 = @inferred roughness_parameters(Roughness_wind_profile(), dfd.ustar, dfd.wind, 
         dfd.Tair, dfd.pressure, dfd.H; zh, zr, 
         stab_formulation = Val(:no_stability_correction))
     @test keys(rp0) == keys_exp
     # same magnitude as with stability correction
     @test all(isapproxm.(values(rp0), values(rp), rtol=0.5))
     # providing DataFrame is not type stable
-    rp0b = roughness_parameters(Val(:wind_profile), df; zh, zr, 
+    rp0b = roughness_parameters(Roughness_wind_profile(), df; zh, zr, 
         stab_formulation = Val(:no_stability_correction))
     @test rp0b == rp0         
     #
     # estimate psi
     #@code_warntype stability_correction(columntable(df), zr, 0.7*zh)
-    #@code_warntype roughness_parameters(Val(:wind_profile), columntable(df), zh, zr)
-    rp_psiauto = roughness_parameters(Val(:wind_profile), df; zh, zr)
+    #@code_warntype roughness_parameters(Roughness_wind_profile(), columntable(df), zh, zr)
+    rp_psiauto = roughness_parameters(Roughness_wind_profile(), df; zh, zr)
     @test rp_psiauto == rp
     #
     # DataFrame with only columns ustar and wind
-    rp0c = roughness_parameters(Val(:wind_profile), df[!,Cols(:ustar, :wind)]; zh, zr, 
+    rp0c = roughness_parameters(Roughness_wind_profile(), df[!,Cols(:ustar, :wind)]; zh, zr, 
         stab_formulation = Val(:no_stability_correction))
     @test rp0c == rp0         
 end

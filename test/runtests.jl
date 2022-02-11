@@ -30,7 +30,7 @@ tha48 = DataFrame(
 
 i_tmp = () -> begin 
     Dl=0.01
-    df = aerodynamic_conductance!(copy(df, copycols=false); Gb_model=Val(:Su_2001), 
+    df = aerodynamic_conductance!(copy(df, copycols=false); Gb_model=Su_2001(), 
         Dl, LAI=thal.LAI, zh=thal.zh, zr=thal.zr);
     @show df.Gb_h[1:48];
     @show df.Ga_h[1:48];
