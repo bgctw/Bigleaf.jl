@@ -1,8 +1,8 @@
-abstract type Conductance_Method end
-struct Thom_1972 <: Conductance_Method end
-struct Choudhury_1988 <: Conductance_Method end
-struct Su_2001 <: Conductance_Method end
-struct Constant_kB1 <: Conductance_Method end
+abstract type ConductanceMethod end
+struct Thom1972 <: ConductanceMethod end
+struct Choudhury1988 <: ConductanceMethod end
+struct Su2001 <: ConductanceMethod end
+struct ConstantKB1 <: ConductanceMethod end
 
 """
     compute_Gb!(df::AbstractDataFrame, approach; kwargs...)
@@ -12,10 +12,10 @@ Estimate boundary layer conductance.
 # Arguments  
 - `df`       : DataFrame with required variables (depend on approach)
 - `approach` : one of
-  - `Thom_1972()`: see [`Gb_Thom`](@ref)
-  - `Choudhury_1988()`: see [`Gb_Choudhury`](@ref)
-  - `Su_2001()`: see [`Gb_Su`](@ref)
-  - `Constant_kB1()`: see [`Gb_constant_kB1`](@ref)
+  - `Thom1972()`: see [`Gb_Thom`](@ref)
+  - `Choudhury1988()`: see [`Gb_Choudhury`](@ref)
+  - `Su2001()`: see [`Gb_Su`](@ref)
+  - `ConstantKB1()`: see [`Gb_constant_kB1`](@ref)
  
 The different approaches require different variables to be present in `df` and
 different keyword arguments.
@@ -35,26 +35,26 @@ To subsequently derived quantities see
 ```jldoctest; output = false
 using DataFrames
 df = DataFrame(wind=[3,4,5], ustar=[0.5,0.6,0.65]) 
-compute_Gb!(df, Thom_1972())
+compute_Gb!(df, Thom1972())
 ≈(df.Gb_h[1], 0.102, rtol=1e-2)
 # output
 true
 ``` 
 """
-function compute_Gb!(df::AbstractDataFrame, approach::Thom_1972; kwargs...)
+function compute_Gb!(df::AbstractDataFrame, approach::Thom1972; kwargs...)
   fr = (ustar) -> Gb_Thom.(ustar; kwargs...)
   #transform!(df, :ustar => ByRow(fr) => :Gb_h) # does not work with SVector
   transform!(df, :ustar => fr => :Gb_h)
 end
-function compute_Gb!(df::AbstractDataFrame, approach::Constant_kB1; kB_h, kwargs...)
+function compute_Gb!(df::AbstractDataFrame, approach::ConstantKB1; kB_h, kwargs...)
   # do not use ByRow because kb_H can be a vector
   ft = (ustar) -> Gb_constant_kB1.(ustar, kB_h; kwargs...)
   transform!(df, :ustar => ft => :Gb_h)
 end
-function compute_Gb!(df::AbstractDataFrame, approach::Choudhury_1988; kwargs...)
+function compute_Gb!(df::AbstractDataFrame, approach::Choudhury1988; kwargs...)
   Gb_Choudhury!(df; kwargs...)
 end
-function compute_Gb!(df::AbstractDataFrame, approach::Su_2001; kwargs...)
+function compute_Gb!(df::AbstractDataFrame, approach::Su2001; kwargs...)
   Gb_Su!(df; kwargs...)
 end
 
@@ -156,7 +156,7 @@ end
 
 """
     Gb_Thom(ustar; constants)
-    compute_Gb!(df, Val{:Thom_1972})
+    compute_Gb!(df, ::Thom1972)
 
 Boundary Layer Conductance according to Thom 1972, an empirical formulation for the 
 for heat transfer based on a simple ustar (friction velocity) dependency.
@@ -186,7 +186,7 @@ see [`compute_Gb!`](@ref)
 ```@example; output = false
 using DataFrames
 df = DataFrame(ustar = SA[0.1,missing,0.3])
-compute_Gb!(df, Thom_1972())
+compute_Gb!(df, Thom1972())
 propertynames(df) == [:ustar, :Gb_h]
 ``` 
 """
@@ -197,7 +197,7 @@ end
 
 """
     Gb_constant_kB1(ustar, kB_h; constants)
-    compute_Gb!(df, Val{:constant_kB1})
+    compute_Gb!(df, ::ConstantKB1})
 
 Boundary Layer Conductance using constant kB^(-1) value for heat transfer.
 
@@ -348,11 +348,11 @@ zh = 25; zr = 40
 z0m = roughness_parameters(
   Roughness_wind_profile(), df.ustar, df.wind, df.Tair, df.pressure, df.H; zh, zr).z0m 
 wind_zh = wind_profile(zh, df, 0.7*zh, z0m)
-compute_Gb!(df,Su_2001(); wind_zh, Dl=0.01, LAI=5)
+compute_Gb!(df,Su2001(); wind_zh, Dl=0.01, LAI=5)
 # the same meteorological conditions, but larger leaves
-compute_Gb!(df,Su_2001(); wind_zh, Dl=0.1,LAI=5)
+compute_Gb!(df,Su2001(); wind_zh, Dl=0.1,LAI=5)
 # same conditions, large leaves, and sparse canopy cover (LAI = 1.5)
-compute_Gb!(df,Su_2001(); wind_zh, Dl=0.1,LAI=1.5)
+compute_Gb!(df,Su2001(); wind_zh, Dl=0.1,LAI=1.5)
 ≈(df.Gb_h[1], 0.0638, rtol=1e-3)
 # output
 true
@@ -382,7 +382,7 @@ function Gb_Su!(df::AbstractDataFrame; wind_zh, Dl, fc=nothing,
     fc = length(LAI) == 1 ? (1-exp(-LAI/2)) : @. (1-exp(-LAI/2))
   end
   isnothing(Dl) && error(
-    "need to provide keyword argument Dl with :Su_2001 method")
+    "need to provide keyword argument Dl with :Su2001 method")
   inputcols = SA[:Tair,:pressure,:ustar]
   # Broadcasting does not work over keyword arguments, need to pass as positional
   fwind = (wind_zh, Dl, fc, N, Cd, hs, args...; kwargs...) -> Gb_Su(args...; 

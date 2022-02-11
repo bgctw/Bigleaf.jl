@@ -1,6 +1,6 @@
 """
     aerodynamic_conductance!(df; 
-      Gb_model = Thom_1972(), Ram_model = Resistance_wind_zr(),
+      Gb_model = Thom1972(), Ram_model = ResistanceWindZr(),
       zr=nothing, zh=nothing, d = isnothing(zh) ? nothing : 0.7*zh,
       ...
       )
@@ -21,7 +21,7 @@ Further required columns of `df` and keyword argument depend on `Gb_model`
 (see [`compute_Gb!`](@ref)) and `Ram_model` (see [`compute_Ram`](@ref)).
 
 If only columns `ustar` and `wind` are available, use default models 
-(`Thom_1972()` and `Resistance_wind_zr()`).
+(`Thom1972()` and `ResistanceWindZr()`).
 
 # Details
 
@@ -68,27 +68,27 @@ using DataFrames
 df = DataFrame(Tair=25.0,pressure=100.0,wind=[3.0,4,5],
   ustar=[0.5,0.6,0.65],H=[200.0,230,250])   
 # simple calculation of Ga  
-aerodynamic_conductance!(df;Gb_model=Thom_1972()) 
+aerodynamic_conductance!(df;Gb_model=Thom1972()) 
 # calculation of Ram using a model derived from the logarithmic wind profile
-aerodynamic_conductance!(df;Gb_model=Thom_1972(),Ram_model = Resistance_wind_profile(), 
+aerodynamic_conductance!(df;Gb_model=Thom1972(),Ram_model = ResistanceWindProfile(), 
   zr=40,zh=25,d=17.5,z0m=2) 
 # simple calculation of Ga, but a physically based canopy boundary layer model
-aerodynamic_conductance!(df,Gb_model=Su_2001(),
+aerodynamic_conductance!(df,Gb_model=Su2001(),
   zr=40,zh=25,d=17.5,Dl=0.05,N=2,fc=0.8)
 all(isfinite.(df.psi_h))
 # output
 true
 ``` 
 """
-function aerodynamic_conductance!(df; Gb_model = Thom_1972(), Ram_model = Resistance_wind_zr(),
+function aerodynamic_conductance!(df; Gb_model = Thom1972(), Ram_model = ResistanceWindZr(),
   zr=nothing,zh=nothing, d = isnothing(zh) ? nothing : 0.7*zh ,
   z0m=nothing,Dl=nothing,N=2,fc=nothing,LAI=nothing,Cd=0.2,hs=0.01,
   leafwidth=nothing,
-  stab_formulation=Val(:Dyer_1970),
+  stab_formulation=Dyer1970(),
   kB_h=nothing,constants=BigleafConstants()
   )
   # add zeta
-  if !isnothing(zr) && !isnothing(d) && !(stab_formulation isa Val{:no_stability_correction})
+  if !isnothing(zr) && !isnothing(d) && !(stab_formulation isa NoStabilityCorrection)
     stability_parameter!(df::AbstractDataFrame; z=zr, d, constants)
   else
     df[!,:zeta] .= missing
@@ -97,8 +97,8 @@ function aerodynamic_conductance!(df; Gb_model = Thom_1972(), Ram_model = Resist
   stability_correction!(df; zeta=df.zeta, stab_formulation, constants)
   # pre-estimate z0m to use it in both Gb and Ga
   needs_windprofile = 
-    Gb_model isa Union{Choudhury_1988, Su_2001} || 
-    Ram_model isa Resistance_wind_profile
+    Gb_model isa Union{Choudhury1988, Su2001} || 
+    Ram_model isa ResistanceWindProfile
   if needs_windprofile
     if isnothing(z0m) 
       z0m = roughness_parameters(Roughness_wind_profile(), df; zh, zr, psi_m = df.psi_m).z0m
@@ -107,17 +107,17 @@ function aerodynamic_conductance!(df; Gb_model = Thom_1972(), Ram_model = Resist
   end
   #
   # calculate canopy boundary layer conductance (Gb)
-  Gb_model isa Thom_1972 && compute_Gb!(df, Gb_model; constants)
-  Gb_model isa Constant_kB1 && compute_Gb!(df, Gb_model; kB_h, constants)
-  Gb_model isa Choudhury_1988 && compute_Gb!(
+  Gb_model isa Thom1972 && compute_Gb!(df, Gb_model; constants)
+  Gb_model isa ConstantKB1 && compute_Gb!(df, Gb_model; kB_h, constants)
+  Gb_model isa Choudhury1988 && compute_Gb!(
     df, Gb_model; leafwidth, LAI, wind_zh, constants)
-  Gb_model isa Su_2001 && compute_Gb!(
+  Gb_model isa Su2001 && compute_Gb!(
     df, Gb_model; wind_zh, Dl, fc, N, Cd, hs, LAI, constants)
   compute_Gb_quantities!(df)
   #
   # calculate aerodynamic risistance for momentum (Ra_m)
-  Ram_model isa Resistance_wind_profile && compute_Ram!(df, Ram_model; zr, d, z0m, constants) 
-  Ram_model isa Resistance_wind_zr && compute_Ram!(df, Ram_model) 
+  Ram_model isa ResistanceWindProfile && compute_Ram!(df, Ram_model; zr, d, z0m, constants) 
+  Ram_model isa ResistanceWindZr && compute_Ram!(df, Ram_model) 
   fr = (Ra_m, Gb_h, Gb_CO2) -> begin
     Ga_m = 1/Ra_m
     Ra_h = Ra_m + 1/Gb_h
@@ -164,19 +164,19 @@ it follows:
 roughness_length_heat(z0m, kB_h) = z0m / exp(kB_h)
 
 
-abstract type Resistance_Method end
-struct Resistance_wind_zr <: Resistance_Method end
-struct Resistance_wind_profile <: Resistance_Method end
+abstract type ResistanceMethod end
+struct ResistanceWindZr <: ResistanceMethod end
+struct ResistanceWindProfile <: ResistanceMethod end
 
 
 """
-    compute_Ram(::Resistance_wind_profile(), ustar; 
+    compute_Ram(::ResistanceWindProfile(), ustar; 
       zr, d, z0m, psi_h, constants=BigleafConstants())
-    compute_Ram!(df, method::Resistance_wind_profile();  
+    compute_Ram!(df, method::ResistanceWindProfile();  
       zr, d, z0m, psi_h = df.psi_h, kwargs...)
 
-    compute_Ram(::Resistance_wind_zr(), ustar, wind)
-    compute_Ram!(df, method::Resistance_wind_zr(); kwargs...)
+    compute_Ram(::ResistanceWindZr(), ustar, wind)
+    compute_Ram!(df, method::ResistanceWindZr(); kwargs...)
 
 Estimate bulk aerodynamic conductance.
 
@@ -193,7 +193,7 @@ Estimate bulk aerodynamic conductance.
 
 # Details
  
-The aerodynamic resistance for momentum ``R_{a_m}`` is given by (`Ram_method = Resistance_wind_zr()`):
+The aerodynamic resistance for momentum ``R_{a_m}`` is given by (`Ram_method = ResistanceWindZr()`):
 
 ``R_{a_m} = u/{u^*}^2``
 
@@ -201,7 +201,7 @@ Where u is the horizontal wind velocity.
 Note that this formulation accounts for changes in atmospheric stability, and does not 
 require an additional stability correction function. 
 
-An alternative method to calculate ``Ra_m`` is provided (`Ram_method = Resistance_wind_profile()`):
+An alternative method to calculate ``Ra_m`` is provided (`Ram_method = ResistanceWindProfile()`):
 
 ``R_{a_m} = (ln((z_r - d)/z_{0m}) - \\psi_h) / (k \\, u^*)``
 
@@ -213,7 +213,7 @@ on a stability parameter `zeta` ``\\zeta=(z-d/L)``, where `z` is the height,
 `d` the zero-plane displacement height, and `L` the Monin-Obukhov length, calculated with 
 [`Monin_Obukhov_length`](@ref)
 The stability correction function is chosen by the argument `stab_formulation`. 
-Options are `Val(:Dyer_1970)` and `Val(:Businger_1971)` and `Val(:no_stability_correction)`.
+Options are `Dyer1970()` and `Businger1971()` and `NoStabilityCorrection()`.
 
 # Note
 For adding aerodynamic conductance for other species see [`add_Ga!`](@ref).
@@ -235,12 +235,12 @@ Aerodynamic resistance for momentum transfer (s m-1) (``Ra_m``)
 # See also
 [`aerodynamic_conductance!`](@ref), [`add_Ga!`](@ref)
 """
-function compute_Ram(::Resistance_wind_profile, ustar::Union{Missing,Number}; 
+function compute_Ram(::ResistanceWindProfile, ustar::Union{Missing,Number}; 
   zr, d, z0m, psi_h, constants=BigleafConstants()
   )
   Ra_m = max((log((zr - d)/z0m) - psi_h),0) / (oftype(ustar,constants.k)*ustar)
 end
-function compute_Ram!(df, method::Resistance_wind_profile;  
+function compute_Ram!(df, method::ResistanceWindProfile;  
   zr, d, z0m, psi_h = df.psi_h, kwargs...
   )
   # put keyword arguments to positional arguments for proper broadcast
@@ -250,10 +250,10 @@ function compute_Ram!(df, method::Resistance_wind_profile;
   transform!(df, :ustar => ft => :Ra_m)
 end
 
-function compute_Ram(::Resistance_wind_zr, ustar::Union{Missing,Number}, wind)
+function compute_Ram(::ResistanceWindZr, ustar::Union{Missing,Number}, wind)
   Ra_m = wind / ustar^2
 end
-function compute_Ram!(df, method::Resistance_wind_zr; kwargs...)
+function compute_Ram!(df, method::ResistanceWindZr; kwargs...)
   fr = (ustar, wind) -> compute_Ram(method, ustar, wind; kwargs...)
   transform!(df, SA[:ustar, :wind] => ByRow(fr) => :Ra_m)
 end

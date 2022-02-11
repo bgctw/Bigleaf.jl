@@ -41,7 +41,7 @@ function setinvalid_qualityflag!(df; setvalmissing = true, kwargs...)
   if setvalmissing
     set_badquality_missing!(df; kwargs...)
   end
-  setinvalid_qualityflag!(df, Val(false); kwargs...)
+  _setinvalid_qualityflag!(df; kwargs...)
 end
 
 function set_badquality_missing!(df;
@@ -62,7 +62,7 @@ function set_badquality_missing!(df;
   transform!(df, tmp...)
 end
 
-function setinvalid_qualityflag!(df, setvalsmissing::Val{false};
+function _setinvalid_qualityflag!(df;
   vars=["LE","H","NEE","Tair","VPD","wind"],
   qc_suffix="_qc",
   good_quality_threshold = 1.0,
@@ -125,7 +125,7 @@ function setinvalid_range!(df, var_ranges::Vararg{Pair,N}; setvalmissing = true,
   if setvalmissing
     set_badrange_missing!(df, var_ranges...; kwargs...)
   end
-  setinvalid_range!(df, Val(false), var_ranges...; kwargs...)
+  _setinvalid_range!(df, var_ranges...; kwargs...)
 end
 
 function set_badrange_missing!(df, var_ranges::Vararg{Pair,N}) where N
@@ -136,7 +136,7 @@ function set_badrange_missing!(df, var_ranges::Vararg{Pair,N}) where N
   transform!(df, tmp...)
 end
 
-function setinvalid_range!(df, setvalsmissing::Val{false}, var_ranges::Vararg{Pair,N}) where N
+function _setinvalid_range!(df, var_ranges::Vararg{Pair,N}) where N
   function fval(valid, x...)
     for (p,xj) in zip(var_ranges, x)
       var, (min, max) = p

@@ -31,25 +31,25 @@ end
     df = copy(tha48)
     stability_correction!(df; z=zr, d)
     z0m = roughness_parameters(Roughness_wind_profile(), df; zh, zr, psi_m = df.psi_m).z0m
-    Ram_r = @inferred compute_Ram(Resistance_wind_zr(), ustar, wind)
+    Ram_r = @inferred compute_Ram(ResistanceWindZr(), ustar, wind)
     @test Ram_r ≈ 6.31 rtol = 1/100 # TODO check with R
     Ram_p =  @inferred compute_Ram(
-        Resistance_wind_profile(), ustar; zr, d, z0m, psi_h = df.psi_h[24])
+        ResistanceWindProfile(), ustar; zr, d, z0m, psi_h = df.psi_h[24])
     @test Ram_p ≈ 5.41 rtol = 1/100 # TODO check with R
     #
-    #Gb_h, Gb_CO2 = compute_Gb!(df, Thom_1972())[24, [:Gb_h, :Gb_CO2]]
-    @inferred compute_Ram!(df, Resistance_wind_zr())
+    #Gb_h, Gb_CO2 = compute_Gb!(df, Thom1972())[24, [:Gb_h, :Gb_CO2]]
+    @inferred compute_Ram!(df, ResistanceWindZr())
     #@test all(propertynames(df)[(end+1-length(Ram)):end] .== keys(Ram))
     @test propertynames(df)[end] == :Ra_m
     @test df.Ra_m[24] == Ram_r
-    @inferred compute_Ram!(df, Resistance_wind_profile(); zr, d, z0m)
+    @inferred compute_Ram!(df, ResistanceWindProfile(); zr, d, z0m)
     @test df.Ra_m[24] == Ram_p
     Ram_skalar = df.Ra_m
     #
     # test zr as a vecttor
     df[!,:zri] .= zr
     df.zri[1] = zr/2
-    @inferred compute_Ram!(df, Resistance_wind_profile(); zr=df.zri, d, z0m)
+    @inferred compute_Ram!(df, ResistanceWindProfile(); zr=df.zri, d, z0m)
     @test df.Ra_m[2:end] == Ram_skalar[2:end]
     @test df.Ra_m[1] != Ram_skalar[1]
 end
@@ -64,14 +64,14 @@ end
     # using only ustar and wind
     dfo = DataFrame(ustar = [0.1,missing,0.3], wind = [3.4, 2.8, 3.3])
     df = copy(dfo)
-    @inferred aerodynamic_conductance!(df; Gb_model=Thom_1972())
+    @inferred aerodynamic_conductance!(df; Gb_model=Thom1972())
     # missing due to missing zr
     @test all(ismissing.(df.psi_h))        
     @test all(ismissing.(df.psi_m))        
     @test all(ismissing.(df.z0h))        
     @inferred aerodynamic_conductance!(
-        df; Gb_model=Thom_1972(), zr = thal.zr, zh = thal.zh,
-        stab_formulation = Val(:no_stability_correction))
+        df; Gb_model=Thom1972(), zr = thal.zr, zh = thal.zh,
+        stab_formulation = NoStabilityCorrection())
     @test all(iszero.(df.psi_h))        
     @test all(iszero.(df.psi_m))        
     @test all(ismissing.(df.z0h))        
@@ -87,7 +87,7 @@ end
     df = tha48[:,Not(Cols(:Gb_h, :Ga_h))]
     # test Ga_m by wind_profile
     @inferred aerodynamic_conductance!(
-        df; Gb_model=Thom_1972(), Ram_model=Resistance_wind_profile(), 
+        df; Gb_model=Thom1972(), Ram_model=ResistanceWindProfile(), 
         zh = thal.zh, zr = thal.zr)
     @test propertynames(df)[(end-9):end] == 
         SA[:Gb_h, :Rb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2, :z0h]
@@ -98,7 +98,7 @@ end
     df = tha48[:,Not(Cols(:Gb_h, :Ga_h))]
     df[!,:kB_hi] .= 1.18
     df.kB_hi[1] = 1.18/2
-    @inferred aerodynamic_conductance!(df; Gb_model=Constant_kB1(), kB_h = df.kB_hi, 
+    @inferred aerodynamic_conductance!(df; Gb_model=ConstantKB1(), kB_h = df.kB_hi, 
         zh = thal.zh, zr = thal.zr)
     @test propertynames(df)[(end-9):end] == 
         SA[:Gb_h, :Rb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2, :z0h]
@@ -110,7 +110,7 @@ end
     df = tha48[:,Not(Cols(:Gb_h, :Ga_h))]
     # test Ga_m by wind_profile
     @inferred aerodynamic_conductance!(
-        df; Gb_model=Choudhury_1988(), Ram_model=Resistance_wind_profile(), 
+        df; Gb_model=Choudhury1988(), Ram_model=ResistanceWindProfile(), 
         leafwidth, LAI=thal.LAI, zh = thal.zh, zr = thal.zr)
     @test propertynames(df)[(end-9):end] == 
         SA[:Gb_h, :Rb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2, :z0h]
@@ -125,7 +125,7 @@ end
     df[!,:LAI] .= thal.LAI
     df.LAI[1] = thal.LAI/2
     # test providing changing LAI
-    @inferred aerodynamic_conductance!(df; Gb_model=Su_2001(), 
+    @inferred aerodynamic_conductance!(df; Gb_model=Su2001(), 
         Dl, LAI=df.LAI, zh=thal.zh, zr=thal.zr);
     @test propertynames(df)[(end-9):end] == 
         SA[:Gb_h, :Rb_h, :kB_h, :Gb_CO2, :Ra_m, :Ga_m, :Ga_h, :Ra_h, :Ga_CO2, :z0h]

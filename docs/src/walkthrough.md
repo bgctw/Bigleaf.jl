@@ -122,17 +122,17 @@ We can demonstrate the usage with a simple example:
 ```@example doc
 # explicit inputs
 Tair, pressure, Rn, =  14.81, 97.71, 778.17 
-potential_ET(Val(:PriestleyTaylor), Tair, pressure, Rn)
+potential_ET(PriestleyTaylor(), Tair, pressure, Rn)
 
 # DataFrame
-potential_ET!(copy(tha), Val(:PriestleyTaylor))
+potential_ET!(copy(tha), PriestleyTaylor())
 
 # DataFrame with a few columns overwritten by user values
-potential_ET!(transform(tha, :Tair => x -> 25.0; renamecols=false), Val(:PriestleyTaylor))
+potential_ET!(transform(tha, :Tair => x -> 25.0; renamecols=false), PriestleyTaylor())
 
 # varying one input only: scalar form with dot-notation
 Tair_vec =  10.0:1.0:20.0
-DataFrame(potential_ET.(Val(:PriestleyTaylor), Tair_vec, pressure, Rn))
+DataFrame(potential_ET.(Ref(PriestleyTaylor()), Tair_vec, pressure, Rn))
 nothing # hide
 ```
 
@@ -156,7 +156,7 @@ $S$ and $G$ values.
 Note that the default for G and S in the dataframe variant is missing (and assumed zero), 
 even if those columns are
 present in the DataFrame. You need to explictly pass those columns with the optional
-arguments: e.g. `potential_ET(df, Val(:PriestleyTaylor); G = df.G)`
+arguments: e.g. `potential_ET(df, PriestleyTaylor(); G = df.G)`
 
 Note that in difference to the bigleaf R package missing entries in an input
 vector are not relaced by zero by default. 
@@ -324,9 +324,9 @@ The following figure compares them at absole scale and as difference to the
 #using DataFrames
 #Tair = 0:0.25:12
 ##Tair = [10.0,20.0]
-#eform_def = Val(:Sonntag_1990)
+#eform_def = Sonntag1990()
 #Esat_def = Esat_from_Tair.(Tair; Esat_formula = eform_def)
-#eforms = (Val(:Sonntag_1990), Val(:Alduchov_1996), Val(:Allen_1998))
+#eforms = (Sonntag1990(), Alduchov1996(), Allen1998())
 #eform = eforms[2]
 #string.(eforms)
 #df = mapreduce(vcat, eforms) do eform 
@@ -345,7 +345,7 @@ The following figure compares them at absole scale and as difference to the
 #dfws = @pipe df |> select(_, 1,2, :dEsat) |> unstack(_, :Esat_formula, 3)
 #@df dfw plot(:Tair, cols(2:4), legend = :topleft, xlab="Tair (degC)", #ylab="Esat (kPa)")
 #savefig("Esat_abs.svg")
-#@df dfws plot(:Tair, cols(2:4), legend = :topleft, xlab="Tair (degC)", #ylab="Esat -ESat_Sonntag_1990 (kPa)")
+#@df dfws plot(:Tair, cols(2:4), legend = :topleft, xlab="Tair (degC)", #ylab="Esat -ESat_Sonntag1990 (kPa)")
 #savefig("fig/Esat_rel.svg")
 ```
 
@@ -381,7 +381,7 @@ thas[1:3, Cols(:datetime,Between(:zeta,:Ga_CO2))]
 
 Note that by not providing additional arguments, the default values are taken.
 We also do not need most of the arguments that can be provided to the function in this case 
-(i.e. with `Gb_model=Thom_1972()`). These are only required if we use a more complex 
+(i.e. with `Gb_model=Thom1972()`). These are only required if we use a more complex 
 formulation of $G_b$.
 The output of the function is another DataFrame which contains separate columns for 
 conductances and resistances of different scalars (momentum, heat, and $CO_2$ by default).
@@ -394,7 +394,7 @@ dimension ($D_l$, assumed to be 1cm here), and information on sensor and canopy 
 
 
 ```@example doc
-aerodynamic_conductance!(thas;Gb_model=Su_2001(),
+aerodynamic_conductance!(thas;Gb_model=Su2001(),
      LAI=thal.zh, zh=thal.zh, d=0.7*thal.zh, zr=thal.zr, Dl=thal.Dl);
 thas[1:3, Cols(:datetime,Between(:zeta,:Ga_CO2))]
 ```
@@ -413,7 +413,7 @@ Functin `add_Gb` calculates $G_b$ for other trace gases, provided that the respe
 number is known. 
 
 ```@example doc
-compute_Gb!(thas, Thom_1972()); # adds/modifies column Gb_h and Gb_CO2
+compute_Gb!(thas, Thom1972()); # adds/modifies column Gb_h and Gb_CO2
 add_Gb!(thas, :Gb_O2 => 0.84, :Gb_CH4 => 0.99); # adds Gb_O2 and Gb_CH4
 select(first(thas,3), r"Gb_")
 ```
@@ -427,7 +427,7 @@ conductance of the vegetation and the soil to water vapor transfer (and as such 
 a purely physiological quantity). Calculating $G_s$ in `Bigleaf.jl` is simple:
 
 ```@example doc
-surface_conductance!(thas, Val(:PenmanMonteith));
+surface_conductance!(thas, InversePenmanMonteith());
 thas[1:3,Cols(:datetime, r"Gs")]
 ```
 
@@ -439,7 +439,7 @@ In our example we do not have information on the storage fluxes, but we have mea
 on the ground heat flux, which we should add to the function call:
 
 ```@example doc
-surface_conductance!(thas, Val(:PenmanMonteith); G=thas.G);
+surface_conductance!(thas, InversePenmanMonteith(); G=thas.G);
 thas[1:3,Cols(:datetime, r"Gs")]
 ```
 
@@ -493,10 +493,10 @@ evapotranspiration (PET). At the moment, the `Bigleaf.jl` contains two formulati
 for the estimate of PET: the Priestley-Taylor equation, and the Penman-Monteith equation:
 
 ```@example doc
-potential_ET!(thas, Val(:PriestleyTaylor); G = thas.G)
+potential_ET!(thas, PriestleyTaylor(); G = thas.G)
 
 # aerodynamic Ga_h and surface conductance Gs_mol must be computed before
-potential_ET!(thas, Val(:PenmanMonteith);  G = thas.G, 
+potential_ET!(thas, PenmanMonteith();  G = thas.G, 
         Gs_pot=quantile(skipmissing(thas.Gs_mol),0.95))
 thas[24:26, Cols(:datetime, :ET_pot, :LE_pot)]
 ```

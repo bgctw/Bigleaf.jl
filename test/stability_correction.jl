@@ -44,7 +44,7 @@ end
     df2 = DataFrame(stability_correction.(zeta))
     @test all(isapprox.(df2.psi_h, SA[2.431,2.197,1.881,1.386,0,-2.5], rtol=1e-3))
     @test all(isapprox.(df2.psi_m, SA[2.275, 2.061, 1.772, 1.317, 0, -2.5], rtol=1e-3))
-    df2 = DataFrame(stability_correction.(zeta; stab_formulation=Val(:Businger_1971)))                         
+    df2 = DataFrame(stability_correction.(zeta; stab_formulation=Businger1971()))                         
     @test all(isapprox.(df2.psi_h, SA[2.085, 1.862, 1.564, 1.106,0, -3.9], rtol=1e-3))
     @test all(isapprox.(df2.psi_m, SA[2.418, 2.200, 1.904, 1.435,0, -3], rtol=1e-3))
     #
@@ -54,7 +54,7 @@ end
     @test all(ismissing.(values(resm)))
     #
     resm = @inferred stability_correction(first(zeta); 
-        stab_formulation = Val(:no_stability_correction))
+        stab_formulation = NoStabilityCorrection())
     @test resm == (psi_h = 0.0, psi_m = 0.0)
 end
 
@@ -80,9 +80,9 @@ end
     dfm = allowmissing(dfo)
     dfm.ustar[1] = missing
     res = stability_correction(
-        dfm; z, d, stab_formulation = Val(:no_stability_correction))
+        dfm; z, d, stab_formulation = NoStabilityCorrection())
     stability_correction!(
-        dfm; z, d, stab_formulation = Val(:no_stability_correction))
+        dfm; z, d, stab_formulation = NoStabilityCorrection())
     propertynames(dfm)[(end-1):end] == SA[:psi_h, :psi_m]
     @test all(iszero.(dfm.psi_h))
     @test all(iszero.(dfm.psi_m))
@@ -124,10 +124,10 @@ end
     dfm = allowmissing(dfo)
     dfm.ustar[1] = missing
     res = stability_correction(
-        dfm; z, d, stab_formulation = Val(:no_stability_correction))
+        dfm; z, d, stab_formulation = NoStabilityCorrection())
     @test eltype(res.psi_h) == Float32
     stability_correction!(
-        dfm; z, d, stab_formulation = Val(:no_stability_correction))
+        dfm; z, d, stab_formulation = NoStabilityCorrection())
     propertynames(dfm)[(end-1):end] == SA[:psi_h, :psi_m]
     @test all(iszero.(dfm.psi_h))
     @test all(iszero.(dfm.psi_m))

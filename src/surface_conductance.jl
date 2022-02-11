@@ -1,10 +1,15 @@
-"""
-      surface_conductance(::Val{:FluxGradient},   Tair,pressure,VPD,LE; constants)
-      surface_conductance(::Val{:PenmanMonteith}, Tair,pressure,VPD,LE,Rn,Ga_h; 
-            G = 0.0, S = 0.0, Esat_formula=Val(:Sonntag_1990), constants)
+abstract type SurfaceConductanceMethod end
+struct FluxGradient <: SurfaceConductanceMethod end
+struct InversePenmanMonteith <: SurfaceConductanceMethod end
 
-      surface_conductance!(df, method::Val{:FluxGradient}; kwargs...)
-      surface_conductance!(df, method::Val{:PenmanMonteith}; G = 0.0, S = 0.0, kwargs...)
+
+"""
+      surface_conductance(::FluxGradient,   Tair,pressure,VPD,LE; constants)
+      surface_conductance(::InversePenmanMonteith, Tair,pressure,VPD,LE,Rn,Ga_h; 
+            G = 0.0, S = 0.0, Esat_formula=Sonntag1990(), constants)
+
+      surface_conductance!(df, method::FluxGradient; kwargs...)
+      surface_conductance!(df, method::InversePenmanMonteith; G = 0.0, S = 0.0, kwargs...)
 
 Calculate surface conductance to water vapor from the inverted Penman-Monteith equation 
 or from a simple flux-gradient approach.
@@ -16,16 +21,16 @@ or from a simple flux-gradient approach.
 - `df`        : DataFrame with above variables
 - `constants=`[`BigleafConstants`](@ref)`()`: Dictionary with physical constants
 
-additional for PenmanMonteith
+additional for InversePenmanMonteith
 - `LE`        : Latent heat flux (W m-2)
 - `VPD`       : Vapor pressure deficit (kPa)
 - `Ga_h`      : Aerodynamic conductance towater vapor (m s-1), assumed equal to that of heat
 - `G=0.0`     : Ground heat flux (W m-2), defaults to zero
 - `S=0.0`     : Sum of all storage fluxes (W m-2), defaults to zero
-- `Esat_formula=Val(:Sonntag_1990)`: formula used in [`Esat_from_Tair`](@ref)
+- `Esat_formula=Sonntag1990()`: formula used in [`Esat_from_Tair`](@ref)
 
 # Details
-For `Val(:PenmanMonteith)`, surface conductance (Gs) in m s-1 
+For `InversePenmanMonteith()`, surface conductance (Gs) in m s-1 
 is calculated from the inverted Penman-Monteith equation:
 
 ``G_s = ( LE \\. G_a \\, \\gamma ) / ( \\Delta \\, A + \\rho \\, c_p \\, G_a \\, VPD - 
@@ -40,7 +45,7 @@ the lenght of the DataFrame in the DataFrame variant.
 While the bigleaf R package by default converts any missings in `G` and `S` to 0,
 in `Bigleaf.jl` the caller must take care, e.g. by using `G = coalesce(myGvector, 0.0)`.
 
-For `Val(:FluxGradient)`, Gs (in mol m-2 s-1) is calculated from VPD and ET only:
+For `FluxGradient()`, Gs (in mol m-2 s-1) is calculated from VPD and ET only:
 
    ``Gs = ET/p \\, VPD``
 
@@ -72,26 +77,26 @@ NamedTuple with entries:
 # Examples
 ```jldoctest; output = false
 Tair,pressure,VPD,LE,Rn,Ga_h,G = (14.8, 97.7, 1.08, 183.0, 778.0, 0.116, 15.6)
-Gs = surface_conductance(Val(:PenmanMonteith), Tair,pressure,VPD,LE,Rn,Ga_h;G)
+Gs = surface_conductance(InversePenmanMonteith(), Tair,pressure,VPD,LE,Rn,Ga_h;G)
 isapprox(Gs.Gs_mol, 0.28, atol=0.1)
 # output
 true
 ``` 
 """
-function surface_conductance(::Val{:FluxGradient}, Tair,pressure,VPD,LE; constants=BigleafConstants())
+function surface_conductance(::FluxGradient, Tair,pressure,VPD,LE; constants=BigleafConstants())
     Gs_mol = (LE_to_ET(LE,Tair)/oftype(pressure,constants.Mw)) * pressure / VPD
     Gs_ms  = mol_to_ms(Gs_mol,Tair,pressure; constants)
     (;Gs_ms,Gs_mol)   
 end     
-function surface_conductance!(df::AbstractDataFrame, method::Val{:FluxGradient}; kwargs...)
+function surface_conductance!(df::AbstractDataFrame, method::FluxGradient; kwargs...)
       fr = (args...) -> surface_conductance(method, args...; kwargs...) 
       transform!(df, SA[:Tair,:pressure,:VPD,:LE] => ByRow(fr) => AsTable)
 end
 
-function surface_conductance(::Val{:PenmanMonteith}, Tair,pressure,VPD,LE,Rn,Ga_h; 
+function surface_conductance(::InversePenmanMonteith, Tair,pressure,VPD,LE,Rn,Ga_h; 
       G = 0.0, S = 0.0,
       #Ga="Ga_h",missing_G_as_NA=false,missing_S_as_NA=false,
-      Esat_formula=Val(:Sonntag_1990), constants=BigleafConstants()
+      Esat_formula=Sonntag1990(), constants=BigleafConstants()
       )
       Delta = Esat_from_Tair_deriv(Tair; Esat_formula, constants)
       gamma = psychrometric_constant(Tair, pressure; constants)
@@ -101,7 +106,7 @@ function surface_conductance(::Val{:PenmanMonteith}, Tair,pressure,VPD,LE,Rn,Ga_
       Gs_mol = ms_to_mol(Gs_ms,Tair,pressure; constants)
       (;Gs_ms,Gs_mol)    
 end
-function surface_conductance!(df::AbstractDataFrame, method::Val{:PenmanMonteith}; 
+function surface_conductance!(df::AbstractDataFrame, method::InversePenmanMonteith; 
       G = 0.0, S = 0.0, kwargs...)
       # need to convert G and S to positional arguments for proper broadcast
       fpos = (G, S, args...) -> surface_conductance(method, args...; G,S, kwargs...) 

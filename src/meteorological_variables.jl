@@ -80,7 +80,7 @@ function pressure_from_elevation(elev,Tair,VPD=missing; constants=BigleafConstan
     pressure1   = oftype(Tair,constants.pressure0) / exp(oftype(Tair,constants.g) * elev / (oftype(Tair,constants.Rd)*Tair_K))
     Tv          = virtual_temp(
       Tair_K - oftype(Tair,constants.Kelvin), pressure1 * constants.Pa2kPa, VPD;
-      Esat_formula=Val(:Sonntag_1990),constants) + oftype(Tair,constants.Kelvin)
+      Esat_formula=Sonntag1990(),constants) + oftype(Tair,constants.Kelvin)
     pressure    = oftype(Tair,constants.pressure0) / exp(oftype(Tair,constants.g) * elev / (oftype(Tair,constants.Rd)*Tv))
   end
   pressure = pressure * constants.Pa2kPa
@@ -193,13 +193,13 @@ wetbulb_temp.([20,25.0], 100, [1,1.6])
 ```
 """
 function wetbulb_temp(Tair, pressure, VPD; accuracy=1e-03,
-  Esat_formula=Val(:Sonntag_1990), constants=BigleafConstants())
+  Esat_formula=Sonntag1990(), constants=BigleafConstants())
   gamma  = psychrometric_constant(Tair,pressure)
   ea     = VPD_to_e(VPD,Tair;Esat_formula)
   wetbulb_temp_from_e_Tair_gamma(ea,Tair,gamma; accuracy,Esat_formula,constants)
 end,
 function wetbulb_temp_from_e_Tair_gamma(ea, Tair, gamma; accuracy=1e-03,
-  Esat_formula=Val(:Sonntag_1990), constants=BigleafConstants())
+  Esat_formula=Sonntag1990(), constants=BigleafConstants())
   if accuracy > one(accuracy)
     @warn ("'accuracy' is set to 1 degC")
     accuracy = one(accuracy)
@@ -252,12 +252,12 @@ Td = dew_point(Tair, VPD; accuracy = 1e-2)
 (e = VPD_to_e(VPD,Tair), esat_Td = Esat_from_Tair(Td))
 ```
 """
-function dew_point(Tair, VPD; accuracy=1e-03,Esat_formula=Val(:Sonntag_1990),
+function dew_point(Tair, VPD; accuracy=1e-03,Esat_formula=Sonntag1990(),
                       constants=BigleafConstants())
   ea = VPD_to_e(VPD,Tair;Esat_formula)
   dew_point_from_e(ea; accuracy, Esat_formula, constants)
 end,
-function dew_point_from_e(ea;accuracy=1e-03,Esat_formula=Val(:Sonntag_1990), constants=BigleafConstants())
+function dew_point_from_e(ea;accuracy=1e-03,Esat_formula=Sonntag1990(), constants=BigleafConstants())
   if accuracy > one(accuracy)
     @warn ("'accuracy' is set to 1 degC")
     accuracy = one(accuracy)
@@ -311,7 +311,7 @@ vt = virtual_temp(Tair,pressure,VPD)
 true
 ```
 """
-function virtual_temp(Tair,pressure,VPD;Esat_formula=Val(:Sonntag_1990),
+function virtual_temp(Tair,pressure,VPD;Esat_formula=Sonntag1990(),
                          constants=BigleafConstants())
   e    = VPD_to_e(VPD,Tair;Esat_formula)
   Tair_Kelvin = Tair + oftype(Tair,constants.Kelvin)
