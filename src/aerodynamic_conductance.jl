@@ -1,6 +1,6 @@
 """
     aerodynamic_conductance!(df; 
-      Gb_model = Thom1972(), Ram_model = ResistanceWindZr(),
+      Gb_model = :Thom1972, Ram_model = ResistanceWindZr(),
       zr=nothing, zh=nothing, d = isnothing(zh) ? nothing : 0.7*zh,
       ...
       )
@@ -21,7 +21,7 @@ Further required columns of `df` and keyword argument depend on `Gb_model`
 (see [`compute_Gb!`](@ref)) and `Ram_model` (see [`compute_Ram`](@ref)).
 
 If only columns `ustar` and `wind` are available, use default models 
-(`Thom1972()` and `ResistanceWindZr()`).
+(`:Thom1972` and `ResistanceWindZr()`).
 
 # Details
 
@@ -68,19 +68,19 @@ using DataFrames
 df = DataFrame(Tair=25.0,pressure=100.0,wind=[3.0,4,5],
   ustar=[0.5,0.6,0.65],H=[200.0,230,250])   
 # simple calculation of Ga  
-aerodynamic_conductance!(df;Gb_model=Thom1972()) 
+aerodynamic_conductance!(df;Gb_model=:Thom1972) 
 # calculation of Ram using a model derived from the logarithmic wind profile
-aerodynamic_conductance!(df;Gb_model=Thom1972(),Ram_model = ResistanceWindProfile(), 
+aerodynamic_conductance!(df;Gb_model=:Thom1972,Ram_model = ResistanceWindProfile(), 
   zr=40,zh=25,d=17.5,z0m=2) 
 # simple calculation of Ga, but a physically based canopy boundary layer model
-aerodynamic_conductance!(df,Gb_model=Su2001(),
+aerodynamic_conductance!(df,Gb_model=:Su2001,
   zr=40,zh=25,d=17.5,Dl=0.05,N=2,fc=0.8)
 all(isfinite.(df.psi_h))
 # output
 true
 ``` 
 """
-function aerodynamic_conductance!(df; Gb_model = Thom1972(), Ram_model = ResistanceWindZr(),
+function aerodynamic_conductance!(df; Gb_model = :Thom1972, Ram_model = ResistanceWindZr(),
   zr=nothing,zh=nothing, d = isnothing(zh) ? nothing : 0.7*zh ,
   z0m=nothing,Dl=nothing,N=2,fc=nothing,LAI=nothing,Cd=0.2,hs=0.01,
   leafwidth=nothing,
@@ -101,7 +101,7 @@ function aerodynamic_conductance!(df; Gb_model = Thom1972(), Ram_model = Resista
     Ram_model isa ResistanceWindProfile
   if needs_windprofile
     if isnothing(z0m) 
-      z0m = roughness_parameters(Roughness_wind_profile(), df; zh, zr, psi_m = df.psi_m).z0m
+      z0m = roughness_parameters(:wind_profile, df; zh, zr, psi_m = df.psi_m).z0m
     end
     wind_zh = wind_profile(zh, df, d, z0m; stab_formulation, constants)
   end

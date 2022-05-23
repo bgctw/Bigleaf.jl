@@ -12,10 +12,10 @@ Estimate boundary layer conductance.
 # Arguments  
 - `df`       : DataFrame with required variables (depend on approach)
 - `approach` : one of
-  - `Thom1972()`: see [`Gb_Thom`](@ref)
-  - `Choudhury1988()`: see [`Gb_Choudhury`](@ref)
-  - `Su2001()`: see [`Gb_Su`](@ref)
-  - `ConstantKB1()`: see [`Gb_constant_kB1`](@ref)
+  - `:Thom1972`: see [`Gb_Thom`](@ref)
+  - `:Choudhury1988`: see [`Gb_Choudhury`](@ref)
+  - `:Su2001`: see [`Gb_Su`](@ref)
+  - `:constant_KB1`: see [`Gb_constant_kB1`](@ref)
  
 The different approaches require different variables to be present in `df` and
 different keyword arguments.
@@ -35,26 +35,27 @@ To subsequently derived quantities see
 ```jldoctest; output = false
 using DataFrames
 df = DataFrame(wind=[3,4,5], ustar=[0.5,0.6,0.65]) 
-compute_Gb!(df, Thom1972())
+compute_Gb!(df, :Thom1972)
 ≈(df.Gb_h[1], 0.102, rtol=1e-2)
 # output
 true
 ``` 
 """
-function compute_Gb!(df::AbstractDataFrame, approach::Thom1972; kwargs...)
+@symboldispatch_pos2 function compute_Gb!(df::AbstractDataFrame, ::Val{:Thom1972}; kwargs...)
   fr = (ustar) -> Gb_Thom.(ustar; kwargs...)
   #transform!(df, :ustar => ByRow(fr) => :Gb_h) # does not work with SVector
   transform!(df, :ustar => fr => :Gb_h)
 end
-function compute_Gb!(df::AbstractDataFrame, approach::ConstantKB1; kB_h, kwargs...)
+
+function compute_Gb!(df::AbstractDataFrame, ::Val{:constant_KB1}; kB_h, kwargs...)
   # do not use ByRow because kb_H can be a vector
   ft = (ustar) -> Gb_constant_kB1.(ustar, kB_h; kwargs...)
   transform!(df, :ustar => ft => :Gb_h)
 end
-function compute_Gb!(df::AbstractDataFrame, approach::Choudhury1988; kwargs...)
+function compute_Gb!(df::AbstractDataFrame, ::Val{:Choudhury1988}; kwargs...)
   Gb_Choudhury!(df; kwargs...)
 end
-function compute_Gb!(df::AbstractDataFrame, approach::Su2001; kwargs...)
+function compute_Gb!(df::AbstractDataFrame, ::Val{:Su2001}; kwargs...)
   Gb_Su!(df; kwargs...)
 end
 
@@ -156,7 +157,7 @@ end
 
 """
     Gb_Thom(ustar; constants)
-    compute_Gb!(df, ::Thom1972)
+    compute_Gb!(df, :Thom1972)
 
 Boundary Layer Conductance according to Thom 1972, an empirical formulation for the 
 for heat transfer based on a simple ustar (friction velocity) dependency.
@@ -186,7 +187,7 @@ see [`compute_Gb!`](@ref)
 ```@example; output = false
 using DataFrames
 df = DataFrame(ustar = SA[0.1,missing,0.3])
-compute_Gb!(df, Thom1972())
+compute_Gb!(df, :Thom1972)
 propertynames(df) == [:ustar, :Gb_h]
 ``` 
 """
@@ -197,7 +198,7 @@ end
 
 """
     Gb_constant_kB1(ustar, kB_h; constants)
-    compute_Gb!(df, ::ConstantKB1})
+    compute_Gb!(df, :constant_KB1})
 
 Boundary Layer Conductance using constant kB^(-1) value for heat transfer.
 
@@ -346,13 +347,13 @@ df = DataFrame(
   Tair=25.0,pressure=100.0,wind=[3.0,4,5],ustar=[0.5,0.6,0.65],H=[200.0,230,250])
 zh = 25; zr = 40
 z0m = roughness_parameters(
-  Roughness_wind_profile(), df.ustar, df.wind, df.Tair, df.pressure, df.H; zh, zr).z0m 
+  :wind_profile, df.ustar, df.wind, df.Tair, df.pressure, df.H; zh, zr).z0m 
 wind_zh = wind_profile(zh, df, 0.7*zh, z0m)
-compute_Gb!(df,Su2001(); wind_zh, Dl=0.01, LAI=5)
+compute_Gb!(df,:Su2001; wind_zh, Dl=0.01, LAI=5)
 # the same meteorological conditions, but larger leaves
-compute_Gb!(df,Su2001(); wind_zh, Dl=0.1,LAI=5)
+compute_Gb!(df,:Su2001; wind_zh, Dl=0.1,LAI=5)
 # same conditions, large leaves, and sparse canopy cover (LAI = 1.5)
-compute_Gb!(df,Su2001(); wind_zh, Dl=0.1,LAI=1.5)
+compute_Gb!(df,:Su2001; wind_zh, Dl=0.1,LAI=1.5)
 ≈(df.Gb_h[1], 0.0638, rtol=1e-3)
 # output
 true

@@ -39,7 +39,7 @@ thas = subset(thaf, :valid)
 
 function tmpf()
     Dl=0.01
-    aerodynamic_conductance!(thas; Gb_model=Su2001(), 
+    aerodynamic_conductance!(thas; Gb_model=:Su2001, 
         Dl, LAI=thal.LAI, zh=thal.zh, zr=thal.zr);
     surface_conductance!(thas, InversePenmanMonteith(); G=thas.G);
 end

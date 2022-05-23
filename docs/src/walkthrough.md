@@ -381,7 +381,7 @@ thas[1:3, Cols(:datetime,Between(:zeta,:Ga_CO2))]
 
 Note that by not providing additional arguments, the default values are taken.
 We also do not need most of the arguments that can be provided to the function in this case 
-(i.e. with `Gb_model=Thom1972()`). These are only required if we use a more complex 
+(i.e. with `Gb_model=:Thom1972`). These are only required if we use a more complex 
 formulation of $G_b$.
 The output of the function is another DataFrame which contains separate columns for 
 conductances and resistances of different scalars (momentum, heat, and $CO_2$ by default).
@@ -394,7 +394,7 @@ dimension ($D_l$, assumed to be 1cm here), and information on sensor and canopy 
 
 
 ```@example doc
-aerodynamic_conductance!(thas;Gb_model=Su2001(),
+aerodynamic_conductance!(thas;Gb_model=:Su2001,
      LAI=thal.zh, zh=thal.zh, d=0.7*thal.zh, zr=thal.zr, Dl=thal.Dl);
 thas[1:3, Cols(:datetime,Between(:zeta,:Ga_CO2))]
 ```
@@ -413,7 +413,7 @@ Functin `add_Gb` calculates $G_b$ for other trace gases, provided that the respe
 number is known. 
 
 ```@example doc
-compute_Gb!(thas, Thom1972()); # adds/modifies column Gb_h and Gb_CO2
+compute_Gb!(thas, :Thom1972); # adds/modifies column Gb_h and Gb_CO2
 add_Gb!(thas, :Gb_O2 => 0.84, :Gb_CH4 => 0.99); # adds Gb_O2 and Gb_CH4
 select(first(thas,3), r"Gb_")
 ```
@@ -459,7 +459,7 @@ close to the surface and weaker at greater heights:
 using Statistics
 wind_heights = 22:2:60.0
 d = 0.7 * thal.zh
-z0m = roughness_parameters(Roughness_wind_profile(), thas; zh=thal.zh, zr=thal.zr).z0m
+z0m = roughness_parameters(:wind_profile, thas; zh=thal.zh, zr=thal.zr).z0m
 wp = map(wind_heights) do z
   wind_profile(z, thas,d, z0m)
 end;

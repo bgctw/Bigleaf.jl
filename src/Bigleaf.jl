@@ -14,10 +14,11 @@ using Statistics, StatsBase # mean, rle
 using PaddedViews, StaticArrays
 using Infiltrator
 using Parameters
+using SymbolDispatch
 
-export ConductanceMethod, Thom1972, Choudhury1988, Su2001, ConstantKB1
+#export ConductanceMethod, Thom1972, Choudhury1988, Su2001, ConstantKB1
 export ResistanceMethod, ResistanceWindZr, ResistanceWindProfile
-export RoughnessMethod, Roughness_wind_profile, RoughnessCanopyHeight, RoughnessCanopyHeightLAI
+#export RoughnessMethod, Roughness_wind_profile, RoughnessCanopyHeight, RoughnessCanopyHeightLAI
 export ETMethod, PriestleyTaylor, PenmanMonteith
 export EsatMethod, Sonntag1990, Alduchov1996, Allen1998
 export StabilityCorrectionMethod, Dyer1970, Businger1971, NoStabilityCorrection
@@ -65,5 +66,10 @@ include("surface_roughness.jl")
 include("boundary_layer_conductance.jl")
 include("aerodynamic_conductance.jl")
 include("surface_conductance.jl")
+
+# testing @symboldispatch
+export foo
+@symboldispatch foo(::Val{:wind}) = :wind
+foo(::Val{:Wutzler2022}) = :Wutzler2022 
 
 end

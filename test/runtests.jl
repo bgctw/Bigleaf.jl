@@ -30,13 +30,11 @@ tha48 = DataFrame(
 
 i_tmp = () -> begin 
     Dl=0.01
-    df = aerodynamic_conductance!(copy(df, copycols=false); Gb_model=Su2001(), 
+    df = aerodynamic_conductance!(copy(df, copycols=false); Gb_model=:Su2001, 
         Dl, LAI=thal.LAI, zh=thal.zh, zr=thal.zr);
     @show df.Gb_h[1:48];
     @show df.Ga_h[1:48];
 end
-
-
 
 thal = (
     LAI = 7.6,   # leaf area index
