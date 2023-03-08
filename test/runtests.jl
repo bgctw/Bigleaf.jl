@@ -1,4 +1,4 @@
-using Bigleaf
+using BigLeaf
 using Test, StableRNGs
 using Pipe: @pipe 
 using DataFrames, Dates, TimeZones
@@ -46,7 +46,7 @@ thal = (
 )
 
 
-@testset "Bigleaf" begin
+@testset "BigLeaf" begin
     @testset "bigleaf_constants" begin
         include("bigleaf_constants.jl")
     end

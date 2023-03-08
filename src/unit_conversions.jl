@@ -14,7 +14,7 @@ Saturation Vapor Pressure (Esat) and Slope of the Esat Curve
 - `Tair`:      Air temperature (deg C)
 - `Esat_formula=Sonntag1990()`:   Esat_formula to be used. Either 
    `Sonntag1990()` (Default), `Alduchov1996()`, or `Allen1998()`.
-- `constants=BigleafConstants()`: Dictionary with entry  :Pa2kPa 
+- `constants=BigLeafConstants()`: Dictionary with entry  :Pa2kPa 
 
 # Details
 Esat (kPa) is calculated using the Magnus equation:
@@ -55,16 +55,16 @@ Esat_from_Tair_deriv(20.0)    # its derivative to temperature in kPa K-1
 Esat_slope(20.0)              # both as a tuple
 ```
 """
-function Esat_slope(Tair::Number; Esat_formula=Sonntag1990(), constants=BigleafConstants()) 
+function Esat_slope(Tair::Number; Esat_formula=Sonntag1990(), constants=BigLeafConstants()) 
   Esat = Esat_from_Tair(Tair; Esat_formula, constants)
   Delta = Esat_from_Tair_deriv(Tair; Esat_formula, constants)
   Esat, Delta
 end,
-function Esat_from_Tair(Tair; Esat_formula=Sonntag1990(), constants=BigleafConstants()) 
+function Esat_from_Tair(Tair; Esat_formula=Sonntag1990(), constants=BigLeafConstants()) 
   a,b,c = get_EsatCoef(Esat_formula)
   Esat = a * exp((b * Tair) / (c + Tair)) * constants.Pa2kPa
 end,
-function Esat_from_Tair_deriv(Tair; Esat_formula=Sonntag1990(), constants=BigleafConstants()) 
+function Esat_from_Tair_deriv(Tair; Esat_formula=Sonntag1990(), constants=BigLeafConstants()) 
   # slope of the saturation vapor pressure curve
   #Delta = eval(D(expression(a * exp((b * Tair) / (c + Tair))),name="Tair"))
   a,b,c = get_EsatCoef(Esat_formula)
@@ -117,8 +117,8 @@ end
 
 
 """
-    ms_to_mol(G_ms,Tair,pressure; constants=BigleafConstants())
-    mol_to_ms(G_mol,Tair,pressure; constants=BigleafConstants())
+    ms_to_mol(G_ms,Tair,pressure; constants=BigLeafConstants())
+    mol_to_ms(G_mol,Tair,pressure; constants=BigLeafConstants())
 
 Converts conductances from mass (m s-1) to molar units (mol m-2 s-1), or vice versa
 
@@ -143,12 +143,12 @@ rmol = ms_to_mol(G_ms,Tair,pressure)
 true
 ```
 """
-function ms_to_mol(G_ms,Tair,pressure; constants=BigleafConstants())
+function ms_to_mol(G_ms,Tair,pressure; constants=BigLeafConstants())
   Tair     = Tair + oftype(Tair,constants.Kelvin)
   pressure = pressure * constants.kPa2Pa 
   G_mol  = G_ms * pressure / (oftype(Tair, constants.Rgas)  * Tair)
 end,
-function mol_to_ms(G_mol,Tair,pressure; constants=BigleafConstants())
+function mol_to_ms(G_mol,Tair,pressure; constants=BigLeafConstants())
   Tair     = Tair + oftype(Tair,constants.Kelvin)
   pressure = pressure * constants.kPa2Pa 
   G_ms  = G_mol * (oftype(Tair, constants.Rgas) * Tair) / (pressure)
@@ -179,19 +179,19 @@ Conversion between vapor pressure (e), vapor pressure deficit (VPD),
 
 All functions accept the optional arguemtns:
 - `Esat_formula`: formula used in [`Esat_from_Tair`](@ref)
-- `constants`: dictionary from [`BigleafConstants`](@ref) with entries
+- `constants`: dictionary from [`BigLeafConstants`](@ref) with entries
   eps and Pa2kPa
 
 # Rreferences 
 Foken, T, 2008: Micrometeorology_ Springer, Berlin, Germany.
 """
 function VPD_to_rH(VPD,Tair; Esat_formula=Sonntag1990(),
-                      constants=BigleafConstants())
+                      constants=BigLeafConstants())
   esat = Esat_from_Tair(Tair; Esat_formula = Esat_formula,constants)
   rH   = 1 - VPD/esat
 end,
 function rH_to_VPD(rH,Tair; Esat_formula=Sonntag1990(),
-                      constants=BigleafConstants())
+                      constants=BigLeafConstants())
   if !ismissing(rH) && rH > 1 
     @warn("Expected relative humidity (rH) between 0 and 1, but was ", rH)
   end
@@ -199,7 +199,7 @@ function rH_to_VPD(rH,Tair; Esat_formula=Sonntag1990(),
   VPD  = esat - rH*esat
 end,
 function e_to_rH(e,Tair; Esat_formula=Sonntag1990(),
-                    constants=BigleafConstants())
+                    constants=BigLeafConstants())
   esat = Esat_from_Tair(Tair; Esat_formula = Esat_formula,constants)
   if !ismissing(e) && (e > esat + sqrt(eps()))
     @warn("Provided vapour pressure that was higher than saturation_
@@ -208,29 +208,29 @@ function e_to_rH(e,Tair; Esat_formula=Sonntag1990(),
   rH  = min(1, e/esat)
 end,
 function VPD_to_e(VPD,Tair; Esat_formula=Sonntag1990(),
-                     constants=BigleafConstants())
+                     constants=BigLeafConstants())
   esat = Esat_from_Tair(Tair; Esat_formula = Esat_formula,constants)
   e    = esat - VPD
 end,
 function e_to_VPD(e,Tair; Esat_formula=Sonntag1990(),
-                     constants=BigleafConstants())
+                     constants=BigLeafConstants())
   esat = Esat_from_Tair(Tair; Esat_formula = Esat_formula,constants)
   VPD  = esat - e
 end,
-function e_to_q(e::FT,pressure; constants=BigleafConstants()) where FT
+function e_to_q(e::FT,pressure; constants=BigLeafConstants()) where FT
   q = (FT(constants.eps) * e / (pressure - (FT(1)-FT(constants.eps)) * e))
 end,
-function q_to_e(q::FT,pressure; constants=BigleafConstants()) where FT
+function q_to_e(q::FT,pressure; constants=BigLeafConstants()) where FT
   e = (q * pressure / ((FT(1)-FT(constants.eps)) * q + FT(constants.eps)))
 end,
 function q_to_VPD(q,Tair,pressure; Esat_formula=Sonntag1990(),
-                     constants=BigleafConstants())
+                     constants=BigLeafConstants())
   esat = Esat_from_Tair(Tair; Esat_formula = Esat_formula,constants)
   e    = q_to_e(q,pressure; constants)
   VPD  = esat - e
 end,
 function VPD_to_q(VPD,Tair,pressure; Esat_formula=Sonntag1990(),
-                     constants=BigleafConstants())
+                     constants=BigLeafConstants())
   esat = Esat_from_Tair(Tair; Esat_formula = Esat_formula,constants)
   e    = esat - VPD
   q    = e_to_q(e,pressure;constants)
@@ -273,17 +273,17 @@ function PPFD_to_Rg(PPFD,J_to_mol=4.6,frac_PAR=0.5)
 end
 
 """
-    kg_to_mol(mass, molarMass=BigleafConstants()[:H2Omol])
+    kg_to_mol(mass, molarMass=BigLeafConstants()[:H2Omol])
 
 Conversion between Mass (kg) and Molar Units (mol).
 """
-function kg_to_mol(mass, molarMass=BigleafConstants()[:H2Omol])
+function kg_to_mol(mass, molarMass=BigLeafConstants()[:H2Omol])
   moles = mass / molarMass
 end
 
 """
-    umolCO2_to_gC(CO2_flux; constants=BigleafConstants())
-    gC_to_umolCO2(C_flux; constants=BigleafConstants())
+    umolCO2_to_gC(CO2_flux; constants=BigLeafConstants())
+    gC_to_umolCO2(C_flux; constants=BigLeafConstants())
 
 
 Convert CO2 quantities from (umol CO2 m-2 s-1) to (g C m-2 d-1) and vice versa.
@@ -291,7 +291,7 @@ Convert CO2 quantities from (umol CO2 m-2 s-1) to (g C m-2 d-1) and vice versa.
 # Arguments
 - CO2_flux  CO2 flux (umol CO2 m-2 s-1)
 - C_flux    Carbon (C) flux (gC m-2 d-1)
-- `constants`: dictionary from [`BigleafConstants`](@ref) with entries:
+- `constants`: dictionary from [`BigLeafConstants`](@ref) with entries:
   Cmol, umol2mol, mol2umol, kg2g, g2kg, says2seconds
 
 # Examples                 
@@ -299,11 +299,11 @@ Convert CO2 quantities from (umol CO2 m-2 s-1) to (g C m-2 d-1) and vice versa.
 umolCO2_to_gC(20)  # gC m-2 d-1
 ```
 """
-function umolCO2_to_gC(CO2_flux::FT; constants=BigleafConstants()) where FT
+function umolCO2_to_gC(CO2_flux::FT; constants=BigLeafConstants()) where FT
   C_flux = CO2_flux * FT(constants.umol2mol) * FT(constants.Cmol) * 
   FT(constants.kg2g) * FT(constants.days2seconds)
 end,
-function gC_to_umolCO2(C_flux::FT; constants=BigleafConstants()) where FT
+function gC_to_umolCO2(C_flux::FT; constants=BigLeafConstants()) where FT
   CO2_flux = (C_flux * FT(constants.g2kg)  / FT(constants.days2seconds)) / 
   FT(constants.Cmol)  * FT(constants.mol2umol)
 end

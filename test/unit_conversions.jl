@@ -1,7 +1,7 @@
 @testset "Esat_from_Tair" begin
   Tair = 15
   Esat_formula=Sonntag1990()
-  constants=BigleafConstants()
+  constants=BigLeafConstants()
   eSat = Esat_from_Tair(Tair; Esat_formula, constants)
   # regression test
   @test isapprox(eSat, 1.702, atol=1e-3)
@@ -20,7 +20,7 @@ end
     step = 0.1
     Tair = range(20.0, 22.0, step = step)
     Esat_formula=Sonntag1990()
-    constants=BigleafConstants()
+    constants=BigLeafConstants()
     Esat = Esat_from_Tair.(Tair)
     delta = Esat_from_Tair_deriv.(Tair)
     delta2 = diff(Esat)/step 
@@ -88,7 +88,7 @@ end
 
 @testset "kg_to_mol" begin
   mass = 10.0
-  molarMass =BigleafConstants().H2Omol
+  molarMass =BigLeafConstants().H2Omol
   amountOfSubstance = kg_to_mol(mass, molarMass)
   @test amountOfSubstance == mass/molarMass
 end

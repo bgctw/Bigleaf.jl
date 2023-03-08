@@ -80,7 +80,7 @@
 """
 """
 function WUE_metrics(data,GPP="GPP",NEE="NEE",LE="LE",VPD="VPD",Tair="Tair",
-                        constants=BigleafConstants())
+                        constants=BigLeafConstants())
   
   check_input(data,list(GPP,NEE,LE,VPD,Tair))
   

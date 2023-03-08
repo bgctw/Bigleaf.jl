@@ -97,7 +97,7 @@
 function surface_conditions(data,Tair="Tair",pressure="pressure",LE="LE",H="H",
                                VPD="VPD",Ga="Ga_h",calc_surface_CO2=false,Ca="Ca",Ga_CO2="Ga_CO2",
                                NEE="NEE",Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
-                               constants=BigleafConstants())
+                               constants=BigLeafConstants())
   
   check_input(data,list(Tair,pressure,LE,H,VPD,Ga))
   
@@ -213,7 +213,7 @@ end
 """
 """
 function radiometric_surface_temp(data,LW_up="LW_up",LW_down="LW_down",
-                                     emissivity,constants=BigleafConstants())
+                                     emissivity,constants=BigLeafConstants())
   
   check_input(data,list(LW_up,LW_down))
   

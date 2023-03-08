@@ -122,7 +122,7 @@ function surface_conductance(data,Tair="Tair",pressure="pressure",Rn="Rn",G=noth
                                 VPD="VPD",LE="LE",Ga="Ga_h",missing_G_as_NA=false,missing_S_as_NA=false,
                                 formulation=c(Val(:PenmanMonteith),Val(:FluxGradient)),
                                 Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
-                                constants=BigleafConstants())
+                                constants=BigLeafConstants())
   
   formulation = match_arg(formulation)
   

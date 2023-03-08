@@ -1,5 +1,5 @@
 ```@meta
-CurrentModule = Bigleaf
+CurrentModule = BigLeaf
 ```
 # Index
 ```@index
@@ -7,5 +7,5 @@ CurrentModule = Bigleaf
 
 # Autodocs
 ```@autodocs
-Modules = [Bigleaf]
+Modules = [BigLeaf]
 ```

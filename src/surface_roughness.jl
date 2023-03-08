@@ -9,7 +9,7 @@ calculates the Roughness Reynolds Number.
 - `ustar`     : Friction velocity (m s-1)
 - `z0m`       : Roughness length (m)
 optional
-- `constants=`[`BigleafConstants`](@ref)`()`
+- `constants=`[`BigLeafConstants`](@ref)`()`
                  
 # Details
 The Roughness Reynolds Number is calculated as in Massman 1999a:     
@@ -30,7 +30,7 @@ R = Reynolds_Number(Tair,pressure,ustar,z0m)
 true
 ``` 
 """
-function Reynolds_Number(Tair,pressure,ustar,z0m;constants=BigleafConstants())
+function Reynolds_Number(Tair,pressure,ustar,z0m;constants=BigLeafConstants())
   v  = kinematic_viscosity(Tair,pressure;constants)
   Re = z0m*ustar/v
 end
@@ -57,7 +57,7 @@ and roughness length for momentum (z0m).
              
 # Arguments              
 - `zh`        : Vegetation height (m)          
-- `constants=`[`BigleafConstants`](@ref)`()`: 
+- `constants=`[`BigLeafConstants`](@ref)`()`: 
 
 By canopy height:
 - `frac_d`    : Fraction of displacement height on canopy height (-)
@@ -165,7 +165,7 @@ function roughness_parameters(::RoughnessCanopyHeightLAI, zh, LAI;
 end
 
 function roughness_parameters(::Roughness_wind_profile, ustar::AbstractVector{FT}, wind, psi_m; 
-  zh, zr, d = 0.7*zh, constants=BigleafConstants()
+  zh, zr, d = 0.7*zh, constants=BigLeafConstants()
   ) where FT
   FT == Missing && return((d = d, z0m = missing, z0m_se = missing))
   z0m_all = allowmissing(@. (nonmissingtype(FT)(zr) - nonmissingtype(FT)(d)) * 
@@ -182,7 +182,7 @@ end
 
 function roughness_parameters(method::Roughness_wind_profile, 
   ustar::AbstractVector, wind, Tair, pressure, H; zh, zr, d = 0.7*zh,
-  stab_formulation=Dyer1970(), constants=BigleafConstants(), kwargs...
+  stab_formulation=Dyer1970(), constants=BigLeafConstants(), kwargs...
   )
   # psi_m = Tables.Columns(stability_correction.(
   #   zr, d, Tair, pressure, ustar, H; stab_formulation, constants)).psi_m
@@ -223,7 +223,7 @@ measurements of wind speed.
 - `ustar`     : Friction velocity (m s-1)
 - `d`         : Zero-plane displacement height (-)
 - `z0m`       : Roughness length (m)
-- `constants=`[`BigleafConstants`](@ref)`()`
+- `constants=`[`BigLeafConstants`](@ref)`()`
 For DataFrame variant with supplying stability_parameter
 - `df`:         : DataFrame with columns 
   - `ustar`     : Friction velocity (m s-1)
@@ -287,21 +287,21 @@ nothing
 ``` 
 """  
 function wind_profile(
-  z::Number, ustar::Union{Missing,FT}, d, z0m, psi_m; constants=BigleafConstants()
+  z::Number, ustar::Union{Missing,FT}, d, z0m, psi_m; constants=BigLeafConstants()
   ) where FT<:Number
   wind_heights = max(FT(0),(ustar / FT(constants.k)) * (log(max(FT(0),(FT(z) -FT(d))) / FT(z0m)) - psi_m))
   wind_heights
 end
 
 function wind_profile(z::Number, ustar::Union{Missing,Number}, d, z0m, Tair,pressure,H,
-  stab_formulation=Dyer1970(), constants=BigleafConstants())
+  stab_formulation=Dyer1970(), constants=BigLeafConstants())
   psi_m = stability_correction(
     z,d, Tair,pressure,ustar,H; stab_formulation, constants).psi_m
   wind_profile(z, ustar, d, z0m, psi_m)
 end
 
 function wind_profile(z::Number, df::DFTable, d, z0m; psi_m = nothing, MOL = nothing,
-  stab_formulation = Dyer1970(), constants =BigleafConstants()
+  stab_formulation = Dyer1970(), constants =BigLeafConstants()
   )
   if isnothing(psi_m)
     if isnothing(MOL) 

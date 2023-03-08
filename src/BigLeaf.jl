@@ -1,4 +1,4 @@
-module Bigleaf
+module BigLeaf
 
 #using DocStringExtensions
 using Optim
@@ -24,7 +24,7 @@ export StabilityCorrectionMethod, Dyer1970, Businger1971, NoStabilityCorrection
 export SurfaceConductanceMethod, FluxGradient, InversePenmanMonteith
 
 export frac_hour, moving_average, get_nonoverlapping_periods, set_datetime_ydh!
-export BigleafConstants
+export BigLeafConstants
 export Esat_slope, Esat_from_Tair, Esat_from_Tair_deriv,
      LE_to_ET, ET_to_LE, ms_to_mol, mol_to_ms, VPD_to_rH, rH_to_VPD,
      e_to_rH, VPD_to_e, e_to_VPD, e_to_q, q_to_e, q_to_VPD, VPD_to_q,

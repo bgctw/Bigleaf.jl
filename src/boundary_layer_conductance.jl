@@ -67,7 +67,7 @@ Based on boundary layer conductance for heat, compute derived quantities.
 # Arguments
 - `Gb_h` : Boundary layer conductance for heat transfer (m s-1)
 - `df`   : DataFrame with above columns
-- `constants=`[`BigleafConstants`](@ref)`()`: entries `Sc_CO2` and `Pr`
+- `constants=`[`BigLeafConstants`](@ref)`()`: entries `Sc_CO2` and `Pr`
 
 # Value
 NamedTuple with entries
@@ -76,7 +76,7 @@ NamedTuple with entries
 - `kB_h`: kB^(-1) parameter for heat transfer
 - `Gb_CO2`: Boundary layer conductance for CO2 (m s-1). 
 """
-function compute_Gb_quantities(Gb_h, ustar; constants=BigleafConstants())
+function compute_Gb_quantities(Gb_h, ustar; constants=BigLeafConstants())
   (ismissing(Gb_h) || ismissing(ustar)) && return(
     (Rb_h=missing, Gb_h=missing, kB_h=missing, Gb_CO2=missing))
   Rb_h = 1/Gb_h
@@ -86,7 +86,7 @@ function compute_Gb_quantities(Gb_h, ustar; constants=BigleafConstants())
     ((oftype(Gb_h,constants.Sc_CO2)/oftype(Gb_h,constants.Pr))^oftype(Gb_h,0.67))
   (;Rb_h, Gb_h, kB_h, Gb_CO2)
 end
-function compute_Gb_quantities!(df::AbstractDataFrame; constants=BigleafConstants())
+function compute_Gb_quantities!(df::AbstractDataFrame; constants=BigLeafConstants())
   ft = (args...) -> compute_Gb_quantities.(args...; constants)
   transform!(df, SA[:Gb_h, :ustar] => ft => AsTable)
 end
@@ -104,7 +104,7 @@ compute boundary layer conductance for additional quantities for given Schmidt-n
                additional conductances to be calculated
 - `df`       : DataFrame to add output columns               
 optional
-- `constants=`[`BigleafConstants`](@ref)`()`: Dictionary with entries 
+- `constants=`[`BigLeafConstants`](@ref)`()`: Dictionary with entries 
   - `Pr` - Prandtl number 
 
 # Details
@@ -140,7 +140,7 @@ function add_Gb(Gb_h::Union{Missing,Number}, Sc::Vararg{Pair,N}; kwargs...) wher
   add_Gb_(Gb_h, Scn, Scv; kwargs...)
 end
 function add_Gb_(Gb_h::FTM, Scn::NTuple{N,Symbol}, Scv::NTuple{N}; 
-  constants=BigleafConstants()) where {N, FTM<:Union{Missing,Number}}
+  constants=BigLeafConstants()) where {N, FTM<:Union{Missing,Number}}
   #Gbxv = @. Gb_h / ((Scv/constants.Pr)^0.67)
   ismissing(Gb_h) && return(NamedTuple{Scn}(ntuple(_->missing,N)))
   Gbxv = @. Gb_h / ((Scv/FTM(constants.Pr))^FTM(0.67))
@@ -164,7 +164,7 @@ for heat transfer based on a simple ustar (friction velocity) dependency.
 # Arguments  
 - `ustar`     : Friction velocity (m s-1)
 - `df`        : DataFrame with above variables
-- `constants=`[`BigleafConstants`](@ref)`()`
+- `constants=`[`BigLeafConstants`](@ref)`()`
  
 # Details
 The empirical equation for Rb suggested by Thom 1972 is:
@@ -190,7 +190,7 @@ compute_Gb!(df, Thom1972())
 propertynames(df) == [:ustar, :Gb_h]
 ``` 
 """
-function Gb_Thom(ustar::Union{Missing,Number}; constants=BigleafConstants())
+function Gb_Thom(ustar::Union{Missing,Number}; constants=BigLeafConstants())
   Rb_h = 6.2*ustar^-0.667
   Gb_h = 1/Rb_h
 end
@@ -205,12 +205,12 @@ Boundary Layer Conductance using constant kB^(-1) value for heat transfer.
 - `ustar`     : Friction velocity (m s-1)
 - `df`        : DataFrame with above variables
 - `kB_h`      : kB^(-1) value for heat transfer
-- `constants=`[`BigleafConstants`](@ref)`()`
+- `constants=`[`BigLeafConstants`](@ref)`()`
  
 # Details
 Rb_h computed by ``kB_h/(k * ustar)``, where k is the von Karman constant.
 """
-function Gb_constant_kB1(ustar, kB_h; constants=BigleafConstants())
+function Gb_constant_kB1(ustar, kB_h; constants=BigLeafConstants())
   ismissing(ustar) && return(missing)
   Rb_h = kB_h/(oftype(ustar,constants.k) * ustar)
   Gb_h = 1/Rb_h
@@ -230,7 +230,7 @@ for heat transfer according to Choudhury & Monteith 1988.
 - `leafwidth`        : Leaf width (m)
 - `LAI`              : One-sided leaf area index
 - `wind_zh`          : Wind speed at canopy heihgt (m s-1), see [`wind_profile`](@ref) 
-- `constants=`[`BigleafConstants`](@ref)`()`
+- `constants=`[`BigLeafConstants`](@ref)`()`
                         
 # Value
 see [`compute_Gb!`](@ref)
@@ -261,7 +261,7 @@ However, here (if not explicitly given) it is estimated by [`wind_profile`](@ref
   A preliminary multiple resistance routine for deriving dry deposition velocities
   from measured quantities. Water, Air, and Soil Pollution 36, 311-330.
 """
-function Gb_Choudhury(; leafwidth, LAI, wind_zh::FT, constants=BigleafConstants()) where FT
+function Gb_Choudhury(; leafwidth, LAI, wind_zh::FT, constants=BigLeafConstants()) where FT
   FT == Missing && return(missing)
   alpha   = FT(4.39) - FT(3.97)*exp(FT(-0.258)*FT(LAI)) 
   # (ismissing(wind_zh) || isnothing(wind_zh)) && return(
@@ -270,7 +270,7 @@ function Gb_Choudhury(; leafwidth, LAI, wind_zh::FT, constants=BigleafConstants(
   Gb_h = FT(LAI)*((FT(0.02)/alpha)*sqrt(wind_zh/FT(leafwidth))*(FT(1)-exp(-FT(alpha)/FT(2))))
 end
 function Gb_Choudhury!(
-  df::AbstractDataFrame; leafwidth, LAI, wind_zh, constants=BigleafConstants()
+  df::AbstractDataFrame; leafwidth, LAI, wind_zh, constants=BigLeafConstants()
   )
   # if isnothing(wind_zh)
   #   wind_zh = wind_profile(zh, df, d, z0m; zh, zr, stab_formulation, constants)
@@ -299,7 +299,7 @@ formulation according to Su et al. 2001.
 - `N`         : Number of leaf sides participating in heat exchange (defaults to 2)
 - `Cd`        : Foliage drag coefficient (-)
 - `hs`        : Roughness height of the soil (m)
-- `constants=`[`BigleafConstants`](@ref)`()`
+- `constants=`[`BigLeafConstants`](@ref)`()`
 
 # Value
 see [`compute_Gb!`](@ref)
@@ -359,7 +359,7 @@ true
 ``` 
 """
 function Gb_Su(Tair,pressure,ustar::FT; wind_zh, Dl, fc, N=2, Cd=0.2, hs=0.01,
-  constants=BigleafConstants() 
+  constants=BigLeafConstants() 
   ) where FT
   FT == Missing && return(missing)
   wind_zh = max(FT(0.01),FT(wind_zh)) ## avoid zero windspeed
@@ -375,7 +375,7 @@ function Gb_Su(Tair,pressure,ustar::FT; wind_zh, Dl, fc, N=2, Cd=0.2, hs=0.01,
   Gb_h = 1/Rb_h
 end
 function Gb_Su!(df::AbstractDataFrame; wind_zh, Dl, fc=nothing, 
-  N=2, Cd=0.2, hs=0.01, LAI, constants=BigleafConstants()
+  N=2, Cd=0.2, hs=0.01, LAI, constants=BigLeafConstants()
   )
   if isnothing(fc)
     isnothing(LAI) && error("one of 'fc' or 'LAI' must be provided")

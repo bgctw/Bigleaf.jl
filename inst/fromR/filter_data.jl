@@ -134,7 +134,7 @@ function filter_data(data,quality_control=true,filter_growseas=false,
                         missing_qc_as_bad=true,GPP="GPP",doy="doy",
                         year="year",tGPP=0.5,ws=15,min_int=5,precip="precip",
                         tprecip=0.01,precip_hours=24,records_per_hour=2,
-                        filtered_data_to_NA=true,constants=BigleafConstants())
+                        filtered_data_to_NA=true,constants=BigLeafConstants())
   
   
   ### I) Quality control filter

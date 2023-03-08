@@ -44,7 +44,7 @@
 """
 """
 function Monin_Obukhov_length(data,Tair="Tair",pressure="pressure",ustar="ustar",
-                                 H="H",constants=BigleafConstants())
+                                 H="H",constants=BigLeafConstants())
   
   check_input(data,list(Tair,pressure,ustar,H))
   
@@ -93,7 +93,7 @@ end
 #' 
 #' @export           
 function stability_parameter(data,Tair="Tair",pressure="pressure",ustar="ustar",
-                                H="H",zr,d,constants=BigleafConstants())
+                                H="H",zr,d,constants=BigLeafConstants())
   
   check_input(data,list(Tair,pressure,ustar,H))
   

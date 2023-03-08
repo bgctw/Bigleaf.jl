@@ -1,7 +1,7 @@
 """
     Monin_Obukhov_length(Tair, pressure, ustar, H; constants)
-    Monin_Obukhov_length!(df;constants=BigleafConstants())
-    Monin_Obukhov_length(df;constants=BigleafConstants())
+    Monin_Obukhov_length!(df;constants=BigLeafConstants())
+    Monin_Obukhov_length(df;constants=BigLeafConstants())
 
 calculates the Monin-Obukhov length.
 
@@ -12,7 +12,7 @@ calculates the Monin-Obukhov length.
 - `H`         : Sensible heat flux (W m-2)
 - `df`        : DataFrame containing the above variables
 optional
-- `constants=`[`BigleafConstants`](@ref)`()`: Dictionary with entries 
+- `constants=`[`BigLeafConstants`](@ref)`()`: Dictionary with entries 
   - `Kelvin` - conversion degree Celsius to Kelvin 
   - `cp` - specific heat of air for constant pressure (J K-1 1) 
   - `k` - von Karman constant (-) 
@@ -47,14 +47,14 @@ Monin_Obukhov_length(
   ustar=seq(0.2,1,0.1),H=seq(40,200,20))
 ``` 
 """
-function Monin_Obukhov_length(Tair::FT, pressure, ustar, H; constants=BigleafConstants()
+function Monin_Obukhov_length(Tair::FT, pressure, ustar, H; constants=BigLeafConstants()
   ) where FT
   rho  = air_density(Tair, pressure; constants)
   TairK = Tair + oftype(Tair, constants.Kelvin)
   #MOL  = (-rho*constants.cp*ustar^3*TairK) / (constants.k*constants.g*H)
   MOL  = (-rho*FT(constants.cp)*ustar^3*TairK) / (FT(constants.k)*FT(constants.g)*H)
 end
-function Monin_Obukhov_length!(df;constants=BigleafConstants())
+function Monin_Obukhov_length!(df;constants=BigLeafConstants())
   fr = (args...) -> Monin_Obukhov_length(args...; constants)
   transform!(df, SA[:Tair, :pressure, :ustar, :H] => ByRow(fr) => :MOL)
 end
@@ -76,7 +76,7 @@ lower atmosphere.
 - `MOL` : Monin-Obukhov-length L (m)
 - `df`  : DataFrame containting the variables required by [`Monin_Obukhov_length`](@ref)
 optional
-- `constants=`[`BigleafConstants`](@ref)`()`
+- `constants=`[`BigLeafConstants`](@ref)`()`
 
 In the second variant and if `MOL=nothing` in the DataFrame variants, MOL is computed by 
 [`Monin_Obukhov_length`](@ref).
@@ -108,12 +108,12 @@ function stability_parameter(z,d,MOL)
   zeta = (z - d) / MOL
 end
 function stability_parameter(z,d,Tair, pressure, ustar::FT, H; 
-  constants=BigleafConstants()) where FT
+  constants=BigLeafConstants()) where FT
   MOL = Monin_Obukhov_length(Tair, pressure, ustar, H; constants);
   stability_parameter(FT(z),FT(d),MOL)
 end
 function stability_parameter!(df::AbstractDataFrame; z,d, MOL=nothing,
-  constants=BigleafConstants())
+  constants=BigLeafConstants())
   if isnothing(MOL)
     ft = (args...) -> stability_parameter.(z,d,args...; constants)
     transform!(df, SA[:Tair, :pressure, :ustar, :H] => ft => :zeta)
@@ -123,7 +123,7 @@ function stability_parameter!(df::AbstractDataFrame; z,d, MOL=nothing,
   end
 end
 # function stability_parameter(df::DFTable; z,d, MOL=nothing,
-#   constants=BigleafConstants())
+#   constants=BigLeafConstants())
 #   if isnothing(MOL) MOL = Monin_Obukhov_length(df; constants); end
 #   stability_parameter.(z,d,MOL)
 # end
@@ -139,7 +139,7 @@ struct NoStabilityCorrection <: StabilityCorrectionMethod end
     stability_correction(z,d, Tair,pressure,ustar,H; constants,
       stab_formulation=Dyer1970())
     stability_correction!(df; zeta, z, d; 
-      stab_formulation=Dyer1970(), constants =BigleafConstants())
+      stab_formulation=Dyer1970(), constants =BigLeafConstants())
     
 Integrated Stability Correction Functions for Heat and Momentum
 
@@ -236,7 +236,7 @@ function get_stability_coefs_unstable(::Dyer1970, zeta)
 end
 
 function stability_correction(z,d, Tair::Union{Missing,Number},pressure,ustar::FT,H; 
-  stab_formulation=Dyer1970(), constants=BigleafConstants()) where FT
+  stab_formulation=Dyer1970(), constants=BigLeafConstants()) where FT
   stab_formulation isa NoStabilityCorrection && return(
     (psi_h = zero(FT), psi_m = zero(FT)))
   FT <: Missing && return(missing)
@@ -254,7 +254,7 @@ end
 #   tmp2 = Tables.columns(tmp1)
 # end
 function stability_correction!(df; zeta=nothing, z=nothing, d=nothing, 
-  stab_formulation=Dyer1970(), constants =BigleafConstants())
+  stab_formulation=Dyer1970(), constants =BigLeafConstants())
   # cannot dispatch on keyword argument, hence need if-clause
   if stab_formulation isa NoStabilityCorrection
     zeroT = :ustar in propertynames(df) ? zero(eltype(skipmissing(df.ustar))) : zero(z)
@@ -272,7 +272,7 @@ function stability_correction!(df; zeta=nothing, z=nothing, d=nothing,
 end
 
 function stability_correction(df::DFTable; z, d, 
-  stab_formulation=Dyer1970(), constants =BigleafConstants()
+  stab_formulation=Dyer1970(), constants =BigLeafConstants()
   )
   # do not provide zeta, because can simply invoke stability_correction.(zeta)
   if stab_formulation isa NoStabilityCorrection

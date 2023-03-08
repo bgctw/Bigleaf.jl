@@ -7,7 +7,7 @@ Air density of moist air from air temperature and pressure_
 - Tair:      Air temperature (deg C)
 - pressure:  Atmospheric pressure (kPa)
 optional 
-- `constants=`[`BigleafConstants`](@ref)`()`: Dictionary with entries 
+- `constants=`[`BigLeafConstants`](@ref)`()`: Dictionary with entries 
    Kelvin, kPa2Pa
 
 # Details 
@@ -27,7 +27,7 @@ air_density(25,101.325)
 # References  
 Foken, T, 2008: Micrometeorology. Springer, Berlin, Germany.
 """
-function air_density(Tair,pressure; constants=BigleafConstants())
+function air_density(Tair,pressure; constants=BigLeafConstants())
   Tair_K     = Tair + oftype(Tair,constants.Kelvin)
   pressure_Pa = pressure * oftype(pressure,constants.kPa2Pa)
   rho = pressure_Pa / (oftype(Tair_K,constants.Rd) * Tair_K) 
@@ -45,7 +45,7 @@ An estimate of mean pressure at a given elevation as predicted by the
 - Tair:      Air temperature (deg C)
 - VPD:       Vapor pressure deficit (kPa); optional
 optional 
-- `constants=`[`BigleafConstants`](@ref)`()`: Dictionary with entries 
+- `constants=`[`BigLeafConstants`](@ref)`()`: Dictionary with entries 
     Kelvin, pressure0, Rd, g, Pa2kPa
 
 # Details 
@@ -72,7 +72,7 @@ Stull B_, 1988: An Introduction to Boundary Layer Meteorology.
 pressure_from_elevation(500,25,1)
 ```
 """                           
-function pressure_from_elevation(elev,Tair,VPD=missing; constants=BigleafConstants())
+function pressure_from_elevation(elev,Tair,VPD=missing; constants=BigLeafConstants())
   Tair_K     = Tair + oftype(Tair,constants.Kelvin)
   if ismissing(VPD)
     pressure = oftype(Tair,constants.pressure0) / exp(oftype(Tair,constants.g) * elev / (oftype(Tair,constants.Rd)*Tair_K))
@@ -95,7 +95,7 @@ Computes the psychrometric 'constant'.
 - Tair:      Air temperature (deg C)
 - pressure:  Atmospheric pressure (kPa)
 optional 
-- `constants=`[`BigleafConstants`](@ref)`()`: Dictionary with entries 
+- `constants=`[`BigLeafConstants`](@ref)`()`: Dictionary with entries 
     cp, eps
                  
 # Details 
@@ -118,7 +118,7 @@ Monteith J.L., Unsworth M.H., 2008: Principles of Environmental Physics.
 psychrometric_constant.(5.0:5.0:25.0, 100)
 ```
 """
-function psychrometric_constant(Tair,pressure; constants=BigleafConstants())
+function psychrometric_constant(Tair,pressure; constants=BigLeafConstants())
   lambda = latent_heat_vaporization(Tair)
   gamma  = (oftype(pressure,constants.cp) * pressure) / (oftype(lambda,constants.eps) * lambda)
 end
@@ -167,7 +167,7 @@ Calculate the wet bulb temperature, i_e_ the temperature
 optional
 - accuracy:  Accuracy of the result (deg C)
 - `Esat_formula`: formula used in [`Esat_from_Tair`](@ref)
-- `constants=`[`BigleafConstants`](@ref)`()`: Dictionary with entries 
+- `constants=`[`BigLeafConstants`](@ref)`()`: Dictionary with entries 
      cp, eps,Pa2kPa
 
 # Details 
@@ -193,13 +193,13 @@ wetbulb_temp.([20,25.0], 100, [1,1.6])
 ```
 """
 function wetbulb_temp(Tair, pressure, VPD; accuracy=1e-03,
-  Esat_formula=Sonntag1990(), constants=BigleafConstants())
+  Esat_formula=Sonntag1990(), constants=BigLeafConstants())
   gamma  = psychrometric_constant(Tair,pressure)
   ea     = VPD_to_e(VPD,Tair;Esat_formula)
   wetbulb_temp_from_e_Tair_gamma(ea,Tair,gamma; accuracy,Esat_formula,constants)
 end,
 function wetbulb_temp_from_e_Tair_gamma(ea, Tair, gamma; accuracy=1e-03,
-  Esat_formula=Sonntag1990(), constants=BigleafConstants())
+  Esat_formula=Sonntag1990(), constants=BigLeafConstants())
   if accuracy > one(accuracy)
     @warn ("'accuracy' is set to 1 degC")
     accuracy = one(accuracy)
@@ -224,7 +224,7 @@ Calculate the dew point, the temperature to which air must be
 optional
 - accuracy = 1e-03: Accuracy of the result (deg C)
 - `Esat_formula`: formula used in [`Esat_from_Tair`](@ref)
-- `constants=`[`BigleafConstants`](@ref)`()`: Dictionary with entries 
+- `constants=`[`BigLeafConstants`](@ref)`()`: Dictionary with entries 
     Pa2kPa 
 
 # Details 
@@ -253,11 +253,11 @@ Td = dew_point(Tair, VPD; accuracy = 1e-2)
 ```
 """
 function dew_point(Tair, VPD; accuracy=1e-03,Esat_formula=Sonntag1990(),
-                      constants=BigleafConstants())
+                      constants=BigLeafConstants())
   ea = VPD_to_e(VPD,Tair;Esat_formula)
   dew_point_from_e(ea; accuracy, Esat_formula, constants)
 end,
-function dew_point_from_e(ea;accuracy=1e-03,Esat_formula=Sonntag1990(), constants=BigleafConstants())
+function dew_point_from_e(ea;accuracy=1e-03,Esat_formula=Sonntag1990(), constants=BigLeafConstants())
   if accuracy > one(accuracy)
     @warn ("'accuracy' is set to 1 degC")
     accuracy = one(accuracy)
@@ -283,7 +283,7 @@ Virtual temperature, defined as the temperature at which dry air would have the 
 - `VPD`:       Vapor pressure deficit (kPa)
 - `Esat_formula`: formula used in [`Esat_from_Tair`](@ref)
 optional 
-- `constants=`[`BigleafConstants`](@ref)`()`: Dictionary with entries 
+- `constants=`[`BigLeafConstants`](@ref)`()`: Dictionary with entries 
   - :Kelvin - conversion degree Celsius to Kelvin
   - :eps - ratio of the molecular weight of water vapor to dry air (-) 
 
@@ -312,7 +312,7 @@ true
 ```
 """
 function virtual_temp(Tair,pressure,VPD;Esat_formula=Sonntag1990(),
-                         constants=BigleafConstants())
+                         constants=BigLeafConstants())
   e    = VPD_to_e(VPD,Tair;Esat_formula)
   Tair_Kelvin = Tair + oftype(Tair,constants.Kelvin)
   Tv_Kelvin = Tair_Kelvin / (1 - (1 - oftype(pressure,constants.eps)) * e/pressure) 
@@ -329,7 +329,7 @@ Calculate the kinematic viscosity of air.
 - Tair      Air temperature (deg C)
 - pressure  Atmospheric pressure (kPa)
 optional 
-- `constants=`[`BigleafConstants`](@ref)`()`: Dictionary with entries 
+- `constants=`[`BigLeafConstants`](@ref)`()`: Dictionary with entries 
     Kelvin, pressure0, Tair0, kPa2Pa
 
 # Details 
@@ -355,7 +355,7 @@ vis = kinematic_viscosity(Tair,pressure)
 true
 ```
 """         
-function kinematic_viscosity(Tair,pressure; constants=BigleafConstants())
+function kinematic_viscosity(Tair,pressure; constants=BigLeafConstants())
   (ismissing(Tair) || ismissing(pressure)) && return(missing)
   Tair_Kelvin     = Tair + oftype(Tair, constants.Kelvin)
   pressure_kPa = pressure * oftype(pressure, constants.kPa2Pa)

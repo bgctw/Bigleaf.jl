@@ -26,7 +26,7 @@ the Penman-Monteith equation with a prescribed surface conductance.
 optional:
 - `G=0.0`:         Ground heat flux (W m-2). Defaults to zero.
 - `S=0.0`:         Sum of all storage fluxes (W m-2) . Defaults to zero.
-- `constants=`[`BigleafConstants`](@ref)`()`: physical constants (cp, eps, Rd, Rgas)
+- `constants=`[`BigLeafConstants`](@ref)`()`: physical constants (cp, eps, Rd, Rgas)
 for `PriestleyTaylor`:
 - `alpha = 1.26`:   Priestley-Taylor coefficient
 for PenmanMonteith:
@@ -134,7 +134,7 @@ end
 function potential_ET(::PriestleyTaylor, Tair, pressure, Rn, G, S;
   alpha=1.26,
   Esat_formula=Sonntag1990(),
-  constants=BigleafConstants())
+  constants=BigLeafConstants())
   #
   gamma  = psychrometric_constant(Tair,pressure;constants)
   Delta  = Esat_from_Tair_deriv(Tair; Esat_formula, constants)
@@ -157,7 +157,7 @@ end
 function potential_ET(::PenmanMonteith, Tair, pressure, Rn, VPD, Ga_h, G, S;
   Gs_pot=0.6,
   Esat_formula=Sonntag1990(),
-  constants=BigleafConstants()
+  constants=BigLeafConstants()
   )
   gamma  = psychrometric_constant(Tair,pressure;constants)
   Delta  = Esat_from_Tair_deriv(Tair; Esat_formula = Esat_formula,constants)
@@ -250,7 +250,7 @@ optional :
 - `G=0`       : Ground heat flux (W m-2)
 - `S=0`       : Sum of all storage fluxes (W m-2)
 - `Esat_formula=Sonntag1990()`: formula used in [`Esat_from_Tair`](@ref)
-- `constants=`[`BigleafConstants`](@ref)`()`: pysical constants (cp, eps)
+- `constants=`[`BigLeafConstants`](@ref)`()`: pysical constants (cp, eps)
                  
 # Details
 Total evapotranspiration can be written in the form (Jarvis & McNaughton 6):
@@ -303,7 +303,7 @@ end
 
 function equilibrium_imposed_ET(Tair,pressure,VPD,Gs, Rn, G, S;
   Esat_formula=Sonntag1990(),
-  constants=BigleafConstants())
+  constants=BigLeafConstants())
   # 
   rho    = air_density(Tair, pressure; constants)
   gamma  = psychrometric_constant(Tair, pressure; constants)

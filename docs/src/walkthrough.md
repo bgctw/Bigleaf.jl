@@ -1,4 +1,4 @@
-This vignette is a short introduction to the functionalities of the `Bigleaf.jl` package. 
+This vignette is a short introduction to the functionalities of the `BigLeaf.jl` package. 
 It is directed to first-time package users who are familiar with the basic concepts of Julia. 
 After presenting the use of several key functions of the package, 
 some useful hints and guidelines are given at the end of the vignette.
@@ -6,12 +6,12 @@ some useful hints and guidelines are given at the end of the vignette.
 
 # Package scope and important conceptual considerations
 
-`Bigleaf.jl` calculates physical and physiological ecosystem properties from eddy 
+`BigLeaf.jl` calculates physical and physiological ecosystem properties from eddy 
 covariance data. Examples for such properties are aerodynamic and surface conductance, 
 surface conditions(e.g. temperature, VPD), wind profile, roughness parameters, 
 vegetation-atmosphere decoupling, potential evapotranspiration, (intrinsic) water-use 
 efficiency, stomatal sensitivity to VPD, or intercellular CO2 concentration.  
-All calculations in the `Bigleaf.jl` package assume that the ecosystem behaves like a  
+All calculations in the `BigLeaf.jl` package assume that the ecosystem behaves like a  
 "big-leaf", i.e. a single, homogenous plane which acts as the only source and sink of the 
 measured fluxes. This assumption comes with the advantages that calculations are simplified 
 considerably and that (in most cases) little ancillary information on the EC sites is 
@@ -20,14 +20,14 @@ critical limitations. All derived variables are bulk ecosystem characteristics a
 be interpreted as such. It is for example not possible to infer within-canopy variations 
 of a certain property.
 
-Please also keep in mind that the `Bigleaf.jl` package does NOT provide formulations for 
+Please also keep in mind that the `BigLeaf.jl` package does NOT provide formulations for 
 bottom-up modelling. The principle applied here is to use an inversion approach in which 
 ecosystem properties are inferred top-down from the measured fluxes. Such an inversion can, 
 in principle, be also be conducted with more complex models (e.g. sun/shade or canopy/soil 
 models), but keep in mind that these approaches also require that the additional, 
 site-specific parameters are adequately well known. 
 
-The use of more detailed models is not within the scope of the `Bigleaf.jl` package, but 
+The use of more detailed models is not within the scope of the `BigLeaf.jl` package, but 
 it is preferable to use such approaches when important assumptions of the "big-leaf" 
 approach are not met. This is the case in particular when the ecosystem is sparsely covered 
 with vegetation (low LAI, e.g. sparse crops, some savanna systems). 
@@ -38,14 +38,14 @@ with vegetation (low LAI, e.g. sparse crops, some savanna systems).
 In this tutorial, we will work with a dataset from the eddy covariance site Tharandt 
 (DE-Tha), a spruce forest in Eastern Germany. The DataFrame `DE_Tha_Jun_2014` is downloaded 
 from the `bigleaf` 
-[R package](https://bitbucket.org/juergenknauer/Bigleaf/) repository and contains 
+[R package](https://bitbucket.org/juergenknauer/BigLeaf/) repository and contains 
 half-hourly data of meteorological and flux measurements made in June 2014. For loading the 
 RData into Julia, see the 
-[source](https://github.com/bgctw/Bigleaf.jl/blob/main/docs/src/walkthrough.md?plain=1#L26) 
+[source](https://github.com/bgctw/BigLeaf.jl/blob/main/docs/src/walkthrough.md?plain=1#L26) 
 of this file. We give the data.frame a shorter name here and create a timestamp.
 
 ```@example doc
-using Bigleaf
+using BigLeaf
 using DataFrames
 ```
 ```@setup doc
@@ -95,7 +95,7 @@ nothing # hide
 
 # General guidelines on package usage
 
-There are a few general guidelines that are important to consider when using the `Bigleaf.jl` package. 
+There are a few general guidelines that are important to consider when using the `BigLeaf.jl` package. 
 
 
 ## Units
@@ -108,7 +108,7 @@ and temperature always in °C.
 
 ## Function arguments
 
-`Bigleaf.jl` usually provides functions in two flavours.
+`BigLeaf.jl` usually provides functions in two flavours.
 - providing all arguments seperately as scalars and output being a single scalar
   or a NamedTuple
 - providing a DataFrame as first argument with columns corresponding to the inputs and 
@@ -149,7 +149,7 @@ and $S$ is the sum of all storage fluxes of the ecosystem
 (see e.g. Leuning et al. 2012 for an overview). For some sites, $G$ is not available, 
 and for most sites, only a few components of $S$ are measured. 
 
-In `Bigleaf.jl` it is not a problem if $G$ and/or $S$ are missing (other than the results 
+In `BigLeaf.jl` it is not a problem if $G$ and/or $S$ are missing (other than the results 
 might be (slightly) biased), but special options exist for the treatment of missing 
 $S$ and $G$ values. 
 
@@ -172,7 +172,7 @@ why we want to filter our data before we start calculating ecosystem properties.
 The first one is to exclude datapoints that do not fulfill the requirements of the 
 EC technique or that are of bad quality due to e.g. instrument failure or gap-filling 
 with poor confidence. Note that the quality assessment of the EC data is not the purpose 
-of the `Bigleaf.jl` package. This is done by other packages (e.g. `REddyProc`), 
+of the `BigLeaf.jl` package. This is done by other packages (e.g. `REddyProc`), 
 which often provide quality control flags for the variables. These quality control 
 flags are used here to filter out bad-quality datapoints.
 
@@ -182,7 +182,7 @@ interested in properties related to plant gas exchange, it makes most sense to f
 time periods when plants are photosynthetically active 
 (i.e. in the growing season and at daytime).
 
-`Bigleaf.jl` provides methods that update (or create) the :valid column in 
+`BigLeaf.jl` provides methods that update (or create) the :valid column in 
 a DataFrame. Records, i.e. rows, that contain non valid conditions are set to false.
 If the valid column was false before, it stays at false.
 
@@ -289,7 +289,7 @@ thas = subset(thaf, :valid)
 
 ## Meteorological variables
 
-The `Bigleaf.jl` package provides calculation routines for a number of meteorological variables, which are basic to the calculation of many other variables. A few examples on their usage are given below:
+The `BigLeaf.jl` package provides calculation routines for a number of meteorological variables, which are basic to the calculation of many other variables. A few examples on their usage are given below:
 
 ```@example doc
 # Saturation vapor pressure (kPa) and slope of the saturation vapor pressure curve (kPa K-1)
@@ -355,7 +355,7 @@ The following figure compares them at absole scale and as difference to the
 
 ## Aerodynamic conductance
 
-An important metric for many calculations in the `Bigleaf.jl` package is the aerodynamic 
+An important metric for many calculations in the `BigLeaf.jl` package is the aerodynamic 
 conductance ($G_a$) between the land surface and the measurement height. $G_a$ 
 characterizes how efficiently mass and energy is transferred between the land surface 
 and the atmosphere. $G_a$ consists of two parts: $G_{a_m}$, the aerodynamic conductance 
@@ -367,7 +367,7 @@ $G_a$ can be defined as
 In this tutorial we will focus on 
 how to use the function [`aerodynamic_conductance!`](@ref). 
 For further details on the equations, 
-the reader is directed to the publication of the Bigleaf package (Knauer et al. 2018) and 
+the reader is directed to the publication of the BigLeaf package (Knauer et al. 2018) and 
 the references therein. A good overview is provided by e.g. Verma 1989.
 
   $G_a$ and in particular $G_b$ can be calculated with varying degrees of complexity. 
@@ -408,7 +408,7 @@ This is because this formulation takes additional aerodynamically relevant prope
 
 By default, the function `aerodynamic_conductance` (calling `compute_Gb!`) returns the 
 (quasi-laminar) canopy boundary layer ($G_{b}$) for heat and water vapor 
-(which are assumed to be equal in the `Bigleaf.jl`), as well as for CO$_2$. 
+(which are assumed to be equal in the `BigLeaf.jl`), as well as for CO$_2$. 
 Functin `add_Gb` calculates $G_b$ for other trace gases, provided that the respective Schmidt 
 number is known. 
 
@@ -424,7 +424,7 @@ Knowledge of aerodynamic conductance $G_a$
 allows us to calculate the bulk surface conductance ($G_s$) of the site 
 (In this case by inverting the Penman-Monteith equation). Gs represents the combined 
 conductance of the vegetation and the soil to water vapor transfer (and as such it is not 
-a purely physiological quantity). Calculating $G_s$ in `Bigleaf.jl` is simple:
+a purely physiological quantity). Calculating $G_s$ in `BigLeaf.jl` is simple:
 
 ```@example doc
 surface_conductance!(thas, InversePenmanMonteith());
@@ -450,7 +450,7 @@ The 'big-leaf' framework assumes that wind speed is zero at height d + $z_{0m}$
 (where $z_{0m}$ is the roughness length for momentum) and then increases exponentially with 
 height. The shape of the wind profile further depends on the stability conditions of the 
 air above the canopy.
-In `Bigleaf.jl`, a wind profile can be calculated assuming an exponential increase with 
+In `BigLeaf.jl`, a wind profile can be calculated assuming an exponential increase with 
 height, which is affected by atmospheric stability. Here, we calculate wind speed at 
 heights of 22-60m in steps of 2m. As expected, the gradient in wind speed is strongest 
 close to the surface and weaker at greater heights:
@@ -489,7 +489,7 @@ well with the actual measurements.
 ## Potential evapotranspiration
 
 For many hydrological applications, it is relevant to get an estimate on the potential 
-evapotranspiration (PET). At the moment, the `Bigleaf.jl` contains two formulations 
+evapotranspiration (PET). At the moment, the `BigLeaf.jl` contains two formulations 
 for the estimate of PET: the Priestley-Taylor equation, and the Penman-Monteith equation:
 
 ```@example doc
@@ -567,7 +567,7 @@ umolCO2_to_gC(20.0)
 
 Many functions provide constant empirical parameters. Those can
 be changed by overriding the default values with 
-[`BigleafConstants`](@ref) 
+[`BigLeafConstants`](@ref) 
 and passing this Struct to the respective function.
 
 

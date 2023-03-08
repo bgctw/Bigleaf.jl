@@ -88,7 +88,7 @@ end
 #'
 """
 """
-function ms_to_mol(G_ms,Tair,pressure,constants=BigleafConstants())
+function ms_to_mol(G_ms,Tair,pressure,constants=BigLeafConstants())
 
   Tair     = Tair + constants.Kelvin
   pressure = pressure * constants.kPa2Pa
@@ -102,7 +102,7 @@ end
 #' @rdname ms_to_mol
 """
 """
-function mol_to_ms(G_mol,Tair,pressure,constants=BigleafConstants())
+function mol_to_ms(G_mol,Tair,pressure,constants=BigLeafConstants())
 
   Tair     = Tair + constants.Kelvin
   pressure = pressure * constants.kPa2Pa
@@ -139,7 +139,7 @@ end
 """
 """
 function VPD_to_rH(VPD,Tair,Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
-                      constants=BigleafConstants())
+                      constants=BigLeafConstants())
 
   esat = Esat_slope(Tair,Esat_formula,constants)[,"Esat"]
   rH   = 1 - VPD/esat
@@ -152,7 +152,7 @@ end
 """
 """
 function rH_to_VPD(rH,Tair,Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
-                      constants=BigleafConstants())
+                      constants=BigLeafConstants())
 
   if(any(rH > 1 & !ismissing(rH)))
     @warn"relative humidity (rH) has to be between 0 and 1.")
@@ -168,7 +168,7 @@ end
 """
 """
 function e_to_rH(e,Tair,Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
-                    constants=BigleafConstants())
+                    constants=BigLeafConstants())
   
   esat = Esat_slope(Tair,Esat_formula,constants)[,"Esat"]
   
@@ -187,7 +187,7 @@ end
 """
 """
 function VPD_to_e(VPD,Tair,Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
-                     constants=BigleafConstants())
+                     constants=BigLeafConstants())
 
   esat = Esat_slope(Tair,Esat_formula,constants)[,"Esat"]
   e    = esat - VPD
@@ -200,7 +200,7 @@ end
 """
 """
 function e_to_VPD(e,Tair,Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
-                     constants=BigleafConstants())
+                     constants=BigLeafConstants())
 
   esat = Esat_slope(Tair,Esat_formula,constants)[,"Esat"]
   VPD  = esat - e
@@ -212,7 +212,7 @@ end
 #' @family humidity conversion
 """
 """
-function e_to_q(e,pressure,constants=BigleafConstants())
+function e_to_q(e,pressure,constants=BigLeafConstants())
   q = constants.eps] * e / (pressure - (1-constants[:eps) * e)
   return(q)
 end
@@ -222,7 +222,7 @@ end
 #' @family humidity conversion
 """
 """
-function q_to_e(q,pressure,constants=BigleafConstants())
+function q_to_e(q,pressure,constants=BigLeafConstants())
   e = q * pressure / ((1-constants.eps]) * q + constants[:eps)
   return(e)
 end
@@ -233,7 +233,7 @@ end
 """
 """
 function q_to_VPD(q,Tair,pressure,Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
-                     constants=BigleafConstants())
+                     constants=BigLeafConstants())
 
   esat = Esat_slope(Tair,Esat_formula,constants)[,"Esat"]
   e    = q_to_e(q,pressure,constants)
@@ -247,7 +247,7 @@ end
 """
 """
 function VPD_to_q(VPD,Tair,pressure,Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
-                     constants=BigleafConstants())
+                     constants=BigLeafConstants())
 
   esat = Esat_slope(Tair,Esat_formula,constants)[,"Esat"]
   e    = esat - VPD
@@ -317,7 +317,7 @@ end
  Numeric vector of amount of substance in mol.
 """
 """
-function kg_to_mol(mass, molarMass=BigleafConstants()$H2Omol)
+function kg_to_mol(mass, molarMass=BigLeafConstants()$H2Omol)
   
   moles = mass / molarMass
   
@@ -347,7 +347,7 @@ end
 #'
 """
 """
-function umolCO2_to_gC(CO2_flux,constants=BigleafConstants())
+function umolCO2_to_gC(CO2_flux,constants=BigLeafConstants())
 
   C_flux = CO2_flux * constants.umol2mol] * constants[:Cmol] * constants[:kg2g] * constants[:days2seconds
 
@@ -360,7 +360,7 @@ end
 #' @rdname umolCO2_to_gC
 """
 """
-function gC_to_umolCO2(C_flux,constants=BigleafConstants())
+function gC_to_umolCO2(C_flux,constants=BigLeafConstants())
 
   CO2_flux = (C_flux * constants.g2kg] / constants[:days2seconds]) / constants[:Cmol] * constants[:mol2umol
 

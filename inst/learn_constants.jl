@@ -24,18 +24,18 @@ f1(Val(cst3))
 @code_llvm f1(Val(cst3))
 
 struct ConstantsB end
-(c::ConstantsB)(::Val{s}) where s = getproperty(Bigleaf.BigleafConstantsDef, s)
+(c::ConstantsB)(::Val{s}) where s = getproperty(BigLeaf.BigLeafConstantsDef, s)
 cstB = ConstantsB()
 cstB(Val(:g))
 f1(Val(cstB))
 @code_llvm f1(Val(cstB))
 
-using Bigleaf
-f3(;cst=BigleafConstants()) = 2 * cst.g
+using BigLeaf
+f3(;cst=BigLeafConstants()) = 2 * cst.g
 f3()
 @code_llvm f3()
-@code_llvm f3(cst=BigleafConstants())
+@code_llvm f3(cst=BigLeafConstants())
 @code_warntype f3()
-@code_warntype f3(cst=BigleafConstants())
+@code_warntype f3(cst=BigLeafConstants())
 @code_warntype bigleaf_constants.g
 

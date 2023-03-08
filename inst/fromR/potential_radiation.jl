@@ -21,7 +21,7 @@
 #'   
 """
 """
-function extraterrestrial_radiation(doy,constants =BigleafConstants())
+function extraterrestrial_radiation(doy,constants =BigLeafConstants())
   
   # Fractional year in radians
   FracYearRad = 2 * pi * (doy - 1) / 365.24

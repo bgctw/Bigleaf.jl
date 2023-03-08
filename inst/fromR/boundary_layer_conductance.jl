@@ -56,7 +56,7 @@
 #' 
 """
 """
-function Gb_Thom(ustar,Sc=nothing,Sc_name=nothing,constants=BigleafConstants())
+function Gb_Thom(ustar,Sc=nothing,Sc_name=nothing,constants=BigLeafConstants())
   
   check_input(nothing,ustar)
   
@@ -174,7 +174,7 @@ end
 #' @export                                                                                                                                                                                                                                                                                    
 function Gb_Choudhury(data,Tair="Tair",pressure="pressure",wind="wind",ustar="ustar",H="H",
                          leafwidth,LAI,zh,zr,d,z0m=nothing,stab_formulation=c(Val(:Dyer_1970),Val(:Businger_1971)),
-                         Sc=nothing,Sc_name=nothing,constants=BigleafConstants())
+                         Sc=nothing,Sc_name=nothing,constants=BigLeafConstants())
   
   stab_formulation = match_arg(stab_formulation)
   
@@ -336,7 +336,7 @@ end
 function Gb_Su(data,Tair="Tair",pressure="pressure",ustar="ustar",wind="wind",
                   H="H",zh,zr,d,z0m=nothing,Dl,fc=nothing,LAI=nothing,N=2,Cd=0.2,hs=0.01,
                   stab_formulation=c(Val(:Dyer_1970),Val(:Businger_1971)),
-                  Sc=nothing,Sc_name=nothing,constants=BigleafConstants())
+                  Sc=nothing,Sc_name=nothing,constants=BigLeafConstants())
   
   stab_formulation = match_arg(stab_formulation)
   

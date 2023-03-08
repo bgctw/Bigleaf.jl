@@ -63,7 +63,7 @@
 """
 """
 function intercellular_CO2(data,Ca="Ca",GPP="GPP",Gs="Gs_mol",Rleaf=nothing,
-                              missing_Rleaf_as_NA=false,constants=BigleafConstants())
+                              missing_Rleaf_as_NA=false,constants=BigLeafConstants())
   
   check_input(data,list(Ca,GPP,Gs))
   
@@ -290,7 +290,7 @@ function photosynthetic_capacity(data,C3=true,Temp,GPP="GPP",Ci,PPFD="PPFD",PPFD
                                     Kc_Ha=79.43,Ko_Ha=36.38,Gam_Ha=37.83,Vcmax_Ha=65.33,Vcmax_Hd=200,
                                     Vcmax_dS=0.635,Jmax_Ha=43.9,Jmax_Hd=200,Jmax_dS=0.640,
                                     Theta=0.7,alpha_canopy=0.8,missing_Rleaf_as_NA=false,Ci_C4=100,
-                                    constants=BigleafConstants())
+                                    constants=BigLeafConstants())
   
   check_input(data,list(Temp,GPP,Ci,PPFD))
   
@@ -432,7 +432,7 @@ end
 #'             Plant, Cell and Environment 30, 1176-1190.
 #'             
 #' @export             
-function Arrhenius_temp_response(param,Temp,Ha,Hd,dS,constants=BigleafConstants())
+function Arrhenius_temp_response(param,Temp,Ha,Hd,dS,constants=BigLeafConstants())
   
   Temp = Temp + constants.Kelvin
   Tref = 25.0 + constants.Kelvin
@@ -600,7 +600,7 @@ function stomatal_slope(data,Tair="Tair",pressure="pressure",GPP="GPP",Gs="Gs_mo
                            VPD="VPD",Ca="Ca",Rleaf=nothing,model=c("USO","Ball&Berry","Leuning"),
                            robust_nls=false,nmin=40,fitg0=false,g0=0,fitD0=false,
                            D0=1.5,Gamma=50,missing_Rleaf_as_NA=false,
-                           constants=BigleafConstants(),...)
+                           constants=BigLeafConstants(),...)
   
   model = match_arg(model)
   

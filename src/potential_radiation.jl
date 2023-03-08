@@ -8,7 +8,7 @@ eccentricity correction. Computation follows Lanini, 2010 (Master thesis, Bern U
 # Arguments
 - doy: integer with day of year (DoY) starting at 1
 optional 
-- `constants=`[`BigleafConstants`](@ref)`()`: Dictionary with entries 
+- `constants=`[`BigLeafConstants`](@ref)`()`: Dictionary with entries 
    - solar_constant
 - `year`=2030: year to create timestamps. Due to precession results slightly
   change across decades.   
@@ -25,7 +25,7 @@ ex_rad = extraterrestrial_radiation(1)
 true
 ```
 """
-function extraterrestrial_radiation(doy::Number;constants =BigleafConstants(), year = 2030, FT=typeof(constants.solar_constant))
+function extraterrestrial_radiation(doy::Number;constants =BigLeafConstants(), year = 2030, FT=typeof(constants.solar_constant))
   # Fractional year in radians
   FracYearRad = 2 * π * (doy - 1) / oftype(doy/1, 365.24)
   #Eccentricity correction

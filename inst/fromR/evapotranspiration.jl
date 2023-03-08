@@ -96,7 +96,7 @@ function potential_ET(data,Tair="Tair",pressure="pressure",Rn="Rn",G=nothing,S=n
                          VPD="VPD",Ga="Ga_h",approach=c(Val(:PriestleyTaylor),Val(:PenmanMonteith)),
                          alpha=1.26,Gs_pot=0.6,missing_G_as_NA=false,missing_S_as_NA=false,
                          Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
-                         constants=BigleafConstants())
+                         constants=BigLeafConstants())
   
   approach = match_arg(approach)
   
@@ -178,7 +178,7 @@ end
 function reference_ET(data,Gs_ref=0.0143,Tair="Tair",pressure="pressure",VPD="VPD",Rn="Rn",Ga="Ga_h",
                          G=nothing,S=nothing,missing_G_as_NA=false,missing_S_as_NA=false,
                          Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
-                         constants=BigleafConstants())
+                         constants=BigLeafConstants())
   
   stop("this function is deprecated (since bigleaf version 0.6.0). For the calculation of potential ET from the Penman-Monteith equation (as formerly calculated with this function), use function potential_ET() with the argument approach='Penman-Monteith'. Note that the default value for argument 'Gs_pot' is expressed now in mol m-2 s-1 for simplicity (0.6 mol m-2 s-1).")
   
@@ -263,7 +263,7 @@ end
 function equilibrium_imposed_ET(data,Tair="Tair",pressure="pressure",VPD="VPD",Gs="Gs_ms",
                                    Rn="Rn",G=nothing,S=nothing,missing_G_as_NA=false,missing_S_as_NA=false,
                                    Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
-                                   constants=BigleafConstants())
+                                   constants=BigLeafConstants())
   
   check_input(data,list(Tair,pressure,VPD,Rn,Gs,G,S))
   

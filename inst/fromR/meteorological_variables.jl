@@ -30,7 +30,7 @@
 #' 
 """
 """
-function air_density(Tair,pressure,constants=BigleafConstants())
+function air_density(Tair,pressure,constants=BigLeafConstants())
   
   Tair     = Tair + constants.Kelvin
   pressure = pressure * constants.kPa2Pa
@@ -81,7 +81,7 @@ end
 #' pressure_from_elevation(500,Tair=25,VPD=1)
 #' 
 #' @export                           
-function pressure_from_elevation(elev,Tair,VPD=nothing,constants=BigleafConstants())
+function pressure_from_elevation(elev,Tair,VPD=nothing,constants=BigLeafConstants())
   
   Tair     = Tair + constants.Kelvin
   
@@ -161,7 +161,7 @@ end
 """
 """
 function Esat_slope(Tair,Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
-                       constants=BigleafConstants())
+                       constants=BigLeafConstants())
   
   Esat_formula = match_arg(Esat_formula)
   
@@ -222,7 +222,7 @@ end
 #' 
 """
 """
-function psychrometric_constant(Tair,pressure,constants=BigleafConstants())
+function psychrometric_constant(Tair,pressure,constants=BigLeafConstants())
   
   lambda = latent_heat_vaporization(Tair)
   gamma  = (constants.cp] * pressure) / (constants[:eps * lambda)
@@ -291,7 +291,7 @@ end
 #' @importFrom stats optimize 
 #' 
 #' @keywords internal
-function wetbulb_solver(ea,Tair,gamma,accuracy,Esat_formula,constants=BigleafConstants())
+function wetbulb_solver(ea,Tair,gamma,accuracy,Esat_formula,constants=BigLeafConstants())
   wetbulb_optim = optimize(function(Tw){abs(ea - c((Esat_slope(Tw,Esat_formula,constants)[,"Esat"] - 0.93*gamma*(Tair - Tw))))},
                             interval=c(-100,100),tol=accuracy)
   return(wetbulb_optim)
@@ -339,7 +339,7 @@ end
 """
 """
 function wetbulb_temp(Tair,pressure,VPD,accuracy=1e-03,Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
-                         constants=BigleafConstants())
+                         constants=BigLeafConstants())
   
   if (!is_numeric(accuracy))
     stop("'accuracy' must be numeric!")
@@ -392,7 +392,7 @@ end
 #' @importFrom stats optimize 
 #' 
 #' @keywords internal
-function dew_point_solver(ea,accuracy,Esat_formula,constants=BigleafConstants())
+function dew_point_solver(ea,accuracy,Esat_formula,constants=BigLeafConstants())
   
   Td_optim = optimize(function(Td){abs(ea - Esat_slope(Td,Esat_formula,constants)[,"Esat"])},
                        interval=c(-100,100),tol=accuracy)
@@ -436,7 +436,7 @@ end
 #' @importFrom stats optimize 
 #' @export              
 function dew_point(Tair,VPD,accuracy=1e-03,Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
-                      constants=BigleafConstants())
+                      constants=BigLeafConstants())
   
   if (!is_numeric(accuracy))
     stop("'accuracy' must be numeric!")
@@ -500,7 +500,7 @@ end
 """
 """
 function virtual_temp(Tair,pressure,VPD,Esat_formula=c("Sonntag_1990","Alduchov_1996","Allen_1998"),
-                         constants=BigleafConstants())
+                         constants=BigLeafConstants())
   
   e    = VPD_to_e(VPD,Tair,Esat_formula)
   Tair = Tair + constants.Kelvin
@@ -543,7 +543,7 @@ end
 #' kinematic_viscosity(25,100)    
 #' 
 #' @export         
-function kinematic_viscosity(Tair,pressure,constants=BigleafConstants())
+function kinematic_viscosity(Tair,pressure,constants=BigLeafConstants())
   
   Tair     = Tair + constants.Kelvin
   pressure = pressure * constants.kPa2Pa

@@ -19,7 +19,7 @@ or from a simple flux-gradient approach.
 - `pressure`  : Atmospheric pressure (kPa)
 - `Rn`        : Net radiation (W m-2)
 - `df`        : DataFrame with above variables
-- `constants=`[`BigleafConstants`](@ref)`()`: Dictionary with physical constants
+- `constants=`[`BigLeafConstants`](@ref)`()`: Dictionary with physical constants
 
 additional for InversePenmanMonteith
 - `LE`        : Latent heat flux (W m-2)
@@ -43,7 +43,7 @@ Available energy (A) is defined as ``A = R_n - G - S``.
 Ground heat flux and total storage flux can be provided as scalars or vectors of
 the lenght of the DataFrame in the DataFrame variant.
 While the bigleaf R package by default converts any missings in `G` and `S` to 0,
-in `Bigleaf.jl` the caller must take care, e.g. by using `G = coalesce(myGvector, 0.0)`.
+in `BigLeaf.jl` the caller must take care, e.g. by using `G = coalesce(myGvector, 0.0)`.
 
 For `FluxGradient()`, Gs (in mol m-2 s-1) is calculated from VPD and ET only:
 
@@ -83,7 +83,7 @@ isapprox(Gs.Gs_mol, 0.28, atol=0.1)
 true
 ``` 
 """
-function surface_conductance(::FluxGradient, Tair,pressure,VPD,LE; constants=BigleafConstants())
+function surface_conductance(::FluxGradient, Tair,pressure,VPD,LE; constants=BigLeafConstants())
     Gs_mol = (LE_to_ET(LE,Tair)/oftype(pressure,constants.Mw)) * pressure / VPD
     Gs_ms  = mol_to_ms(Gs_mol,Tair,pressure; constants)
     (;Gs_ms,Gs_mol)   
@@ -96,7 +96,7 @@ end
 function surface_conductance(::InversePenmanMonteith, Tair,pressure,VPD,LE,Rn,Ga_h; 
       G = 0.0, S = 0.0,
       #Ga="Ga_h",missing_G_as_NA=false,missing_S_as_NA=false,
-      Esat_formula=Sonntag1990(), constants=BigleafConstants()
+      Esat_formula=Sonntag1990(), constants=BigLeafConstants()
       )
       Delta = Esat_from_Tair_deriv(Tair; Esat_formula, constants)
       gamma = psychrometric_constant(Tair, pressure; constants)

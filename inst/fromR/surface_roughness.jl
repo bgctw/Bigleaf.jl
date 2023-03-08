@@ -34,7 +34,7 @@
 #' 
 """
 """
-function Reynolds_Number(Tair,pressure,ustar,z0m,constants=BigleafConstants())
+function Reynolds_Number(Tair,pressure,ustar,z0m,constants=BigLeafConstants())
   
   v  = kinematic_viscosity(Tair,pressure,constants)
   Re = z0m*ustar/v
@@ -148,7 +148,7 @@ function roughness_parameters(method=c(Val(:canopy_height),Val(:canopy_height_LA
                                  frac_d=0.7,frac_{z0m}=0.1,LAI,zr,cd=0.2,hs=0.01,data,Tair="Tair",pressure="pressure",
                                  wind="wind",ustar="ustar",H="H",d=nothing,z0m=nothing,
                                  stab_roughness=true,stab_formulation=c(Val(:Dyer_1970),Val(:Businger_1971)),
-                                 constants=BigleafConstants())
+                                 constants=BigLeafConstants())
   
   method           = match_arg(method)
   stab_formulation = match_arg(stab_formulation)
@@ -284,7 +284,7 @@ end
 function wind_profile(data,z,Tair="Tair",pressure="pressure",ustar="ustar",H="H",wind="wind",
                          zr,zh,d=nothing,frac_d=0.7,z0m=nothing,frac_{z0m}=nothing,estimate_z0m=true,
                          stab_correction=true,stab_formulation=c(Val(:Dyer_1970),Val(:Businger_1971)),
-                         constants=BigleafConstants())
+                         constants=BigLeafConstants())
   
   stab_formulation = match_arg(stab_formulation)
   

@@ -1,7 +1,7 @@
 """
-    BigleafConstants(;...)
+    BigLeafConstants(;...)
 
-Constants used troughout the Bigleaf.jl Package
+Constants used troughout the BigLeaf.jl Package
 
 Default values can be overridden by the named arguments of the constructor:
 
@@ -40,14 +40,14 @@ Default values can be overridden by the named arguments of the constructor:
 
 ## Examples
 ```jldoctest; output=false
-BigleafConstants().g == 9.81
+BigLeafConstants().g == 9.81
 # on the moon change gravity constant to 1/6 that of the earth
-BigleafConstants(g = BigleafConstants().g/6).g == 9.81/6
+BigLeafConstants(g = BigLeafConstants().g/6).g == 9.81/6
 # output
 true
 ```
 """
-@with_kw struct BigleafConstants{FT,IT,RT} 
+@with_kw struct BigLeafConstants{FT,IT,RT} 
   cp::FT         = 1004.834        # specific heat of air for constant pressure (J K-1 kg-1)
   Rgas::FT       = 8.31451         # universal gas constant (J mol-1 K-1)
   Rv::FT         = 461.5           # gas constant of water vapor (J kg-1 K-1) (Stull 1988 p.641)

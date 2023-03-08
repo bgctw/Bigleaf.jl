@@ -1,9 +1,9 @@
 ```@meta
-CurrentModule = Bigleaf
+CurrentModule = BigLeaf
 ```
 
-# Bigleaf
-Documentation for [Bigleaf](https://github.com/bgctw/Bigleaf.jl).
+# BigLeaf
+Documentation for [BigLeaf](https://github.com/bgctw/BigLeaf.jl).
 
 ```@contents
 Pages = ["index.md",]
