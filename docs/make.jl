@@ -12,7 +12,8 @@ doctest(Bigleaf, manual = false)
 makedocs(;
     # modules=[Bigleaf], # uncomment to show warnings on non-included docstrings
     authors="Thomas Wutzler <twutz@bgc-jena.mpg.de>, Jürgen Knauer <Juergen.Knauer@csiro.au> and contributors",
-    repo="https://github.com/bgctw/Bigleaf.jl/blob/{commit}{path}#{line}",
+    #repo="https://github.com/bgctw/Bigleaf.jl/blob/{commit}{path}#{line}",
+    repo = Remotes.GitHub("bgctw", "Bigleaf.jl"),
     sitename="Bigleaf.jl",
     doctestfilters=[r".*Info.*"],
     format=Documenter.HTML(;
