@@ -284,8 +284,13 @@ sum(.!thaf.valid) # some more invalids
 In this walkthrough we use the data as filtered above:
 ```@example doc
 thas = subset(thaf, :valid)
+nrow(thas)
 ```
 
+With first 6 rows:
+```@example doc
+mdtable(thas[1:6,:],latex=false) # hide
+```
 
 ## Meteorological variables
 
