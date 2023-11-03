@@ -70,7 +70,7 @@ function bigleaf_constants(
   Mw         = 0.0180153,       # molar mass of water vapor (kg mol-1)
   eps        = 0.622,           # ratio of the molecular weight of water vapor to dry air (=Mw/Md)
   g          = 9.81,            # gravitational acceleration (m s-2)
-  solar_constant = 1366.1,      # solar constant, i.e. solar radation at earth distance from the sun (W m-2)
+  solar_constant = 1366.1,      # solar constant, i.e. solar radiation at earth distance from the sun (W m-2)
   pressure0  = 101325,          # reference atmospheric pressure at sea level (Pa)
   Tair0      = 273.15,          # reference air temperature (K)
   k          = 0.41,            # von Karman constant

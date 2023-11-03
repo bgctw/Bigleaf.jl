@@ -13,7 +13,7 @@ Compute the Sun position at given time and observer coordinates in horizontal co
 - `azimuth`: angle ange the horizon plane eastwards of north [rad]
 - `hourangle`: [rad] as output by AstroLib.eq2hor
    Seems to represent time [day/2pi] after solar noon. 
-   Value at local timezone noon provdes (local time - solar time).
+   Value at local timezone noon provides (local time - solar time).
 """
 function calc_sun_position_hor(datetime::ZonedDateTime, lat, long)
   datetimeUTC = DateTime(datetime,UTC)
@@ -61,7 +61,7 @@ end
 Compute the Sun position at the Julian Day `JD`.
 
 Results are represented in the Mean Equinox of Date (MOD),
-i.e. accounting for precession but not for nutation and smaller pertubation
+i.e. accounting for precession but not for nutation and smaller perturbation
 of the polar axes, in spherical ecliptic and equatorial coordinates. 
 The algorithm was adapted from [Vallado 2013, p. 277-279].
 
@@ -84,7 +84,7 @@ The algorithm was adapted from [Vallado 2013, p. 277-279].
        Microcosm Press, Hawthorne, CA.
 """
 function calc_sun_position_MOD(JD::Number)
-    # Constants (apdated from SatelliteToolbox)
+    # Constants (updated from SatelliteToolbox)
     deg2rad = π/180
     au2m = 149597870700.0
     JD_J2000 = 2.451545e6

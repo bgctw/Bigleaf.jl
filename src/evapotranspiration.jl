@@ -60,7 +60,7 @@ Ground heat flux and storage heat flux `G` or `S` are provided as optional
 arguments. In the input-explicit variants, they default to zero.
 In the data-frame arguments, they default to missing, which results
 in assuming them to be zero which is displayed in a log-message.
-Note that in difference ot the bigleaf R package, you explitly need to
+Note that in difference to the bigleaf R package, you explicitly need to
 care for missing values (see examples).
       
 # Value
@@ -240,7 +240,7 @@ end
 
 Evapotranspiration (ET) split up into imposed ET and equilibrium ET.
 
-# Argumens
+# Arguments
 - `Tair`      : Air temperature (deg C)
 - `pressure`  : Atmospheric pressure (kPa)
 - `VPD`       : Air vapor pressure deficit (kPa)
@@ -250,7 +250,7 @@ optional :
 - `G=0`       : Ground heat flux (W m-2)
 - `S=0`       : Sum of all storage fluxes (W m-2)
 - `Esat_formula=Sonntag1990()`: formula used in [`Esat_from_Tair`](@ref)
-- `constants=`[`BigleafConstants`](@ref)`()`: pysical constants (cp, eps)
+- `constants=`[`BigleafConstants`](@ref)`()`: physical constants (cp, eps)
                  
 # Details
 Total evapotranspiration can be written in the form (Jarvis & McNaughton 6):

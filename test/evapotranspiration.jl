@@ -28,7 +28,7 @@ end
     @test all(df2b.Gs_mol .≈ 0.4)
 end
 
-@testset "potential_ET dataframe missings in G" begin
+@testset "potential_ET dataframe Missings in G" begin
     df = @pipe DataFrame(Tair = 20.0,pressure = 100.0, Rn = 500.0, G = 100.0:1:110) |>
       allowmissing(_, Cols(:G))
     df.G[2] = missing

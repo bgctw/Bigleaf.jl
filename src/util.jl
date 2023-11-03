@@ -4,7 +4,7 @@
 # Convert an Vector{SLVector} to DataFrame.
 
 # Such objects are returned when broadcasting on a function
-# that retuns an SLVector.
+# that returns an SLVector.
 # """
 # function toDataFrame(x::AbstractVector{<:SLArray}) 
 #     names = collect(keys(first(x)))

@@ -246,7 +246,7 @@ function get_growingseason(GPPd,tGPP;ws=15,min_int=5,warngap=true)
   GPPd_smoothed[1:wsd] .= mean(skipmissing(GPPd[1:(2*wsd)]))
   GPPd_smoothed[(length(GPPd)-(wsd-1)):length(GPPd)] .= 
     mean(skipmissing(GPPd[(length(GPPd)-(2*wsd-1)):length(GPPd)]))
-  # check for occurence of missing values and set to mean of the values surrounding them
+  # check for occurrence of missing values and set to mean of the values surrounding them
   imissing = findall(ismissing, GPPd_smoothed)
   if length(imissing) > 0
     warngap && length(imissing) > 10 && 

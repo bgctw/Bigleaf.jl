@@ -91,7 +91,7 @@ end
 
 Computes the psychrometric 'constant'.
 
-# Argumens
+# Arguments
 - Tair:      Air temperature (deg C)
 - pressure:  Atmospheric pressure (kPa)
 optional 

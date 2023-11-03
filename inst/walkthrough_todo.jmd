@@ -11,7 +11,7 @@ import CodecBzip2, CodecXz
 #@suppress_err # error in github-actions: GitHubActionsLogger has no field stream
 register(DataDep(
     "DE_Tha_Jun_2014.rda",
-    "downloading exampple dataset DE_Tha_Jun_2014 from bitbucket.org/juergenknauer/bigleaf",
+    "downloading example dataset DE_Tha_Jun_2014 from bitbucket.org/juergenknauer/bigleaf",
     "https://bitbucket.org/juergenknauer/bigleaf/raw/0ebe11626b4409305951e8add9f6436703c82584/data/DE_Tha_Jun_2014.rda",
     "395f02e1a1a2d175ac7499c200d9d48b1cb58ff4755dfd2d7fe96fd18258d73c"
 ))
@@ -72,7 +72,7 @@ case of missing values in the quality control variable. By default this is (cons
 set to `true`, i.e. all entries where the qc variable is missing is set invalid. 
 
 We can  filter for meteorological conditions to be in acceptable ranges. 
-For each variable to check we supply the valid minimum and valid maxium as a two-tuple
+For each variable to check we supply the valid minimum and valid maximum as a two-tuple
 as the second component of a pair. If their is no limit towards small or
 large values, supply `-Inf` or `Inf` as the minimum or maximum respectively.
 ```julia
@@ -89,7 +89,7 @@ sum(ismissing.(thaf.PPFD)
 
 About half of the data were filtered because radiation was not high enough (night-time). 
 Another quarter was filtered because they showed negative LE values. 
-However, most of them occured during the night:
+However, most of them occurred during the night:
 ```julia
 sum(ismissing.(thaf.PPFD)) / nrow(thaf)
 sum(.!ismissing.(thaf.PPFD) .&& ismissing.(thaf.LE)) / nrow(thaf)
@@ -468,7 +468,7 @@ We see that in this case, small changes in k have an effect on the calculated va
 By default, the functions `aerodynamic_conductance` (calling `compute_Gb!`) returns the 
 (quasi-laminar) canopy boundary layer ($G_{b}$) for heat and water vapor 
 (which are assumed to be equal in the `Bigleaf.jl` package), as well as for CO$_2$. 
-Functin `add_Gb` calculates $G_b$ for other trace gases, provided that the respective Schmidt 
+Function `add_Gb` calculates $G_b$ for other trace gases, provided that the respective Schmidt 
 number is known. 
 
 ```@example doc

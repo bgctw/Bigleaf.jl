@@ -24,7 +24,7 @@ end
     d=0.7*zh
     psi_m = stability_correction!(df; z=zr, d).psi_m
     # note: must use columntable for type stability - but needs compilation timede
-    # not type-stable if some columns allow missings in Julia 1.6
+    # not type-stable if some columns allow Missings in Julia 1.6
     #rp = @inferred roughness_parameters(Roughness_wind_profile(), df.ustar, df.wind, psi_m; zh, zr)
     rp = roughness_parameters(Roughness_wind_profile(), df.ustar, df.wind, psi_m; zh, zr)
     @test keys(rp) == keys_exp

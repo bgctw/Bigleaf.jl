@@ -11,7 +11,7 @@ import CodecBzip2, CodecXz
 #@suppress_err # error in github-actions: GitHubActionsLogger has no field stream
 register(DataDep(
     "DE_Tha_Jun_2014.rda",
-    "downloading exampple dataset DE_Tha_Jun_2014 from bitbucket.org/juergenknauer/bigleaf",
+    "downloading example dataset DE_Tha_Jun_2014 from bitbucket.org/juergenknauer/bigleaf",
     "https://bitbucket.org/juergenknauer/bigleaf/raw/0ebe11626b4409305951e8add9f6436703c82584/data/DE_Tha_Jun_2014.rda",
     "395f02e1a1a2d175ac7499c200d9d48b1cb58ff4755dfd2d7fe96fd18258d73c"
 ))

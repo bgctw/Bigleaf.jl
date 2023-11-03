@@ -10,7 +10,7 @@ struct Allen1998 <: EsatMethod end
 
 Saturation Vapor Pressure (Esat) and Slope of the Esat Curve
 
-# Arguemtns
+# Arguments
 - `Tair`:      Air temperature (deg C)
 - `Esat_formula=Sonntag1990()`:   Esat_formula to be used. Either 
    `Sonntag1990()` (Default), `Alduchov1996()`, or `Allen1998()`.
@@ -177,7 +177,7 @@ Conversion between vapor pressure (e), vapor pressure deficit (VPD),
 - VPD:       Vapor pressure deficit (kPa)
 - rH:        Relative humidity (-)
 
-All functions accept the optional arguemtns:
+All functions accept the optional arguments:
 - `Esat_formula`: formula used in [`Esat_from_Tair`](@ref)
 - `constants`: dictionary from [`BigleafConstants`](@ref) with entries
   eps and Pa2kPa
