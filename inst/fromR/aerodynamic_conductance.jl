@@ -35,7 +35,7 @@
 #' - Gb_model          Boundary layer resistance formulation. One of `Val(:Thom_1972),Val(:Choudhury_1988),Val(:Su_2001),Val(:constant_kB1)`.
 #' - kB_h              kB-1 value for heat transfer; only used if `Gb_model = Val(:constant_kB1)`
 #' - Sc                Optional: Schmidt number of additional quantities to be calculated
-#' - Sc_name           Optional: Name of the additonal quantities, has to be of same length than 
+#' - Sc_name           Optional: Name of the additional quantities, has to be of same length than 
 #'                          `Sc_name`
 #' - constants         k - von Karman constant 
 #'                          cp - specific heat of air for constant pressure (J K-1 kg-1) 

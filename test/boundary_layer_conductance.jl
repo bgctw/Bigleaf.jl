@@ -82,7 +82,7 @@ end
     #
     # DataFrame variant
     df = tha48[:,Not(:Gb_h)]
-    # sum(skipmissing(...)) not inferrable in Julia 1.6
+    # sum(skipmissing(...)) not inferable in Julia 1.6
     # @descend_code_warntype roughness_parameters(
     #     Roughness_wind_profile(), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
     #     zh, zr)
@@ -136,7 +136,7 @@ end
     float_cols = names(df0, Not(:datetime))
     df0 = transform(df0, float_cols .=> ByRow(passmissing(Float32)) .=> float_cols)
     df = copy(df0)
-    # sum(skipmissing(...)) not inferrable in Julia 1.6
+    # sum(skipmissing(...)) not inferable in Julia 1.6
     # @descend_code_warntype roughness_parameters(
     #     Roughness_wind_profile(), df.ustar, df.wind, df.Tair, df.pressure, df.H; 
     #     zh, zr)

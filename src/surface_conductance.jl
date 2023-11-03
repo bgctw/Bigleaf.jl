@@ -41,7 +41,7 @@ saturation vapor pressure curve (kPa K^-1), and ``\\rho`` is air density (kg m-3
 Available energy (A) is defined as ``A = R_n - G - S``. 
 
 Ground heat flux and total storage flux can be provided as scalars or vectors of
-the lenght of the DataFrame in the DataFrame variant.
+the length of the DataFrame in the DataFrame variant.
 While the bigleaf R package by default converts any missings in `G` and `S` to 0,
 in `Bigleaf.jl` the caller must take care, e.g. by using `G = coalesce(myGvector, 0.0)`.
 

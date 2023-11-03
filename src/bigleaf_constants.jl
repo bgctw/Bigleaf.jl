@@ -1,7 +1,7 @@
 """
     BigleafConstants(;...)
 
-Constants used troughout the Bigleaf.jl Package
+Constants used throughout the Bigleaf.jl Package
 
 Default values can be overridden by the named arguments of the constructor:
 
@@ -57,7 +57,7 @@ true
   eps::FT        = 0.622           # ratio of the molecular weight of water vapor to dry air
     # (=Mw/Md)
   g::FT          = 9.81            # gravitational acceleration (m s-2)
-  solar_constant::FT = 1366.1      # solar constant, i.e. solar radation at earth distance from 
+  solar_constant::FT = 1366.1      # solar constant, i.e. solar radiation at earth distance from 
   # the sun (W m-2)
   pressure0::FT  = 101325.0        # reference atmospheric pressure at sea level (Pa)
   Tair0::FT      = 273.15          # reference air temperature (K)

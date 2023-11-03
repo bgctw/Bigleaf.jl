@@ -44,14 +44,14 @@ end
     @test df.Ra_m[24] == Ram_r
     @inferred compute_Ram!(df, ResistanceWindProfile(); zr, d, z0m)
     @test df.Ra_m[24] == Ram_p
-    Ram_skalar = df.Ra_m
+    Ram_scalar = df.Ra_m
     #
     # test zr as a vecttor
     df[!,:zri] .= zr
     df.zri[1] = zr/2
     @inferred compute_Ram!(df, ResistanceWindProfile(); zr=df.zri, d, z0m)
-    @test df.Ra_m[2:end] == Ram_skalar[2:end]
-    @test df.Ra_m[1] != Ram_skalar[1]
+    @test df.Ra_m[2:end] == Ram_scalar[2:end]
+    @test df.Ra_m[1] != Ram_scalar[1]
 end
 
 @testset "roughness_length_heat" begin

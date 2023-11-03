@@ -12,7 +12,7 @@ surface conditions(e.g. temperature, VPD), wind profile, roughness parameters,
 vegetation-atmosphere decoupling, potential evapotranspiration, (intrinsic) water-use 
 efficiency, stomatal sensitivity to VPD, or intercellular CO2 concentration.  
 All calculations in the `Bigleaf.jl` package assume that the ecosystem behaves like a  
-"big-leaf", i.e. a single, homogenous plane which acts as the only source and sink of the 
+"big-leaf", i.e. a single, homogeneous plane which acts as the only source and sink of the 
 measured fluxes. This assumption comes with the advantages that calculations are simplified 
 considerably and that (in most cases) little ancillary information on the EC sites is 
 required. It is important to keep in mind that these simplifications go hand in hand with 
@@ -56,7 +56,7 @@ import CodecBzip2, CodecXz
 #@suppress_err # error in github-actions: GitHubActionsLogger has no field stream
 register(DataDep(
     "DE_Tha_Jun_2014.rda",
-    "downloading exampple dataset DE_Tha_Jun_2014 from bitbucket.org/juergenknauer/bigleaf",
+    "downloading example dataset DE_Tha_Jun_2014 from bitbucket.org/juergenknauer/bigleaf",
     "https://bitbucket.org/juergenknauer/bigleaf/raw/0ebe11626b4409305951e8add9f6436703c82584/data/DE_Tha_Jun_2014.rda",
     "395f02e1a1a2d175ac7499c200d9d48b1cb58ff4755dfd2d7fe96fd18258d73c"
 ))
@@ -109,10 +109,10 @@ and temperature always in °C.
 ## Function arguments
 
 `Bigleaf.jl` usually provides functions in two flavours.
-- providing all arguments seperately as scalars and output being a single scalar
+- providing all arguments separately as scalars and output being a single scalar
   or a NamedTuple
 - providing a DataFrame as first argument with columns corresponding to the inputs and 
-  ouput being the in-place modified DataFrame. Most keyword arguments
+  output being the in-place modified DataFrame. Most keyword arguments
   accept both, vectors or scalars.
   The column names in the DataFrame should correspond to the argument names
   of the corresponding method with individual inputs.
@@ -155,12 +155,12 @@ $S$ and $G$ values.
 
 Note that the default for G and S in the dataframe variant is missing (and assumed zero), 
 even if those columns are
-present in the DataFrame. You need to explictly pass those columns with the optional
+present in the DataFrame. You need to explicitly pass those columns with the optional
 arguments: e.g. `potential_ET(df, PriestleyTaylor(); G = df.G)`
 
 Note that in difference to the bigleaf R package missing entries in an input
 vector are not relaced by zero by default. 
-You need to explitly use coalesce when specifying a ground heat flux
+You need to explicitly use coalesce when specifying a ground heat flux
 for which missings should be replaced by zero: `;G = coalesce(df.G, zero(df.G))`
  
 # Function walkthrough #
@@ -212,7 +212,7 @@ set to `true`, i.e. all entries where the qc variable is missing is set invalid.
 ### `setinvalid_range!`
 
 We can  filter for meteorological conditions to be in acceptable ranges. 
-For each variable to check we supply the valid minimum and valid maxium as a two-tuple
+For each variable to check we supply the valid minimum and valid maximum as a two-tuple
 as the second component of a pair. If their is no limit towards small or
 large values, supply `-Inf` or `Inf` as the minimum or maximum respectively.
 ```@example doc
@@ -229,7 +229,7 @@ sum(ismissing.(thaf.PPFD))
 
 About half of the data were filtered because radiation was not high enough (night-time). 
 Another quarter was filtered because they showed negative LE values. 
-However, most of them occured during the night:
+However, most of them occurred during the night:
 ```@example doc
 sum(ismissing.(thaf.PPFD)) / nrow(thaf) # 0.48
 sum(.!ismissing.(thaf.PPFD) .&& ismissing.(thaf.LE)) / nrow(thaf) # 0.05
@@ -414,7 +414,7 @@ This is because this formulation takes additional aerodynamically relevant prope
 By default, the function `aerodynamic_conductance` (calling `compute_Gb!`) returns the 
 (quasi-laminar) canopy boundary layer ($G_{b}$) for heat and water vapor 
 (which are assumed to be equal in the `Bigleaf.jl`), as well as for CO$_2$. 
-Functin `add_Gb` calculates $G_b$ for other trace gases, provided that the respective Schmidt 
+Function `add_Gb` calculates $G_b$ for other trace gases, provided that the respective Schmidt 
 number is known. 
 
 ```@example doc

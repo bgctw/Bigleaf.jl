@@ -74,7 +74,7 @@ lower atmosphere.
 - `z`   : height (m)
 - `d`   : Zero-plane displacement height (m)
 - `MOL` : Monin-Obukhov-length L (m)
-- `df`  : DataFrame containting the variables required by [`Monin_Obukhov_length`](@ref)
+- `df`  : DataFrame containing the variables required by [`Monin_Obukhov_length`](@ref)
 optional
 - `constants=`[`BigleafConstants`](@ref)`()`
 
@@ -147,7 +147,7 @@ Integrated Stability Correction Functions for Heat and Momentum
 - `zeta`             : Stability parameter zeta (-)
 - `Tair`,`pressure`,`ustar`,`H` : see [`Monin_Obukhov_length`](@ref)
 - `z`,`d`            : see [`stability_parameter`](@ref)
-- `df`  : DataFrame containting the variables required by [`Monin_Obukhov_length`](@ref)
+- `df`  : DataFrame containing the variables required by [`Monin_Obukhov_length`](@ref)
 - `stab_formulation` : Formulation for the stability function. Either 
             `Dyer1970()`, or `Businger1971()` or `NoStabilityCorrection()`
 
@@ -159,7 +159,7 @@ These dimensionless values are needed to correct deviations
 from the exponential wind profile under non-neutral conditions.
 The functions give the integrated form of the universal functions. They
 depend on the value of the stability parameter ``\\zeta``,
-a function of heigh `z`,
+a function of height `z`,
 which can be calculated from the function [`stability_parameter`](@ref).
 The integration of the universal functions is:
 

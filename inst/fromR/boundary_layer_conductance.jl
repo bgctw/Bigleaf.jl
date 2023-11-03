@@ -104,7 +104,7 @@ end
 #' - stab_formulation Stability correction function used (If `stab_correction = true`).
 #'                         Either `Val(:Dyer_1970)` or `Val(:Businger_1971)`.
 #' - Sc               Optional: Schmidt number of additional quantities to be calculated
-#' - Sc_name          Optional: Name of the additonal quantities, has to be of same length than 
+#' - Sc_name          Optional: Name of the additional quantities, has to be of same length than 
 #'                         `Sc_name`
 #' - constants        k - von-Karman constant 
 #'                         Sc_CO2 - Schmidt number for CO2  

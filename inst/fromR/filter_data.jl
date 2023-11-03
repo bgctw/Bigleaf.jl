@@ -330,7 +330,7 @@ function filter_growingseason(GPPd,tGPP,ws=15,min_int=5)
     GPPd_smoothed[1:wsd] = mean(GPPd[1:(2*wsd)],na_rm=true)
     GPPd_smoothed[(length(GPPd)-(wsd-1)):length(GPPd)] = mean(GPPd[(length(GPPd)-(2*wsd-1)):length(GPPd)],na_rm=true)
     
-    # check for occurence of missing values and set them to mean of the values surrounding them
+    # check for occurrence of missing values and set them to mean of the values surrounding them
     missing = which(ismissing(GPPd_smoothed))
     if (length(missing) > 0)
       if (length(missing) > 10){@warn"Attention, there is a gap in 'GPPd' of length n = ",length(missing))}
