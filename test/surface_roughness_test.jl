@@ -1,3 +1,20 @@
+using Bigleaf, Test
+using DataFrames
+using Tables
+using StaticArrays: SA
+
+include("data_tha48.jl")
+tha48 = get_tha48()
+
+thal = (
+    LAI = 7.6,   # leaf area index
+    zh  = 26.5,  # average vegetation height (m)
+    zr  = 42,    # sensor height (m)
+    Dl  = 0.01,  # leaf characteristic dimension (m)
+)
+
+
+
 @testset "Reynolds_Number" begin
     Tair,pressure,ustar,z0m = 25.0,100-0,0.5,0.5
     R = @inferred Reynolds_Number(Tair,pressure,ustar,z0m)                             

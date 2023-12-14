@@ -1,3 +1,19 @@
+using Bigleaf, Test
+using DataFrames
+using StaticArrays: SA
+
+include("data_tha48.jl")
+tha48 = get_tha48()
+
+thal = (
+    LAI = 7.6,   # leaf area index
+    zh  = 26.5,  # average vegetation height (m)
+    zr  = 42,    # sensor height (m)
+    Dl  = 0.01,  # leaf characteristic dimension (m)
+)
+
+
+
 @testset "add_Gb" begin
     Gb_h = 0.0347
     @test add_Gb(Gb_h) == NamedTuple()

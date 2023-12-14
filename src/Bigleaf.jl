@@ -12,7 +12,6 @@ using Suppressor
 using Missings
 using Statistics, StatsBase # mean, rle
 using PaddedViews, StaticArrays
-using Infiltrator
 using Parameters
 
 export ConductanceMethod, Thom1972, Choudhury1988, Su2001, ConstantKB1
