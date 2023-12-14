@@ -1,23 +1,5 @@
-using Bigleaf
-using Test, SafeTestsets, StableRNGs
-using Pipe: @pipe 
-using DataFrames, Dates, TimeZones
-using Tables: columntable
-using StaticArrays
-using Statistics, StatsBase
-using Missings
-
+using Test, SafeTestsets
 const GROUP = get(ENV, "GROUP", "All") # defined in in CI.yml
-
-
-
-i_tmp = () -> begin 
-    Dl=0.01
-    df = aerodynamic_conductance!(copy(df, copycols=false); Gb_model=Su2001(), 
-        Dl, LAI=thal.LAI, zh=thal.zh, zr=thal.zr);
-    @show df.Gb_h[1:48];
-    @show df.Ga_h[1:48];
-end
 
 @time begin
     if GROUP == "All" || GROUP == "Basic"
