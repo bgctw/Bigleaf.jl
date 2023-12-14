@@ -1,3 +1,11 @@
+using Bigleaf, Test
+using StableRNGs
+using DataFrames, Pipe
+using Dates, TimeZones
+using StatsBase
+using StaticArrays: SA
+
+
 @testset "get_growingseason" begin
     rng = StableRNG(815)
     GPPd = @pipe sin.((1:365).*π./365) .+ 0.5 .* rand(rng,365) |> allowmissing(_)

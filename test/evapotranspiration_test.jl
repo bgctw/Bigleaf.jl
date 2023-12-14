@@ -1,3 +1,20 @@
+using Bigleaf, Test
+using DataFrames
+using Tables
+using StaticArrays: SA
+using Pipe
+
+
+include("data_tha48.jl")
+tha48 = get_tha48()
+
+thal = (
+    LAI = 7.6,   # leaf area index
+    zh  = 26.5,  # average vegetation height (m)
+    zr  = 42,    # sensor height (m)
+    Dl  = 0.01,  # leaf characteristic dimension (m)
+)
+
 @testset "potential_ET scalars" begin
     Tair,pressure,Rn = 30.0,100.0,500.0
     ET_pot, LE_pot = potential_ET(PriestleyTaylor(), Tair,pressure,Rn; alpha=1.26)    

@@ -1,3 +1,10 @@
+using Bigleaf, Test
+using DataFrames
+using StaticArrays: SA
+
+include("data_tha48.jl")
+tha48 = get_tha48()
+
 @testset "Monin_Obukhov_length" begin
     datetime, ustar, Tair, pressure, H = tha48[24,Cols(:datetime, :ustar, :Tair, :pressure, :H)]
     MOL24 = @inferred Monin_Obukhov_length(Tair, pressure, ustar, H)
