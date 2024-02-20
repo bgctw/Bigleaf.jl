@@ -44,5 +44,7 @@ jobs:
           COMPATHELPER_PRIV: ${{ secrets.DOCUMENTER_KEY }}
           # COMPATHELPER_PRIV: ${{ secrets.COMPATHELPER_PRIV }}
       - uses: actions/checkout@v2
+        with:
+          ref: 'keepalive'      # The branch, tag or SHA to checkout. 
       - uses: bgctw/keepalive-workflow@master
             
