@@ -43,7 +43,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMPATHELPER_PRIV: ${{ secrets.DOCUMENTER_KEY }}
           # COMPATHELPER_PRIV: ${{ secrets.COMPATHELPER_PRIV }}
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           ref: 'keepalive'      # The branch, tag or SHA to checkout. 
       - uses: bgctw/keepalive-workflow@master
